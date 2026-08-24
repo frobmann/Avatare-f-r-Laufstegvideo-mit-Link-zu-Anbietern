@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Avatar Catwalk Shop</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0a0a14;
+      color: #f0ece2;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .hero {
+      max-width: 600px;
+    }
+
+    .logo {
+      font-size: 4rem;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.5rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: #c9a96e;
+      margin-bottom: 16px;
+    }
+
+    p {
+      font-size: 1.1rem;
+      color: #8a8a9a;
+      line-height: 1.6;
+      margin-bottom: 30px;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 14px 32px;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #c9a96e, #a88a50);
+      color: #0a0a14;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(201, 169, 110, 0.3);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: #c9a96e;
+      border: 1px solid rgba(201, 169, 110, 0.3);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(201, 169, 110, 0.08);
+      border-color: #c9a96e;
+    }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 24px;
+      margin-top: 60px;
+      max-width: 800px;
+    }
+
+    .feature {
+      padding: 24px;
+      background: rgba(26, 28, 36, 0.5);
+      border: 1px solid rgba(42, 45, 56, 0.5);
+      border-radius: 12px;
+      text-align: left;
+    }
+
+    .feature-icon {
+      font-size: 1.5rem;
+      margin-bottom: 12px;
+    }
+
+    .feature h3 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #e8e6e1;
+    }
+
+    .feature p {
+      font-size: 0.8rem;
+      color: #7a7d8a;
+      margin-bottom: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="hero">
+    <div class="logo">🎭</div>
+    <h1>Avatar Catwalk</h1>
+    <p>
+      Interaktiver virtueller Laufsteg – Avatare präsentieren täglich
+      neue Outfits von verschiedenen Anbietern. Klicke auf die Models
+      und shoppe den Look direkt beim Anbieter.
+    </p>
+    <div class="btn-group">
+      <a href="/catwalk" class="btn btn-primary">🎬 Catwalk starten</a>
+      <a href="/admin" class="btn btn-secondary">⚙️ Admin Dashboard</a>
+    </div>
+  </div>
+
+  <div class="features">
+    <div class="feature">
+      <div class="feature-icon">🎭</div>
+      <h3>Avatare verwalten</h3>
+      <p>Erstelle und verwalte virtuelle Models für deinen Laufsteg</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">👔</div>
+      <h3>Täglich einkleiden</h3>
+      <p>Weise täglich neue Artikel von verschiedenen Anbietern zu</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">🛒</div>
+      <h3>Direkt shoppen</h3>
+      <p>Kunden klicken auf Avatare und werden direkt zum Shop weitergeleitet</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">📊</div>
+      <h3>Statistiken</h3>
+      <p>Verfolge Klicks, Hover-Interaktionen und Shop-Weiterleitungen</p>
+    </div>
+  </div>
+</body>
+</html>

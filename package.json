@@ -1,0 +1,22 @@
+{
+  "name": "avatar-catwalk-shop",
+  "version": "1.0.0",
+  "description": "Interaktives Avatar-Catwalk-System mit Anbieter-Verlinkung",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node server/index.js",
+    "init-db": "node server/init-db.js",
+    "seed": "node server/seed-data.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.7.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.0",
+    "multer": "^1.4.5-lts.1",
+    "uuid": "^10.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin – Avatar Catwalk</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0f1117;
+      --bg-card: #1a1c24;
+      --bg-input: #22242e;
+      --border: #2a2d38;
+      --accent: #c9a96e;
+      --accent-hover: #dbc08a;
+      --accent-bg: rgba(201, 169, 110, 0.08);
+      --text: #e8e6e1;
+      --text-dim: #7a7d8a;
+      --danger: #e74c3c;
+      --success: #27ae60;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* Layout */
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .admin-header h1 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .admin-header .links {
+      display: flex;
+      gap: 16px;
+    }
+
+    .admin-header .links a {
+      color: var(--text-dim);
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: color 0.2s;
+    }
+
+    .admin-header .links a:hover { color: var(--accent); }
+
+    .admin-layout {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      min-height: calc(100vh - 57px);
+    }
+
+    /* Sidebar */
+    .sidebar {
+      background: var(--bg-card);
+      border-right: 1px solid var(--border);
+      padding: 16px 0;
+    }
+
+    .sidebar-section {
+      padding: 8px 16px;
+      margin-bottom: 8px;
+    }
+
+    .sidebar-section h3 {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      cursor: pointer;
+      border-radius: 6px;
+      margin: 2px 8px;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+      color: var(--text);
+      border: none;
+      background: none;
+      width: calc(100% - 16px);
+      text-align: left;
+    }
+
+    .nav-item:hover { background: var(--accent-bg); }
+    .nav-item.active {
+      background: var(--accent-bg);
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    /* Main Content */
+    .main-content {
+      padding: 24px;
+      overflow-y: auto;
+    }
+
+    .page-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 24px;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    /* Forms */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 16px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .form-group input, .form-group select, .form-group textarea {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-size: 0.9rem;
+      color: var(--text);
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input:focus, .form-group select:focus {
+      border-color: var(--accent);
+      outline: none;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    /* Buttons */
+    .btn {
+      padding: 8px 20px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #0a0a14;
+    }
+
+    .btn-primary:hover { background: var(--accent-hover); }
+
+    .btn-secondary {
+      background: var(--bg-input);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover { border-color: var(--accent); }
+
+    .btn-danger {
+      background: rgba(231, 76, 60, 0.1);
+      color: var(--danger);
+      border: 1px solid rgba(231, 76, 60, 0.2);
+    }
+
+    .btn-danger:hover { background: rgba(231, 76, 60, 0.2); }
+
+    .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+
+    .btn-icon {
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+    }
+
+    /* Tables */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .data-table th {
+      text-align: left;
+      padding: 10px 12px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-dim);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .data-table td {
+      padding: 12px;
+      font-size: 0.9rem;
+      border-bottom: 1px solid rgba(42, 45, 56, 0.5);
+    }
+
+    .data-table tr:hover { background: var(--accent-bg); }
+
+    /* Tags */
+    .tag {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    .tag-category {
+      background: rgba(201, 169, 110, 0.1);
+      color: var(--accent);
+    }
+
+    /* Outfit Builder */
+    .outfit-builder {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 20px;
+      min-height: 500px;
+    }
+
+    .avatar-select-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .avatar-select-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .avatar-select-item:hover,
+    .avatar-select-item.selected {
+      border-color: var(--accent);
+      background: var(--accent-bg);
+    }
+
+    .avatar-mini-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #a88a50);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+    }
+
+    .avatar-select-info h4 {
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    .avatar-select-info p {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+    }
+
+    .outfit-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .outfit-date-picker {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .outfit-date-picker input[type="date"] {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: var(--text);
+      font-family: inherit;
+    }
+
+    .outfit-slots {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    .outfit-slot {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .outfit-slot-header {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+    }
+
+    .outfit-slot-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+    }
+
+    .outfit-slot-item .name {
+      font-size: 0.85rem;
+    }
+
+    .outfit-slot-item .brand {
+      font-size: 0.7rem;
+      color: var(--accent);
+    }
+
+    .outfit-slot-empty {
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      font-style: italic;
+    }
+
+    /* Article Picker */
+    .article-picker {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .article-picker-filters {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .article-picker-filters select,
+    .article-picker-filters input {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 10px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.85rem;
+    }
+
+    .article-picker-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 10px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .article-pick-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .article-pick-card:hover {
+      border-color: var(--accent);
+      background: var(--accent-bg);
+    }
+
+    .article-pick-info {
+      flex: 1;
+    }
+
+    .article-pick-name { font-size: 0.85rem; }
+    .article-pick-brand { font-size: 0.7rem; color: var(--accent); }
+    .article-pick-price { font-size: 0.85rem; font-weight: 600; }
+
+    /* Stats */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      margin-top: 4px;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      z-index: 1000;
+      transform: translateY(100px);
+      transition: transform 0.3s ease;
+    }
+
+    .toast.show { transform: translateY(0); }
+    .toast.success { background: var(--success); color: white; }
+    .toast.error { background: var(--danger); color: white; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .admin-layout { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .outfit-builder { grid-template-columns: 1fr; }
+    }
+
+    /* Section visibility */
+    .section { display: none; }
+    .section.active { display: block; }
+  </style>
+</head>
+<body>
+
+  <header class="admin-header">
+    <h1>🎭 Avatar Catwalk – Admin</h1>
+    <div class="links">
+      <a href="/catwalk" target="_blank">👁 Catwalk öffnen</a>
+      <a href="/" target="_blank">🏠 Startseite</a>
+    </div>
+  </header>
+
+  <div class="admin-layout">
+    <nav class="sidebar">
+      <div class="sidebar-section">
+        <h3>Verwaltung</h3>
+      </div>
+      <button class="nav-item active" data-section="outfits">👔 Einkleiden</button>
+      <button class="nav-item" data-section="avatars">🎭 Avatare</button>
+      <button class="nav-item" data-section="providers">🏪 Anbieter</button>
+      <button class="nav-item" data-section="articles">👗 Artikel</button>
+      <button class="nav-item" data-section="config">⚙️ Catwalk-Config</button>
+      <button class="nav-item" data-section="stats">📊 Statistiken</button>
+    </nav>
+
+    <main class="main-content">
+
+      <!-- ===== OUTFITS / EINKLEIDEN ===== -->
+      <div id="section-outfits" class="section active">
+        <h2 class="page-title">👔 Avatare einkleiden</h2>
+
+        <div class="outfit-builder">
+          <div>
+            <h3 style="font-size: 0.9rem; margin-bottom: 12px; color: var(--text-dim);">Avatar wählen</h3>
+            <div id="avatar-select-list" class="avatar-select-list">
+              <p style="color: var(--text-dim); font-size: 0.85rem;">Lade Avatare...</p>
+            </div>
+          </div>
+
+          <div class="outfit-panel" id="outfit-panel">
+            <div class="outfit-date-picker">
+              <label style="font-size: 0.85rem;">Datum:</label>
+              <input type="date" id="outfit-date" />
+              <button class="btn btn-secondary btn-sm" onclick="setToday()">Heute</button>
+            </div>
+
+            <div id="current-outfit" class="card">
+              <div class="card-header">
+                <span class="card-title">Aktuelles Outfit</span>
+                <button class="btn btn-danger btn-sm" onclick="clearOutfit()">Alles entfernen</button>
+              </div>
+              <div id="outfit-slots" class="outfit-slots">
+                <p style="color: var(--text-dim);">Wähle zuerst einen Avatar</p>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <span class="card-title">Artikel hinzufügen</span>
+              </div>
+              <div class="article-picker">
+                <div class="article-picker-filters">
+                  <select id="filter-category" onchange="filterArticles()">
+                    <option value="">Alle Kategorien</option>
+                    <option value="kopfbedeckung">Kopfbedeckung</option>
+                    <option value="oberteil">Oberteil</option>
+                    <option value="jacke">Jacke</option>
+                    <option value="hose">Hose</option>
+                    <option value="rock">Rock</option>
+                    <option value="kleid">Kleid</option>
+                    <option value="schuhe">Schuhe</option>
+                    <option value="accessoire">Accessoire</option>
+                    <option value="tasche">Tasche</option>
+                    <option value="schmuck">Schmuck</option>
+                  </select>
+                  <select id="filter-provider" onchange="filterArticles()">
+                    <option value="">Alle Anbieter</option>
+                  </select>
+                  <input type="text" id="filter-search" placeholder="Suchen..." oninput="filterArticles()" />
+                </div>
+                <div id="article-picker-list" class="article-picker-list">
+                  <p style="color: var(--text-dim);">Lade Artikel...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== AVATARE ===== -->
+      <div id="section-avatars" class="section">
+        <h2 class="page-title">🎭 Avatare verwalten</h2>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Neuer Avatar</span>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Name *</label>
+              <input type="text" id="avatar-name" placeholder="z.B. Sophia" />
+            </div>
+            <div class="form-group">
+              <label>Beschreibung</label>
+              <input type="text" id="avatar-desc" placeholder="z.B. Eleganter Stil" />
+            </div>
+            <div class="form-group">
+              <label>Bild-URL</label>
+              <input type="url" id="avatar-image" placeholder="https://..." />
+            </div>
+            <div class="form-group">
+              <label>Position</label>
+              <input type="number" id="avatar-order" value="0" min="0" />
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" onclick="createAvatar()">Avatar erstellen</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Alle Avatare</span>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Beschreibung</th>
+                <th>Position</th>
+                <th>Erstellt</th>
+                <th>Aktionen</th>
+              </tr>
+            </thead>
+            <tbody id="avatars-table-body">
+              <tr><td colspan="5" style="color: var(--text-dim);">Lade...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ===== ANBIETER ===== -->
+      <div id="section-providers" class="section">
+        <h2 class="page-title">🏪 Anbieter verwalten</h2>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Neuer Anbieter</span>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Firmenname *</label>
+              <input type="text" id="prov-name" placeholder="z.B. Zalando AG" />
+            </div>
+            <div class="form-group">
+              <label>Brand-Name *</label>
+              <input type="text" id="prov-brand" placeholder="z.B. Zalando" />
+            </div>
+            <div class="form-group">
+              <label>Website-URL *</label>
+              <input type="url" id="prov-url" placeholder="https://www.zalando.ch" />
+            </div>
+            <div class="form-group">
+              <label>Logo-URL</label>
+              <input type="url" id="prov-logo" placeholder="https://..." />
+            </div>
+            <div class="form-group">
+              <label>Affiliate Base-URL</label>
+              <input type="url" id="prov-affiliate" placeholder="https://affiliate.example.com/?ref=" />
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" onclick="createProvider()">Anbieter erstellen</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Alle Anbieter</span>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Brand</th>
+                <th>Firma</th>
+                <th>Website</th>
+                <th>Aktionen</th>
+              </tr>
+            </thead>
+            <tbody id="providers-table-body">
+              <tr><td colspan="4" style="color: var(--text-dim);">Lade...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ===== ARTIKEL ===== -->
+      <div id="section-articles" class="section">
+        <h2 class="page-title">👗 Artikel verwalten</h2>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Neuer Artikel</span>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Anbieter *</label>
+              <select id="art-provider">
+                <option value="">Anbieter wählen...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Artikelname *</label>
+              <input type="text" id="art-name" placeholder="z.B. Seidenbluse" />
+            </div>
+            <div class="form-group">
+              <label>Kategorie *</label>
+              <select id="art-category">
+                <option value="kopfbedeckung">Kopfbedeckung</option>
+                <option value="oberteil" selected>Oberteil</option>
+                <option value="jacke">Jacke</option>
+                <option value="hose">Hose</option>
+                <option value="rock">Rock</option>
+                <option value="kleid">Kleid</option>
+                <option value="schuhe">Schuhe</option>
+                <option value="accessoire">Accessoire</option>
+                <option value="tasche">Tasche</option>
+                <option value="schmuck">Schmuck</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Preis (CHF) *</label>
+              <input type="number" id="art-price" step="0.01" min="0" placeholder="79.90" />
+            </div>
+            <div class="form-group">
+              <label>Produkt-URL *</label>
+              <input type="url" id="art-url" placeholder="https://shop.example.com/produkt" />
+            </div>
+            <div class="form-group">
+              <label>Bild-URL</label>
+              <input type="url" id="art-image" placeholder="https://..." />
+            </div>
+            <div class="form-group">
+              <label>Farbe (Hex)</label>
+              <input type="text" id="art-color" placeholder="#c9a96e" />
+            </div>
+            <div class="form-group">
+              <label>Größe</label>
+              <input type="text" id="art-size" placeholder="M" />
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" onclick="createArticle()">Artikel erstellen</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Alle Artikel</span>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Kategorie</th>
+                <th>Brand</th>
+                <th>Preis</th>
+                <th>Link</th>
+                <th>Aktionen</th>
+              </tr>
+            </thead>
+            <tbody id="articles-table-body">
+              <tr><td colspan="6" style="color: var(--text-dim);">Lade...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ===== CATWALK CONFIG ===== -->
+      <div id="section-config" class="section">
+        <h2 class="page-title">⚙️ Catwalk-Konfiguration</h2>
+
+        <div class="card">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Titel</label>
+              <input type="text" id="cfg-title" placeholder="Fashion Catwalk" />
+            </div>
+            <div class="form-group">
+              <label>Hintergrundfarbe</label>
+              <input type="color" id="cfg-bg-color" value="#0a0a14" />
+            </div>
+            <div class="form-group">
+              <label>Laufsteg-Farbe</label>
+              <input type="color" id="cfg-runway-color" value="#1a1a2e" />
+            </div>
+            <div class="form-group">
+              <label>Geschwindigkeit</label>
+              <input type="range" id="cfg-speed" min="0.5" max="3" step="0.1" value="1" />
+              <span id="cfg-speed-val">1.0x</span>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" onclick="saveConfig()">Konfiguration speichern</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== STATISTIKEN ===== -->
+      <div id="section-stats" class="section">
+        <h2 class="page-title">📊 Statistiken</h2>
+
+        <div id="stats-overview" class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value" id="stat-hovers">0</div>
+            <div class="stat-label">Hovers (30 Tage)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-clicks">0</div>
+            <div class="stat-label">Klicks (30 Tage)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-redirects">0</div>
+            <div class="stat-label">Shop-Weiterleitungen</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-avatars">0</div>
+            <div class="stat-label">Aktive Avatare</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Top Artikel</span>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Artikel</th>
+                <th>Brand</th>
+                <th>Klicks</th>
+                <th>Weiterleitungen</th>
+              </tr>
+            </thead>
+            <tbody id="top-articles-body">
+              <tr><td colspan="4" style="color: var(--text-dim);">Lade...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const API = window.location.origin + '/api';
+    let allAvatars = [];
+    let allProviders = [];
+    let allArticles = [];
+    let selectedAvatarId = null;
+
+    // ===== NAVIGATION =====
+    document.querySelectorAll('.nav-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.getElementById('section-' + btn.dataset.section).classList.add('active');
+
+        // Daten laden
+        switch (btn.dataset.section) {
+          case 'avatars': loadAvatars(); break;
+          case 'providers': loadProviders(); break;
+          case 'articles': loadArticles(); break;
+          case 'config': loadConfig(); break;
+          case 'stats': loadStats(); break;
+          case 'outfits': loadOutfitView(); break;
+        }
+      });
+    });
+
+    // ===== TOAST =====
+    function showToast(msg, type = 'success') {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.className = 'toast ' + type + ' show';
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // ===== API HELPERS =====
+    async function apiFetch(url, options = {}) {
+      const res = await fetch(API + url, {
+        headers: { 'Content-Type': 'application/json', ...options.headers },
+        ...options
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Unbekannter Fehler' }));
+        throw new Error(err.error || 'Fehler');
+      }
+      return res.json();
+    }
+
+    // ===== AVATARE =====
+    async function loadAvatars() {
+      allAvatars = await apiFetch('/avatars');
+      const tbody = document.getElementById('avatars-table-body');
+      if (allAvatars.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="color: var(--text-dim);">Keine Avatare vorhanden</td></tr>';
+        return;
+      }
+      tbody.innerHTML = allAvatars.map(a => `
+        <tr>
+          <td><strong>${a.name}</strong></td>
+          <td>${a.description || '–'}</td>
+          <td>${a.position_order}</td>
+          <td>${new Date(a.created_at).toLocaleDateString('de-CH')}</td>
+          <td>
+            <button class="btn btn-danger btn-sm" onclick="deleteAvatar('${a.id}')">Entfernen</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function createAvatar() {
+      try {
+        await apiFetch('/avatars', {
+          method: 'POST',
+          body: JSON.stringify({
+            name: document.getElementById('avatar-name').value,
+            description: document.getElementById('avatar-desc').value,
+            image_url: document.getElementById('avatar-image').value,
+            position_order: parseInt(document.getElementById('avatar-order').value) || 0
+          })
+        });
+        showToast('Avatar erstellt!');
+        document.getElementById('avatar-name').value = '';
+        document.getElementById('avatar-desc').value = '';
+        document.getElementById('avatar-image').value = '';
+        loadAvatars();
+      } catch (e) { showToast(e.message, 'error'); }
+    }
+
+    async function deleteAvatar(id) {
+      if (!confirm('Avatar wirklich entfernen?')) return;
+      await apiFetch('/avatars/' + id, { method: 'DELETE' });
+      showToast('Avatar entfernt');
+      loadAvatars();
+    }
+
+    // ===== ANBIETER =====
+    async function loadProviders() {
+      allProviders = await apiFetch('/providers');
+      const tbody = document.getElementById('providers-table-body');
+      if (allProviders.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="color: var(--text-dim);">Keine Anbieter vorhanden</td></tr>';
+        return;
+      }
+      tbody.innerHTML = allProviders.map(p => `
+        <tr>
+          <td><strong>${p.brand_name}</strong></td>
+          <td>${p.name}</td>
+          <td><a href="${p.website_url}" target="_blank" style="color: var(--accent);">${p.website_url}</a></td>
+          <td>
+            <button class="btn btn-danger btn-sm" onclick="deleteProvider('${p.id}')">Entfernen</button>
+          </td>
+        </tr>
+      `).join('');
+
+      // Anbieter-Dropdown in Artikeln aktualisieren
+      updateProviderDropdowns();
+    }
+
+    async function createProvider() {
+      try {
+        await apiFetch('/providers', {
+          method: 'POST',
+          body: JSON.stringify({
+            name: document.getElementById('prov-name').value,
+            brand_name: document.getElementById('prov-brand').value,
+            website_url: document.getElementById('prov-url').value,
+            logo_url: document.getElementById('prov-logo').value,
+            affiliate_base_url: document.getElementById('prov-affiliate').value
+          })
+        });
+        showToast('Anbieter erstellt!');
+        ['prov-name', 'prov-brand', 'prov-url', 'prov-logo', 'prov-affiliate']
+          .forEach(id => document.getElementById(id).value = '');
+        loadProviders();
+      } catch (e) { showToast(e.message, 'error'); }
+    }
+
+    async function deleteProvider(id) {
+      if (!confirm('Anbieter wirklich entfernen?')) return;
+      await apiFetch('/providers/' + id, { method: 'DELETE' });
+      showToast('Anbieter entfernt');
+      loadProviders();
+    }
+
+    function updateProviderDropdowns() {
+      const selects = [
+        document.getElementById('art-provider'),
+        document.getElementById('filter-provider')
+      ];
+      selects.forEach(sel => {
+        if (!sel) return;
+        const val = sel.value;
+        sel.innerHTML = '<option value="">Alle Anbieter</option>';
+        allProviders.forEach(p => {
+          sel.innerHTML += `<option value="${p.id}">${p.brand_name}</option>`;
+        });
+        sel.value = val;
+      });
+    }
+
+    // ===== ARTIKEL =====
+    async function loadArticles() {
+      allArticles = await apiFetch('/articles');
+      const tbody = document.getElementById('articles-table-body');
+      if (allArticles.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="color: var(--text-dim);">Keine Artikel vorhanden</td></tr>';
+        return;
+      }
+      tbody.innerHTML = allArticles.map(a => `
+        <tr>
+          <td>${a.name}</td>
+          <td><span class="tag tag-category">${a.category}</span></td>
+          <td>${a.brand_name}</td>
+          <td>${a.currency} ${a.price.toFixed(2)}</td>
+          <td><a href="${a.product_url}" target="_blank" style="color: var(--accent);">→ Shop</a></td>
+          <td>
+            <button class="btn btn-danger btn-sm" onclick="deleteArticle('${a.id}')">Entfernen</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function createArticle() {
+      try {
+        await apiFetch('/articles', {
+          method: 'POST',
+          body: JSON.stringify({
+            provider_id: document.getElementById('art-provider').value,
+            name: document.getElementById('art-name').value,
+            category: document.getElementById('art-category').value,
+            price: parseFloat(document.getElementById('art-price').value),
+            product_url: document.getElementById('art-url').value,
+            image_url: document.getElementById('art-image').value,
+            color: document.getElementById('art-color').value,
+            size: document.getElementById('art-size').value
+          })
+        });
+        showToast('Artikel erstellt!');
+        ['art-name', 'art-price', 'art-url', 'art-image', 'art-color', 'art-size']
+          .forEach(id => document.getElementById(id).value = '');
+        loadArticles();
+      } catch (e) { showToast(e.message, 'error'); }
+    }
+
+    async function deleteArticle(id) {
+      if (!confirm('Artikel wirklich entfernen?')) return;
+      await apiFetch('/articles/' + id, { method: 'DELETE' });
+      showToast('Artikel entfernt');
+      loadArticles();
+    }
+
+    // ===== OUTFIT / EINKLEIDEN =====
+    function setToday() {
+      document.getElementById('outfit-date').value = new Date().toISOString().split('T')[0];
+      if (selectedAvatarId) loadOutfit(selectedAvatarId);
+    }
+
+    async function loadOutfitView() {
+      allAvatars = await apiFetch('/avatars');
+      allArticles = await apiFetch('/articles');
+      allProviders = await apiFetch('/providers');
+
+      updateProviderDropdowns();
+
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('outfit-date').value = today;
+
+      const list = document.getElementById('avatar-select-list');
+      if (allAvatars.length === 0) {
+        list.innerHTML = '<p style="color: var(--text-dim); font-size: 0.85rem;">Erstelle zuerst Avatare im Bereich "Avatare"</p>';
+        return;
+      }
+
+      list.innerHTML = allAvatars.map((a, i) => `
+        <div class="avatar-select-item" data-id="${a.id}" onclick="selectAvatar('${a.id}', this)">
+          <div class="avatar-mini-icon">🎭</div>
+          <div class="avatar-select-info">
+            <h4>${a.name}</h4>
+            <p>${a.description || 'Kein Stil definiert'}</p>
+          </div>
+        </div>
+      `).join('');
+
+      renderArticlePicker();
+
+      // Ersten Avatar automatisch auswählen
+      if (allAvatars.length > 0) {
+        selectAvatar(allAvatars[0].id, list.querySelector('.avatar-select-item'));
+      }
+    }
+
+    async function selectAvatar(avatarId, element) {
+      selectedAvatarId = avatarId;
+      document.querySelectorAll('.avatar-select-item').forEach(e => e.classList.remove('selected'));
+      if (element) element.classList.add('selected');
+      await loadOutfit(avatarId);
+    }
+
+    async function loadOutfit(avatarId) {
+      const date = document.getElementById('outfit-date').value;
+      const outfit = await apiFetch(`/avatars/${avatarId}/outfit?date=${date}`);
+
+      const categories = [
+        'kopfbedeckung', 'oberteil', 'jacke', 'hose', 'rock',
+        'kleid', 'schuhe', 'accessoire', 'tasche', 'schmuck'
+      ];
+
+      const categoryLabels = {
+        'kopfbedeckung': '🎩 Kopfbedeckung',
+        'oberteil': '👕 Oberteil',
+        'jacke': '🧥 Jacke',
+        'hose': '👖 Hose',
+        'rock': '👗 Rock',
+        'kleid': '👗 Kleid',
+        'schuhe': '👟 Schuhe',
+        'accessoire': '💎 Accessoire',
+        'tasche': '👜 Tasche',
+        'schmuck': '💍 Schmuck'
+      };
+
+      const slots = document.getElementById('outfit-slots');
+      slots.innerHTML = categories.map(cat => {
+        const items = outfit.filter(o => o.category === cat);
+        return `
+          <div class="outfit-slot">
+            <div class="outfit-slot-header">${categoryLabels[cat]}</div>
+            ${items.length > 0 ? items.map(item => `
+              <div class="outfit-slot-item">
+                <div>
+                  <div class="name">${item.article_name}</div>
+                  <div class="brand">${item.brand_name} – ${item.currency} ${item.price.toFixed(2)}</div>
+                </div>
+                <button class="btn btn-danger btn-sm btn-icon" onclick="removeOutfitItem('${item.id}')" title="Entfernen">✕</button>
+              </div>
+            `).join('') : '<div class="outfit-slot-empty">Leer</div>'}
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function addToOutfit(articleId) {
+      if (!selectedAvatarId) {
+        showToast('Bitte wähle zuerst einen Avatar', 'error');
+        return;
+      }
+      const date = document.getElementById('outfit-date').value;
+      try {
+        await apiFetch(`/avatars/${selectedAvatarId}/outfit`, {
+          method: 'POST',
+          body: JSON.stringify({ article_id: articleId, outfit_date: date })
+        });
+        showToast('Artikel zum Outfit hinzugefügt!');
+        loadOutfit(selectedAvatarId);
+      } catch (e) { showToast(e.message, 'error'); }
+    }
+
+    async function removeOutfitItem(outfitId) {
+      await apiFetch(`/avatars/${selectedAvatarId}/outfit/${outfitId}`, { method: 'DELETE' });
+      showToast('Artikel entfernt');
+      loadOutfit(selectedAvatarId);
+    }
+
+    async function clearOutfit() {
+      if (!selectedAvatarId) return;
+      if (!confirm('Ganzes Outfit für dieses Datum löschen?')) return;
+      const date = document.getElementById('outfit-date').value;
+      await apiFetch(`/avatars/${selectedAvatarId}/outfit?date=${date}`, { method: 'DELETE' });
+      showToast('Outfit gelöscht');
+      loadOutfit(selectedAvatarId);
+    }
+
+    function renderArticlePicker() {
+      filterArticles();
+    }
+
+    function filterArticles() {
+      const category = document.getElementById('filter-category').value;
+      const provider = document.getElementById('filter-provider').value;
+      const search = document.getElementById('filter-search').value.toLowerCase();
+
+      let filtered = allArticles;
+      if (category) filtered = filtered.filter(a => a.category === category);
+      if (provider) filtered = filtered.filter(a => a.provider_id === provider);
+      if (search) filtered = filtered.filter(a =>
+        a.name.toLowerCase().includes(search) ||
+        (a.brand_name && a.brand_name.toLowerCase().includes(search))
+      );
+
+      const list = document.getElementById('article-picker-list');
+      if (filtered.length === 0) {
+        list.innerHTML = '<p style="color: var(--text-dim); font-size: 0.85rem;">Keine Artikel gefunden</p>';
+        return;
+      }
+
+      list.innerHTML = filtered.map(a => `
+        <div class="article-pick-card" onclick="addToOutfit('${a.id}')">
+          <div class="article-pick-info">
+            <div class="article-pick-name">${a.name}</div>
+            <div class="article-pick-brand">${a.brand_name || ''} · ${a.category}</div>
+          </div>
+          <div class="article-pick-price">${a.currency} ${a.price.toFixed(2)}</div>
+        </div>
+      `).join('');
+    }
+
+    // Datum-Änderung
+    document.getElementById('outfit-date').addEventListener('change', () => {
+      if (selectedAvatarId) loadOutfit(selectedAvatarId);
+    });
+
+    // ===== CONFIG =====
+    async function loadConfig() {
+      const cfg = await apiFetch('/catwalk/config');
+      document.getElementById('cfg-title').value = cfg.title || '';
+      document.getElementById('cfg-bg-color').value = cfg.background_color || '#0a0a14';
+      document.getElementById('cfg-runway-color').value = cfg.runway_color || '#1a1a2e';
+      document.getElementById('cfg-speed').value = cfg.speed || 1;
+      document.getElementById('cfg-speed-val').textContent = (cfg.speed || 1).toFixed(1) + 'x';
+    }
+
+    document.getElementById('cfg-speed').addEventListener('input', (e) => {
+      document.getElementById('cfg-speed-val').textContent = parseFloat(e.target.value).toFixed(1) + 'x';
+    });
+
+    async function saveConfig() {
+      try {
+        await apiFetch('/catwalk/config', {
+          method: 'PUT',
+          body: JSON.stringify({
+            title: document.getElementById('cfg-title').value,
+            background_color: document.getElementById('cfg-bg-color').value,
+            runway_color: document.getElementById('cfg-runway-color').value,
+            speed: parseFloat(document.getElementById('cfg-speed').value)
+          })
+        });
+        showToast('Konfiguration gespeichert!');
+      } catch (e) { showToast(e.message, 'error'); }
+    }
+
+    // ===== STATS =====
+    async function loadStats() {
+      const stats = await apiFetch('/catwalk/stats?days=30');
+      const avatars = await apiFetch('/avatars');
+
+      const hovers = stats.avatar_stats.filter(s => s.action === 'hover').reduce((s, a) => s + a.count, 0);
+      const clicks = stats.avatar_stats.filter(s => s.action === 'click').reduce((s, a) => s + a.count, 0);
+      const redirects = stats.avatar_stats.filter(s => s.action === 'redirect').reduce((s, a) => s + a.count, 0);
+
+      document.getElementById('stat-hovers').textContent = hovers;
+      document.getElementById('stat-clicks').textContent = clicks;
+      document.getElementById('stat-redirects').textContent = redirects;
+      document.getElementById('stat-avatars').textContent = avatars.length;
+
+      const tbody = document.getElementById('top-articles-body');
+      if (stats.top_articles.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="color: var(--text-dim);">Noch keine Daten</td></tr>';
+        return;
+      }
+
+      // Gruppieren nach Artikel
+      const grouped = {};
+      stats.top_articles.forEach(s => {
+        if (!grouped[s.article_id]) grouped[s.article_id] = { name: s.article_name, brand: s.brand_name, clicks: 0, redirects: 0 };
+        if (s.action === 'click') grouped[s.article_id].clicks = s.count;
+        if (s.action === 'redirect') grouped[s.article_id].redirects = s.count;
+      });
+
+      tbody.innerHTML = Object.values(grouped).map(a => `
+        <tr>
+          <td>${a.name}</td>
+          <td>${a.brand}</td>
+          <td>${a.clicks}</td>
+          <td>${a.redirects}</td>
+        </tr>
+      `).join('');
+    }
+
+    // ===== INIT =====
+    loadOutfitView();
+  </script>
+</body>
+</html>
