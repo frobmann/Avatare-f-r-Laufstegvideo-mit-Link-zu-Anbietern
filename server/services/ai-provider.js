@@ -2,13 +2,12 @@
  * AI Provider Abstraktion
  *
  * Unterstützt mehrere Provider mit einheitlicher Schnittstelle.
- * Standard: Replicate (günstigster Cloud-Provider für IDM-VTON)
+ * Standard: Replicate (günstigster Cloud-Provider)
  *
- * Kosten-Vergleich pro Bild:
- *   Replicate IDM-VTON:  ~$0.01–0.03
- *   Replicate Kolors:    ~$0.02–0.04
- *   Hugging Face:        ~$0.01–0.02 (langsamer)
- *   Seed 2.5:            ~$0.03–0.08
+ * Modelle:
+ *   Avatar-Generierung:  Flux 1.1 Pro      ~$0.03–0.05/Bild
+ *   Virtual Try-On:      IDM-VTON           ~$0.01–0.03/Bild
+ *   Video-Animation:     Minimax Video-01   ~$0.10–0.20/Video
  */
 
 const https = require('https');
@@ -21,8 +20,9 @@ const CONFIG = {
   provider: process.env.AI_PROVIDER || 'replicate',
   replicate: {
     token: process.env.REPLICATE_API_TOKEN || '',
+    avatarModel: process.env.AVATAR_MODEL || 'black-forest-labs/flux-1.1-pro',
     tryonModel: process.env.TRYON_MODEL || 'cuuupid/idm-vton',
-    videoModel: process.env.VIDEO_MODEL || 'stability-ai/stable-video-diffusion',
+    videoModel: process.env.VIDEO_MODEL || 'minimax/video-01',
   },
   huggingface: {
     token: process.env.HUGGINGFACE_API_TOKEN || '',
@@ -118,7 +118,60 @@ async function downloadImage(url, outputPath) {
 }
 
 // ═══════════════════════════════════════════════════
-// REPLICATE PROVIDER (Günstigster)
+// AVATAR-PROMPT GENERATOR
+// ═══════════════════════════════════════════════════
+
+/**
+ * Erstellt einen optimalen Prompt für Avatar-Basisbild-Generierung.
+ * Das Bild zeigt die Person in neutraler Kleidung, damit IDM-VTON
+ * die eigentliche Mode auftragen kann.
+ */
+function buildAvatarPrompt(avatar) {
+  // Geschlecht aus dem Namen ableiten (oder Beschreibung)
+  const femaleNames = ['sophia', 'mia', 'emma', 'anna', 'lisa', 'laura', 'nina', 'sarah', 'julia'];
+  const isFemale = femaleNames.includes((avatar.name || '').toLowerCase());
+
+  const gender = isFemale ? 'woman' : 'man';
+  const genderDetails = isFemale
+    ? 'young woman, 24 years old, slim athletic build, 175cm tall, beautiful face'
+    : 'young man, 26 years old, athletic build, 185cm tall, handsome face';
+
+  // Stil-basierte Haar-/Look-Variationen
+  const styleVariations = {
+    'Eleganter Business-Stil':   'straight dark hair, confident expression, professional look',
+    'Casual Streetwear':         'short modern haircut, relaxed expression, youthful look',
+    'Boho & Vintage':            'long wavy hair, warm smile, bohemian look, freckles',
+    'Smart Casual':              'well-groomed hair, friendly smile, clean-cut look',
+    'Sportlich & Modern':        'ponytail hairstyle, energetic expression, fit physique',
+    'High Fashion':              'striking features, sharp cheekbones, editorial look, bold eyebrows',
+  };
+
+  const look = styleVariations[avatar.description] || 'natural look, friendly expression';
+
+  return `Full body professional fashion photograph of a ${genderDetails}, ${look}, ` +
+    `fashion model standing in a natural front-facing pose, wearing a simple fitted white t-shirt ` +
+    `and plain dark fitted jeans, barefoot or simple white sneakers, ` +
+    `clean pure white studio background, professional fashion photography lighting, ` +
+    `sharp focus, high resolution, photorealistic, no accessories, full body visible head to toe, ` +
+    `center frame, 8k quality, fashion catalog style`;
+}
+
+/**
+ * Erstellt einen Prompt für die Catwalk-Walking-Animation
+ */
+function buildWalkPrompt(avatar) {
+  const femaleNames = ['sophia', 'mia', 'emma', 'anna', 'lisa', 'laura', 'nina', 'sarah', 'julia'];
+  const isFemale = femaleNames.includes((avatar.name || '').toLowerCase());
+  const gender = isFemale ? 'female' : 'male';
+
+  return `Professional fashion show, ${gender} model walking confidently on a catwalk runway, ` +
+    `elegant walking motion, one foot in front of the other, straight posture, ` +
+    `professional studio lighting, fashion show atmosphere, ` +
+    `smooth camera, full body shot, cinematic quality`;
+}
+
+// ═══════════════════════════════════════════════════
+// REPLICATE PROVIDER
 // ═══════════════════════════════════════════════════
 
 class ReplicateProvider {
@@ -135,6 +188,45 @@ class ReplicateProvider {
   }
 
   /**
+   * Avatar-Basisbild generieren (Flux 1.1 Pro)
+   *
+   * Erstellt ein fotorealistisches Ganzkörper-Model-Foto
+   * in neutraler Kleidung für Virtual Try-On.
+   * Kosten: ~$0.03–0.05 pro Bild
+   */
+  async generateAvatarImage({ prompt, width, height }) {
+    if (!this.token) throw new Error('REPLICATE_API_TOKEN nicht gesetzt');
+
+    const model = CONFIG.replicate.avatarModel;
+    const quality = QUALITY_PRESETS[CONFIG.imageQuality] || QUALITY_PRESETS.medium;
+
+    const input = {
+      prompt: prompt,
+      width: width || quality.width,
+      height: height || quality.height,
+      num_inference_steps: quality.steps,
+      guidance_scale: 7.5,
+      output_format: 'png',
+    };
+
+    // Flux-spezifische Parameter
+    if (model.includes('flux')) {
+      input.aspect_ratio = '3:4'; // Hochformat für Ganzkörper
+      delete input.width;
+      delete input.height;
+      delete input.guidance_scale;
+    }
+
+    const prediction = await httpRequest(`${this.baseUrl}/predictions`, {
+      method: 'POST',
+      headers: this.headers,
+      body: JSON.stringify({ model, input }),
+    });
+
+    return this._waitForPrediction(prediction.id);
+  }
+
+  /**
    * Virtual Try-On: Kleidungsbild auf Avatar-Körper auftragen
    *
    * Verwendet IDM-VTON (~$0.01–0.03 pro Bild)
@@ -146,12 +238,10 @@ class ReplicateProvider {
 
     const quality = QUALITY_PRESETS[CONFIG.imageQuality] || QUALITY_PRESETS.medium;
 
-    // IDM-VTON Prediction erstellen
     const prediction = await httpRequest(`${this.baseUrl}/predictions`, {
       method: 'POST',
       headers: this.headers,
       body: JSON.stringify({
-        // IDM-VTON Modell auf Replicate
         model: CONFIG.replicate.tryonModel,
         input: {
           human_img: avatarImageUrl,
@@ -166,44 +256,74 @@ class ReplicateProvider {
       }),
     });
 
-    // Auf Ergebnis warten (Polling)
     return this._waitForPrediction(prediction.id);
   }
 
   /**
-   * Video/Animation generieren
+   * Walking-Video generieren
    *
-   * Verwendet Stable Video Diffusion (~$0.03–0.05 pro Clip)
-   * Input: Einzelbild des fertig eingekleideten Avatars
-   * Output: Kurze Laufanimation (3-4 Sekunden)
+   * Unterstützt mehrere Video-Modelle:
+   * - Minimax Video-01: Beste Qualität (~$0.10–0.20, 5-6 Sek)
+   * - Stable Video Diffusion: Günstigster (~$0.03–0.05, 3 Sek)
+   *
+   * Input: Bild des fertig eingekleideten Avatars
+   * Output: Laufanimation auf dem Catwalk
    */
-  async generateWalkAnimation({ imageUrl, motionStrength }) {
+  async generateWalkAnimation({ imageUrl, motionStrength, prompt }) {
     if (!this.token) throw new Error('REPLICATE_API_TOKEN nicht gesetzt');
+
+    const model = CONFIG.replicate.videoModel;
+    let input;
+
+    if (model.includes('minimax')) {
+      // ── Minimax Video-01 ──
+      input = {
+        prompt: prompt || 'Fashion model walking confidently on a catwalk runway, ' +
+          'professional fashion show, elegant walking motion, studio lighting, ' +
+          'smooth camera following, full body shot, cinematic quality',
+        first_frame_image: imageUrl,
+      };
+    } else if (model.includes('kling')) {
+      // ── Kling Video ──
+      input = {
+        prompt: prompt || 'Fashion model walking on catwalk, professional fashion show, ' +
+          'elegant confident walk, studio lighting, full body',
+        image: imageUrl,
+        duration: 5,
+      };
+    } else if (model.includes('wan')) {
+      // ── Wan 2.1 ──
+      input = {
+        prompt: prompt || 'Fashion model walking on catwalk runway, professional fashion show',
+        image: imageUrl,
+        num_frames: 81,
+        fps: 16,
+      };
+    } else {
+      // ── Stable Video Diffusion (Fallback/günstigster) ──
+      input = {
+        input_image: imageUrl,
+        motion_bucket_id: motionStrength || 40,
+        fps: 12,
+        num_frames: 25,
+        sizing_strategy: 'maintain_aspect_ratio',
+        cond_aug: 0.02,
+        decoding_t: 7,
+        seed: 42,
+      };
+    }
 
     const prediction = await httpRequest(`${this.baseUrl}/predictions`, {
       method: 'POST',
       headers: this.headers,
-      body: JSON.stringify({
-        model: CONFIG.replicate.videoModel,
-        input: {
-          input_image: imageUrl,
-          motion_bucket_id: motionStrength || 40,
-          fps: 12,
-          num_frames: 25,
-          sizing_strategy: 'maintain_aspect_ratio',
-          cond_aug: 0.02,
-          decoding_t: 7,
-          seed: 42,
-        },
-      }),
+      body: JSON.stringify({ model, input }),
     });
 
-    return this._waitForPrediction(prediction.id);
+    return this._waitForPrediction(prediction.id, 600000); // 10 Min Timeout für Video
   }
 
   /**
    * Einfache Bild-zu-Bild Transformation
-   * Für Stil-Anpassungen, Beleuchtung etc.
    */
   async imageToImage({ imageUrl, prompt, strength }) {
     if (!this.token) throw new Error('REPLICATE_API_TOKEN nicht gesetzt');
@@ -231,7 +351,7 @@ class ReplicateProvider {
    */
   async _waitForPrediction(predictionId, maxWaitMs = 300000) {
     const startTime = Date.now();
-    const pollInterval = 2000;
+    const pollInterval = 3000; // 3 Sekunden
 
     while (Date.now() - startTime < maxWaitMs) {
       const status = await httpRequest(`${this.baseUrl}/predictions/${predictionId}`, {
@@ -281,17 +401,15 @@ class ReplicateProvider {
    */
   _estimateCost(prediction) {
     if (prediction.metrics && prediction.metrics.predict_time) {
-      // Replicate berechnet nach GPU-Sekunden
-      // A40: ~$0.000575/s, T4: ~$0.000225/s
       const gpuSeconds = prediction.metrics.predict_time;
       return Math.round(gpuSeconds * 0.000575 * 10000) / 10000;
     }
-    return 0.02; // Fallback-Schätzung
+    return 0.02;
   }
 }
 
 // ═══════════════════════════════════════════════════
-// HUGGING FACE PROVIDER (Alternative, günstig)
+// HUGGING FACE PROVIDER (Alternative)
 // ═══════════════════════════════════════════════════
 
 class HuggingFaceProvider {
@@ -300,11 +418,17 @@ class HuggingFaceProvider {
     this.token = CONFIG.huggingface.token;
   }
 
+  async generateAvatarImage({ prompt }) {
+    if (!this.token) throw new Error('HUGGINGFACE_API_TOKEN nicht gesetzt');
+    return {
+      success: false,
+      error: 'Avatar-Generierung über HuggingFace noch nicht implementiert. Nutze Replicate.',
+    };
+  }
+
   async virtualTryOn({ avatarImageUrl, garmentImageUrl, category }) {
     if (!this.token) throw new Error('HUGGINGFACE_API_TOKEN nicht gesetzt');
 
-    // HF Inference API für IDM-VTON
-    // Hinweis: Auf HF oft in der Free-Tier-Queue → langsamer
     const response = await httpRequest(
       `${this.baseUrl}/models/yisol/IDM-VTON`, {
         method: 'POST',
@@ -324,12 +448,11 @@ class HuggingFaceProvider {
     return {
       success: true,
       output: response,
-      cost: 0.01, // HF Pro: ~$0.01/Bild
+      cost: 0.01,
     };
   }
 
-  async generateWalkAnimation({ imageUrl }) {
-    // HF hat keine direkte SVD-Inference, daher Fallback
+  async generateWalkAnimation() {
     return {
       success: false,
       error: 'Video-Generierung nicht über Hugging Face verfügbar. Nutze Replicate.',
@@ -346,8 +469,14 @@ class LocalProvider {
     this.apiUrl = process.env.LOCAL_AI_URL || 'http://localhost:7860';
   }
 
+  async generateAvatarImage() {
+    return {
+      success: false,
+      error: 'Lokale Avatar-Generierung benötigt ComfyUI oder Stable Diffusion WebUI.',
+    };
+  }
+
   async virtualTryOn({ avatarImageUrl, garmentImageUrl, category }) {
-    // Erwartet ein lokal laufendes IDM-VTON via Gradio
     const response = await httpRequest(`${this.apiUrl}/api/predict`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -356,17 +485,13 @@ class LocalProvider {
       }),
     });
 
-    return {
-      success: true,
-      output: response.data,
-      cost: 0, // Lokal = keine API-Kosten
-    };
+    return { success: true, output: response.data, cost: 0 };
   }
 
-  async generateWalkAnimation({ imageUrl }) {
+  async generateWalkAnimation() {
     return {
       success: false,
-      error: 'Lokale Video-Generierung noch nicht implementiert. Installiere AnimateDiff.',
+      error: 'Lokale Video-Generierung noch nicht implementiert.',
     };
   }
 }
@@ -391,6 +516,8 @@ function createProvider(providerName) {
 module.exports = {
   createProvider,
   downloadImage,
+  buildAvatarPrompt,
+  buildWalkPrompt,
   CONFIG,
   QUALITY_PRESETS,
   ReplicateProvider,

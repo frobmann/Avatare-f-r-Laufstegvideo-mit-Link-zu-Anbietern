@@ -2,20 +2,24 @@
  * Generation Pipeline
  *
  * Orchestriert den gesamten Prozess:
- * 1. Avatar-Basisbild + Kleidungsbilder einsammeln
- * 2. Virtual Try-On per Artikel durchführen (IDM-VTON)
- * 3. Optional: Walking-Animation generieren (SVD)
+ * 1. Avatar-Basisbild generieren (Flux 1.1 Pro)
+ * 2. Virtual Try-On per Artikel (IDM-VTON)
+ * 3. Walking-Animation generieren (Minimax Video-01)
  * 4. Ergebnisse cachen und in DB speichern
  *
- * Kostengünstigstes Setup:
- *   IDM-VTON via Replicate: ~$0.01–0.03/Bild
- *   Gesamt 6 Avatare × 4 Artikel/Tag: ~$0.72–2.16/Tag ≈ $22–65/Monat
+ * Kosten-Übersicht:
+ *   Avatar-Bild:     Flux 1.1 Pro        ~$0.03–0.05/Bild
+ *   Virtual Try-On:  IDM-VTON            ~$0.01–0.03/Bild
+ *   Walk-Video:      Minimax Video-01    ~$0.10–0.20/Video
+ *   ─────────────────────────────────────────────────────
+ *   Komplett pro Avatar (Bild + Try-On + Video): ~$0.15–0.30
+ *   6 Avatare/Tag:   ~$0.90–1.80/Tag ≈ $27–54/Monat
  */
 
 const path = require('path');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
-const { createProvider, downloadImage, CONFIG } = require('./ai-provider');
+const { createProvider, downloadImage, buildAvatarPrompt, buildWalkPrompt, CONFIG } = require('./ai-provider');
 const { getDb } = require('../db');
 
 const GENERATED_DIR = path.join(__dirname, '..', '..', 'public', 'generated');
@@ -57,7 +61,7 @@ async function processQueue() {
 }
 
 /**
- * Cache-Key generieren für ein Outfit
+ * Cache-Key generieren
  */
 function getCacheKey(avatarId, articleIds, date) {
   const sorted = [...articleIds].sort().join('-');
@@ -114,23 +118,145 @@ function updateGeneration(id, updates) {
   db.prepare(`UPDATE generations SET ${fields.join(', ')} WHERE id = ?`).run(...values);
 }
 
+// ═══════════════════════════════════════════════════
+// SCHRITT 1: Avatar-Basisbild generieren
+// ═══════════════════════════════════════════════════
+
 /**
- * ═══════════════════════════════════════════════════
- * HAUPTPIPELINE: Virtual Try-On für einen Avatar
- * ═══════════════════════════════════════════════════
+ * Generiert ein fotorealistisches Ganzkörper-Model-Foto
+ * für einen Avatar. Das Bild zeigt die Person in neutraler
+ * Kleidung (weißes T-Shirt + dunkle Jeans), damit der
+ * Virtual Try-On die eigentliche Mode auftragen kann.
  *
+ * Kosten: ~$0.03–0.05 pro Bild (Flux 1.1 Pro)
+ */
+async function generateAvatarBaseImage(avatarId) {
+  const db = getDb();
+
+  const avatar = db.prepare('SELECT * FROM avatars WHERE id = ?').get(avatarId);
+  if (!avatar) throw new Error('Avatar nicht gefunden');
+
+  // Cache prüfen: existiert bereits ein Basisbild?
+  const cacheKey = `avatar_base_${avatarId}`;
+  const cached = checkCache(cacheKey);
+  if (cached) {
+    return {
+      success: true,
+      cached: true,
+      outputUrl: '/' + cached.output_path.replace(/^public\//, ''),
+      generationId: cached.id,
+      cost: 0,
+    };
+  }
+
+  const provider = createProvider();
+  const prompt = buildAvatarPrompt(avatar);
+
+  console.log(`\n🎨 Generiere Avatar-Basisbild für "${avatar.name}"...`);
+  console.log(`   Modell: ${CONFIG.replicate.avatarModel}`);
+  console.log(`   Prompt: ${prompt.substring(0, 80)}...`);
+
+  const genId = createGenerationRecord(avatarId, 'img2img', cacheKey);
+  updateGeneration(genId, { status: 'processing' });
+
+  try {
+    const result = await enqueueGeneration(async () => {
+      return provider.generateAvatarImage({ prompt });
+    });
+
+    if (result.success) {
+      const outputUrl = Array.isArray(result.output) ? result.output[0] : result.output;
+
+      // Bild herunterladen und lokal speichern
+      const filename = `avatar_${avatarId}_base.png`;
+      const localPath = path.join(GENERATED_DIR, filename);
+      const relativePath = `public/generated/${filename}`;
+
+      await downloadImage(outputUrl, localPath);
+
+      // Avatar-Tabelle mit dem neuen Bild aktualisieren
+      const publicUrl = `/generated/${filename}`;
+      db.prepare('UPDATE avatars SET image_url = ?, updated_at = datetime(\'now\') WHERE id = ?')
+        .run(publicUrl, avatarId);
+
+      updateGeneration(genId, {
+        status: 'completed',
+        output_path: relativePath,
+        cost: result.cost || 0.04,
+        metadata: JSON.stringify({
+          model: CONFIG.replicate.avatarModel,
+          prompt: prompt,
+        }),
+      });
+
+      console.log(`   ✅ Avatar-Bild gespeichert: ${publicUrl}`);
+      console.log(`   💰 Kosten: $${(result.cost || 0.04).toFixed(4)}`);
+
+      return {
+        success: true,
+        outputUrl: publicUrl,
+        generationId: genId,
+        cost: result.cost || 0.04,
+        avatarName: avatar.name,
+      };
+    } else {
+      throw new Error(result.error || 'Avatar-Generierung fehlgeschlagen');
+    }
+  } catch (err) {
+    updateGeneration(genId, {
+      status: 'failed',
+      error_message: err.message,
+    });
+    console.log(`   ❌ Fehler: ${err.message}`);
+    return { success: false, error: err.message, generationId: genId };
+  }
+}
+
+/**
+ * Avatar-Basisbilder für ALLE Avatare generieren
+ */
+async function generateAllAvatarImages() {
+  const db = getDb();
+  const avatars = db.prepare('SELECT * FROM avatars WHERE is_active = 1').all();
+  const results = [];
+
+  console.log(`\n🎭 Generiere Basisbilder für ${avatars.length} Avatare...\n`);
+
+  for (const avatar of avatars) {
+    // Nur generieren wenn noch kein Bild vorhanden
+    if (avatar.image_url && !avatar.image_url.includes('placeholder')) {
+      console.log(`⏭ ${avatar.name}: Basisbild existiert bereits`);
+      results.push({
+        avatarId: avatar.id,
+        name: avatar.name,
+        success: true,
+        skipped: true,
+        outputUrl: avatar.image_url,
+      });
+      continue;
+    }
+
+    const result = await generateAvatarBaseImage(avatar.id);
+    results.push({ avatarId: avatar.id, name: avatar.name, ...result });
+  }
+
+  const totalCost = results.reduce((sum, r) => sum + (r.cost || 0), 0);
+  console.log(`\n✅ Fertig! Gesamtkosten: $${totalCost.toFixed(4)}`);
+
+  return { results, totalCost };
+}
+
+// ═══════════════════════════════════════════════════
+// SCHRITT 2: Virtual Try-On (Outfit auftragen)
+// ═══════════════════════════════════════════════════
+
+/**
  * Nimmt Avatar-Basisbild + Kleidungs-Artikel und generiert
  * ein zusammengesetztes Outfit-Bild.
- *
- * Ablauf:
- * 1. Für jeden Artikel: Try-On API aufrufen
- * 2. Ergebnis als neues Basisbild für nächsten Layer verwenden
- * 3. Finales Bild speichern
  */
 async function generateOutfitImage(avatarId, date) {
   const db = getDb();
 
-  // Avatar und Outfit laden
   const avatar = db.prepare('SELECT * FROM avatars WHERE id = ?').get(avatarId);
   if (!avatar) throw new Error('Avatar nicht gefunden');
 
@@ -156,48 +282,50 @@ async function generateOutfitImage(avatarId, date) {
     return {
       success: true,
       cached: true,
-      outputUrl: '/' + cached.output_path,
+      outputUrl: '/' + cached.output_path.replace(/^public\//, ''),
       generationId: cached.id,
       cost: 0,
     };
   }
 
-  // Provider erstellen
   const provider = createProvider();
-
-  // Generierungs-Record
   const genId = createGenerationRecord(avatarId, 'tryon', cacheKey);
   updateGeneration(genId, { status: 'processing' });
 
   let totalCost = 0;
 
   try {
-    // Startbild: Avatar-Basisbild
     let currentImageUrl = avatar.image_url;
 
     if (!currentImageUrl) {
-      // Kein Basisbild → Generierung nicht möglich mit Try-On
-      // Stattdessen: Ergebnis als "nur Daten" markieren
-      updateGeneration(genId, {
-        status: 'completed',
-        output_path: '',
-        cost: 0,
-        metadata: JSON.stringify({
-          note: 'Kein Avatar-Basisbild. Lade ein Bild hoch oder nutze die CSS-Darstellung.',
-          articles: outfit.map(o => ({
-            name: o.article_name,
-            category: o.category,
-            brand: o.brand_name,
-          })),
-        }),
-      });
+      // Kein Basisbild → Zuerst eines generieren
+      console.log(`⚠️ ${avatar.name}: Kein Basisbild. Generiere zuerst...`);
+      const avatarResult = await generateAvatarBaseImage(avatarId);
 
-      return {
-        success: true,
-        noBaseImage: true,
-        generationId: genId,
-        message: 'Kein Avatar-Basisbild vorhanden. Lade ein Ganzkörper-Foto hoch, um Virtual Try-On zu nutzen.',
-      };
+      if (avatarResult.success && avatarResult.outputUrl) {
+        // Bild als absolute URL für Replicate bereitstellen
+        currentImageUrl = avatarResult.outputUrl;
+        totalCost += avatarResult.cost || 0;
+
+        // Frisch aus DB laden (hat jetzt image_url)
+        const refreshed = db.prepare('SELECT * FROM avatars WHERE id = ?').get(avatarId);
+        currentImageUrl = refreshed.image_url;
+      } else {
+        updateGeneration(genId, {
+          status: 'completed',
+          output_path: '',
+          cost: 0,
+          metadata: JSON.stringify({
+            note: 'Kein Avatar-Basisbild. Generiere zuerst ein Basisbild.',
+          }),
+        });
+        return {
+          success: false,
+          noBaseImage: true,
+          generationId: genId,
+          message: 'Kein Avatar-Basisbild vorhanden. Klicke "Avatar-Bild generieren" um eines zu erstellen.',
+        };
+      }
     }
 
     // Artikel nach Kategorie sortieren (Kleidung layered auftragen)
@@ -205,19 +333,20 @@ async function generateOutfitImage(avatarId, date) {
     const clothingItems = outfit.filter(o => layerOrder.includes(o.category));
     const otherItems = outfit.filter(o => !layerOrder.includes(o.category));
 
-    // Sortierte Kleidung
     clothingItems.sort((a, b) =>
       layerOrder.indexOf(a.category) - layerOrder.indexOf(b.category)
     );
 
-    // Try-On für jeden Kleidungsartikel durchführen
+    console.log(`\n👗 Try-On für ${avatar.name}: ${clothingItems.length} Kleidungsstücke`);
+
+    // Try-On für jeden Kleidungsartikel
     for (const item of clothingItems) {
       if (!item.article_image) {
-        console.log(`⏭ Überspringe ${item.article_name}: Kein Artikelbild`);
+        console.log(`  ⏭ Überspringe ${item.article_name}: Kein Artikelbild`);
         continue;
       }
 
-      console.log(`🎨 Try-On: ${item.article_name} (${item.category})`);
+      console.log(`  🎨 ${item.article_name} (${item.category})...`);
 
       const result = await enqueueGeneration(async () => {
         return provider.virtualTryOn({
@@ -228,21 +357,17 @@ async function generateOutfitImage(avatarId, date) {
       });
 
       if (result.success) {
-        // Ergebnis-Bild als neues Basisbild verwenden
         const outputUrl = Array.isArray(result.output) ? result.output[0] : result.output;
 
-        // Bild herunterladen und lokal speichern
         const filename = `tryon_${genId}_${item.category}_${Date.now()}.png`;
         const localPath = path.join(GENERATED_DIR, filename);
         await downloadImage(outputUrl, localPath);
 
-        // Für nächsten Layer: lokales Bild als URL verwenden
-        currentImageUrl = outputUrl; // Replicate-URL bleibt temporär gültig
-
+        currentImageUrl = outputUrl;
         totalCost += result.cost || 0;
-        console.log(`  ✅ Fertig (${result.cost ? '$' + result.cost.toFixed(4) : 'n/a'})`);
+        console.log(`    ✅ Fertig ($${(result.cost || 0).toFixed(4)})`);
       } else {
-        console.log(`  ❌ Fehler: ${result.error}`);
+        console.log(`    ❌ Fehler: ${result.error}`);
       }
     }
 
@@ -252,7 +377,6 @@ async function generateOutfitImage(avatarId, date) {
     const relativePath = `public/generated/${finalFilename}`;
 
     if (currentImageUrl !== avatar.image_url) {
-      // Wir haben mindestens ein Try-On-Bild
       await downloadImage(currentImageUrl, finalPath);
     }
 
@@ -280,26 +404,28 @@ async function generateOutfitImage(avatarId, date) {
       status: 'failed',
       error_message: err.message,
     });
-
-    return {
-      success: false,
-      error: err.message,
-      generationId: genId,
-    };
+    return { success: false, error: err.message, generationId: genId };
   }
 }
 
+// ═══════════════════════════════════════════════════
+// SCHRITT 3: Walking-Video generieren
+// ═══════════════════════════════════════════════════
+
 /**
- * Walking-Animation für einen Avatar generieren
+ * Generiert eine Walking-Animation aus dem Outfit-Bild.
+ * Verwendet Minimax Video-01 für hochwertige Videos.
+ *
+ * Kosten: ~$0.10–0.20 pro Video (Minimax)
  */
 async function generateWalkAnimation(avatarId, date) {
   const db = getDb();
 
-  // Zuerst: fertiges Outfit-Bild finden oder generieren
   const avatar = db.prepare('SELECT * FROM avatars WHERE id = ?').get(avatarId);
   if (!avatar) throw new Error('Avatar nicht gefunden');
 
-  // Prüfen ob ein Outfit-Bild existiert
+  // Outfit-Bild suchen
+  let sourceImageUrl;
   const existingGen = db.prepare(`
     SELECT * FROM generations
     WHERE avatar_id = ? AND type = 'tryon' AND status = 'completed'
@@ -307,13 +433,12 @@ async function generateWalkAnimation(avatarId, date) {
     ORDER BY created_at DESC LIMIT 1
   `).get(avatarId);
 
-  let sourceImageUrl;
-
   if (existingGen && existingGen.output_path) {
     const fullPath = path.join(__dirname, '..', '..', existingGen.output_path);
     if (fs.existsSync(fullPath)) {
-      // Lokales Bild als URL für Video-Generierung verwenden
-      sourceImageUrl = avatar.image_url; // Fallback: original
+      // Lokales Bild verwenden – Replicate braucht aber eine URL
+      // Daher: Avatar-Bild-URL als Fallback
+      sourceImageUrl = avatar.image_url;
     }
   }
 
@@ -324,31 +449,37 @@ async function generateWalkAnimation(avatarId, date) {
   if (!sourceImageUrl) {
     return {
       success: false,
-      error: 'Kein Bild für Animation vorhanden. Erstelle zuerst ein Outfit-Bild.',
+      error: 'Kein Bild vorhanden. Erstelle zuerst ein Avatar-Basisbild und/oder Outfit-Bild.',
     };
   }
 
+  // Cache prüfen
   const cacheKey = `walk_${avatarId}_${date}`;
   const cached = checkCache(cacheKey);
   if (cached) {
     return {
       success: true,
       cached: true,
-      outputUrl: '/' + cached.output_path,
+      outputUrl: '/' + cached.output_path.replace(/^public\//, ''),
       generationId: cached.id,
       cost: 0,
     };
   }
+
+  console.log(`\n🎬 Generiere Walking-Video für "${avatar.name}"...`);
+  console.log(`   Modell: ${CONFIG.replicate.videoModel}`);
 
   const genId = createGenerationRecord(avatarId, 'walk_animation', cacheKey);
   updateGeneration(genId, { status: 'processing' });
 
   try {
     const provider = createProvider();
+    const walkPrompt = buildWalkPrompt(avatar);
+
     const result = await enqueueGeneration(async () => {
       return provider.generateWalkAnimation({
         imageUrl: sourceImageUrl,
-        motionStrength: 40,
+        prompt: walkPrompt,
       });
     });
 
@@ -363,14 +494,17 @@ async function generateWalkAnimation(avatarId, date) {
       updateGeneration(genId, {
         status: 'completed',
         output_path: relativePath,
-        cost: result.cost || 0,
+        cost: result.cost || 0.15,
       });
+
+      console.log(`   ✅ Video gespeichert: /generated/${filename}`);
+      console.log(`   💰 Kosten: $${(result.cost || 0.15).toFixed(4)}`);
 
       return {
         success: true,
         outputUrl: `/generated/${filename}`,
         generationId: genId,
-        cost: result.cost || 0,
+        cost: result.cost || 0.15,
       };
     } else {
       throw new Error(result.error);
@@ -380,12 +514,75 @@ async function generateWalkAnimation(avatarId, date) {
       status: 'failed',
       error_message: err.message,
     });
+    console.log(`   ❌ Fehler: ${err.message}`);
     return { success: false, error: err.message, generationId: genId };
   }
 }
 
+// ═══════════════════════════════════════════════════
+// KOMPLETT-PIPELINE: Alles in einem Schritt
+// ═══════════════════════════════════════════════════
+
 /**
- * Alle Avatare für ein Datum generieren (Batch)
+ * Führt die komplette Pipeline für einen Avatar aus:
+ * 1. Avatar-Basisbild generieren (falls nötig)
+ * 2. Outfit via Try-On anziehen
+ * 3. Walking-Video generieren
+ *
+ * Geschätzte Kosten: ~$0.15–0.30 pro Avatar
+ */
+async function generateFullPipeline(avatarId, date) {
+  const db = getDb();
+  const avatar = db.prepare('SELECT * FROM avatars WHERE id = ?').get(avatarId);
+  if (!avatar) throw new Error('Avatar nicht gefunden');
+
+  const results = {
+    avatar: avatar.name,
+    steps: [],
+    totalCost: 0,
+    success: true,
+  };
+
+  console.log(`\n${'═'.repeat(50)}`);
+  console.log(`🎭 KOMPLETT-PIPELINE: ${avatar.name}`);
+  console.log(`${'═'.repeat(50)}`);
+
+  // Schritt 1: Avatar-Basisbild
+  if (!avatar.image_url) {
+    console.log('\n📸 Schritt 1/3: Avatar-Basisbild generieren...');
+    const avatarResult = await generateAvatarBaseImage(avatarId);
+    results.steps.push({ step: 'avatar_image', ...avatarResult });
+    results.totalCost += avatarResult.cost || 0;
+    if (!avatarResult.success) {
+      results.success = false;
+      return results;
+    }
+  } else {
+    console.log('\n📸 Schritt 1/3: Avatar-Basisbild vorhanden ✅');
+    results.steps.push({ step: 'avatar_image', success: true, skipped: true });
+  }
+
+  // Schritt 2: Outfit Try-On
+  console.log('\n👗 Schritt 2/3: Outfit via Try-On anziehen...');
+  const outfitResult = await generateOutfitImage(avatarId, date);
+  results.steps.push({ step: 'outfit_tryon', ...outfitResult });
+  results.totalCost += outfitResult.cost || 0;
+
+  // Schritt 3: Walking-Video
+  console.log('\n🎬 Schritt 3/3: Walking-Video generieren...');
+  const videoResult = await generateWalkAnimation(avatarId, date);
+  results.steps.push({ step: 'walk_video', ...videoResult });
+  results.totalCost += videoResult.cost || 0;
+
+  console.log(`\n${'═'.repeat(50)}`);
+  console.log(`✅ Pipeline fertig! Gesamtkosten: $${results.totalCost.toFixed(4)}`);
+  console.log(`${'═'.repeat(50)}\n`);
+
+  return results;
+}
+
+/**
+ * Alle Avatare komplett generieren (Batch)
  */
 async function generateAllOutfits(date) {
   const db = getDb();
@@ -405,9 +602,10 @@ async function generateAllOutfits(date) {
   return { results, totalCost, date };
 }
 
-/**
- * Generierungs-Historie abrufen
- */
+// ═══════════════════════════════════════════════════
+// REPORTING
+// ═══════════════════════════════════════════════════
+
 function getGenerationHistory(limit = 50) {
   const db = getDb();
   return db.prepare(`
@@ -419,9 +617,6 @@ function getGenerationHistory(limit = 50) {
   `).all(limit);
 }
 
-/**
- * Kosten-Zusammenfassung
- */
 function getCostSummary(days = 30) {
   const db = getDb();
   const since = new Date();
@@ -457,8 +652,11 @@ function getCostSummary(days = 30) {
 }
 
 module.exports = {
+  generateAvatarBaseImage,
+  generateAllAvatarImages,
   generateOutfitImage,
   generateWalkAnimation,
+  generateFullPipeline,
   generateAllOutfits,
   getGenerationHistory,
   getCostSummary,

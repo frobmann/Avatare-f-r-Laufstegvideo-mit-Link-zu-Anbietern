@@ -1,11 +1,15 @@
 const express = require('express');
 const {
+  generateAvatarBaseImage,
+  generateAllAvatarImages,
   generateOutfitImage,
   generateWalkAnimation,
+  generateFullPipeline,
   generateAllOutfits,
   getGenerationHistory,
   getCostSummary,
 } = require('../services/generation-pipeline');
+const { CONFIG } = require('../services/ai-provider');
 
 const router = express.Router();
 
@@ -21,20 +25,45 @@ router.get('/status', (req, res) => {
   res.json({
     provider,
     configured: hasToken,
-    tryonModel: process.env.TRYON_MODEL || 'cuuupid/idm-vton',
-    videoModel: process.env.VIDEO_MODEL || 'stability-ai/stable-video-diffusion',
+    avatarModel: CONFIG.replicate.avatarModel,
+    tryonModel: CONFIG.replicate.tryonModel,
+    videoModel: CONFIG.replicate.videoModel,
     quality: process.env.IMAGE_QUALITY || 'medium',
     maxConcurrent: parseInt(process.env.MAX_CONCURRENT_GENERATIONS) || 2,
     costEstimate: {
+      perAvatar: '$0.03–0.05',
       perTryOn: '$0.01–0.03',
-      perVideo: '$0.03–0.05',
-      daily6Avatars: '$0.72–2.16',
-      monthly6Avatars: '$22–65',
+      perVideo: '$0.10–0.20',
+      perFullPipeline: '$0.15–0.30',
+      daily6Avatars: '$0.90–1.80',
+      monthly6Avatars: '$27–54',
     },
   });
 });
 
-// Outfit-Bild für einen Avatar generieren
+// ── Avatar-Basisbild generieren ──
+
+router.post('/avatar/:avatarId', async (req, res) => {
+  try {
+    const result = await generateAvatarBaseImage(req.params.avatarId);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Alle Avatar-Basisbilder generieren (Batch)
+router.post('/avatars/batch', async (req, res) => {
+  try {
+    const result = await generateAllAvatarImages();
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ── Outfit-Bild generieren (Try-On) ──
+
 router.post('/outfit/:avatarId', async (req, res) => {
   try {
     const date = req.body.date || new Date().toISOString().split('T')[0];
@@ -45,8 +74,9 @@ router.post('/outfit/:avatarId', async (req, res) => {
   }
 });
 
-// Walking-Animation generieren
-router.post('/walk/:avatarId', async (req, res) => {
+// ── Walking-Video generieren ──
+
+router.post('/video/:avatarId', async (req, res) => {
   try {
     const date = req.body.date || new Date().toISOString().split('T')[0];
     const result = await generateWalkAnimation(req.params.avatarId, date);
@@ -56,7 +86,20 @@ router.post('/walk/:avatarId', async (req, res) => {
   }
 });
 
-// Alle Avatare für ein Datum generieren (Batch)
+// ── Komplett-Pipeline (Bild → Try-On → Video) ──
+
+router.post('/pipeline/:avatarId', async (req, res) => {
+  try {
+    const date = req.body.date || new Date().toISOString().split('T')[0];
+    const result = await generateFullPipeline(req.params.avatarId, date);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ── Batch: Alle Outfits generieren ──
+
 router.post('/batch', async (req, res) => {
   try {
     const date = req.body.date || new Date().toISOString().split('T')[0];
@@ -67,14 +110,16 @@ router.post('/batch', async (req, res) => {
   }
 });
 
-// Generierungs-Historie
+// ── Generierungs-Historie ──
+
 router.get('/history', (req, res) => {
   const limit = parseInt(req.query.limit) || 50;
   const history = getGenerationHistory(limit);
   res.json(history);
 });
 
-// Kosten-Übersicht
+// ── Kosten-Übersicht ──
+
 router.get('/costs', (req, res) => {
   const days = parseInt(req.query.days) || 30;
   const costs = getCostSummary(days);
