@@ -29,9 +29,36 @@ router.get('/show', (req, res) => {
 
     const totalPrice = outfit.reduce((sum, item) => sum + item.price, 0);
 
+    // Generiertes Bild suchen (falls vorhanden)
+    let generated_image = null;
+    let generated_video = null;
+    try {
+      const genImg = db.prepare(`
+        SELECT output_path FROM generations
+        WHERE avatar_id = ? AND type = 'tryon' AND status = 'completed'
+        AND output_path != ''
+        ORDER BY created_at DESC LIMIT 1
+      `).get(avatar.id);
+      if (genImg && genImg.output_path) {
+        generated_image = '/' + genImg.output_path.replace(/^public\//, '');
+      }
+
+      const genVid = db.prepare(`
+        SELECT output_path FROM generations
+        WHERE avatar_id = ? AND type = 'walk_animation' AND status = 'completed'
+        AND output_path != ''
+        ORDER BY created_at DESC LIMIT 1
+      `).get(avatar.id);
+      if (genVid && genVid.output_path) {
+        generated_video = '/' + genVid.output_path.replace(/^public\//, '');
+      }
+    } catch (e) { /* generations table may not exist yet */ }
+
     return {
       ...avatar,
       outfit,
+      generated_image,
+      generated_video,
       total_price: Math.round(totalPrice * 100) / 100,
       currency: outfit.length > 0 ? outfit[0].currency : 'CHF'
     };

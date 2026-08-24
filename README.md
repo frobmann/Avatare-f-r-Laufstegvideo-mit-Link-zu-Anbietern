@@ -83,6 +83,7 @@ Die URL `/catwalk` kann direkt eingebettet oder geteilt werden. Kunden sehen die
 | `avatar_outfits` | Tägliche Outfit-Zuordnung (Avatar ↔ Artikel ↔ Datum) |
 | `catwalk_config` | Laufsteg-Konfiguration (Farben, Geschwindigkeit) |
 | `click_stats` | Klick-Tracking (Hover, Click, Redirect) |
+| `generations` | KI-Generierungen (Try-On, Animationen, Status, Kosten) |
 
 ### Artikel-Kategorien
 `kopfbedeckung` · `oberteil` · `jacke` · `hose` · `rock` · `kleid` · `schuhe` · `accessoire` · `tasche` · `schmuck`
@@ -125,16 +126,51 @@ Die URL `/catwalk` kann direkt eingebettet oder geteilt werden. Kunden sehen die
 | POST | `/api/catwalk/stats` | Klick erfassen |
 | GET | `/api/catwalk/stats` | Statistiken abrufen |
 
-## 🤖 Seed Models Integration
+## 🤖 KI-Generierung (Virtual Try-On)
 
-Für realistische KI-generierte Avatar-Videos mit Virtual Try-On siehe die detaillierte Kostenanalyse:
+Integrierte KI-Pipeline für fotorealistische Avatar-Bilder und Walk-Animationen.
+
+### Aktuell: IDM-VTON via Replicate (günstigstes Modell)
+
+| Feature | Modell | Kosten/Bild |
+|---------|--------|-------------|
+| Virtual Try-On | IDM-VTON (cuuupid/idm-vton) | ~$0.01–0.03 |
+| Walk-Animation | Stable Video Diffusion | ~$0.03–0.05 |
+
+**Geschätzte Monatskosten (6 Avatare, tägliche Outfits):** ~$15–25/Monat
+
+### Setup
+
+```bash
+# .env Datei erstellen (aus Vorlage)
+cp .env.example .env
+
+# Replicate API Token eintragen
+# → https://replicate.com/account/api-tokens
+```
+
+### KI-API-Endpunkte
+
+| Method | Endpunkt | Beschreibung |
+|--------|---------|-------------|
+| GET | `/api/generate/status` | Provider-Status & Konfiguration |
+| POST | `/api/generate/outfit/:avatarId` | Outfit-Bild generieren |
+| POST | `/api/generate/walk/:avatarId` | Walk-Animation generieren |
+| POST | `/api/generate/batch` | Alle Avatare generieren |
+| GET | `/api/generate/history` | Generierungs-Historie |
+| GET | `/api/generate/costs` | Kosten-Übersicht |
+
+### Features
+- **Caching**: Bereits generierte Bilder werden wiederverwendet
+- **Queue**: Parallele Generierungen mit konfigurierbarem Limit
+- **Kostentracking**: Automatische Erfassung und Übersicht
+- **Multi-Provider**: Erweiterbar auf HuggingFace, lokale Modelle
+
+### Kostenanalyse aller Modelle
+
+Für eine detaillierte Vergleichsanalyse aller AI-Modelle (Seed 2.5, Runway Gen-3, Kling AI, etc.) siehe:
 
 ➡️ **[docs/SEED_MODELS_KOSTENANALYSE.md](docs/SEED_MODELS_KOSTENANALYSE.md)**
-
-**Kurzfassung:**
-- **~$105/Monat** für 6 Avatare mit Seed 2.5 API
-- **Phase 1 (jetzt)**: CSS-animiertes System als kostenfreies MVP
-- **Phase 2+**: Seed 2.5 Integration für fotorealistische Ergebnisse
 
 ## 🛠 Technologie-Stack
 

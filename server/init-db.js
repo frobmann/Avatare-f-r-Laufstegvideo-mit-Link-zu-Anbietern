@@ -99,6 +99,21 @@ db.exec(`
     FOREIGN KEY (article_id) REFERENCES articles(id)
   );
 
+  -- KI-Generierungen (Try-On, Animationen)
+  CREATE TABLE IF NOT EXISTS generations (
+    id TEXT PRIMARY KEY,
+    avatar_id TEXT NOT NULL,
+    type TEXT NOT NULL CHECK(type IN ('tryon', 'walk_animation', 'img2img')),
+    cache_key TEXT DEFAULT '',
+    status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'processing', 'completed', 'failed')),
+    output_path TEXT DEFAULT '',
+    cost REAL DEFAULT 0,
+    error_message TEXT DEFAULT '',
+    metadata TEXT DEFAULT '{}',
+    created_at TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY (avatar_id) REFERENCES avatars(id) ON DELETE CASCADE
+  );
+
   -- Default Catwalk Config einfügen
   INSERT OR IGNORE INTO catwalk_config (id) VALUES ('main');
 
@@ -109,6 +124,9 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_articles_category ON articles(category);
   CREATE INDEX IF NOT EXISTS idx_click_stats_avatar ON click_stats(avatar_id);
   CREATE INDEX IF NOT EXISTS idx_click_stats_timestamp ON click_stats(timestamp);
+  CREATE INDEX IF NOT EXISTS idx_generations_avatar ON generations(avatar_id);
+  CREATE INDEX IF NOT EXISTS idx_generations_cache ON generations(cache_key);
+  CREATE INDEX IF NOT EXISTS idx_generations_status ON generations(status);
 `);
 
 console.log('✅ Datenbank erfolgreich initialisiert:', DB_PATH);

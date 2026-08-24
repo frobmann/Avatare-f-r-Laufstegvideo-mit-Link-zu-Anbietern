@@ -525,6 +525,7 @@
       <button class="nav-item" data-section="providers">🏪 Anbieter</button>
       <button class="nav-item" data-section="articles">👗 Artikel</button>
       <button class="nav-item" data-section="config">⚙️ Catwalk-Config</button>
+      <button class="nav-item" data-section="ai">🤖 KI-Generierung</button>
       <button class="nav-item" data-section="stats">📊 Statistiken</button>
     </nav>
 
@@ -811,6 +812,101 @@
         </div>
       </div>
 
+      <!-- ===== KI-GENERIERUNG ===== -->
+      <div id="section-ai" class="section">
+        <h2 class="page-title">🤖 KI-Generierung (IDM-VTON)</h2>
+
+        <!-- Provider Status -->
+        <div class="card" id="ai-status-card">
+          <div class="card-header">
+            <span class="card-title">Provider-Status</span>
+            <button class="btn btn-secondary btn-sm" onclick="loadAiStatus()">Aktualisieren</button>
+          </div>
+          <div id="ai-status" style="color: var(--text-dim);">Lade...</div>
+        </div>
+
+        <!-- Generierung starten -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Outfit-Bilder generieren</span>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 16px;">
+            Generiert fotorealistische Avatar-Bilder mit den zugewiesenen Kleidungsstücken via IDM-VTON.
+            <br>Voraussetzung: Avatar-Basisbild + Artikel-Bilder müssen als URL hinterlegt sein.
+          </p>
+          <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+            <select id="ai-avatar-select" style="background: var(--bg-input); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; color: var(--text); font-family: inherit;">
+              <option value="">Avatar wählen...</option>
+            </select>
+            <input type="date" id="ai-date" style="background: var(--bg-input); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; color: var(--text); font-family: inherit;" />
+            <button class="btn btn-primary" onclick="generateSingle()">🎨 Outfit generieren</button>
+            <button class="btn btn-secondary" onclick="generateAll()">🎨 Alle Avatare generieren</button>
+          </div>
+          <div id="generation-progress" style="margin-top: 16px; display: none;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div style="width: 20px; height: 20px; border: 2px solid var(--accent); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+              <span id="generation-status" style="font-size: 0.85rem;">Generierung läuft...</span>
+            </div>
+          </div>
+          <div id="generation-result" style="margin-top: 16px; display: none;"></div>
+        </div>
+
+        <!-- Kosten-Übersicht -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">💰 Kosten-Übersicht (30 Tage)</span>
+          </div>
+          <div id="ai-costs" class="stats-grid" style="margin-bottom: 0;">
+            <div class="stat-card">
+              <div class="stat-value" id="cost-total">$0.00</div>
+              <div class="stat-label">Gesamtkosten</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="cost-count">0</div>
+              <div class="stat-label">Generierungen</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="cost-avg">$0.00</div>
+              <div class="stat-label">Ø pro Generierung</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="cost-success">0%</div>
+              <div class="stat-label">Erfolgsrate</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Generierungs-Historie -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">📜 Generierungs-Historie</span>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Avatar</th>
+                <th>Typ</th>
+                <th>Status</th>
+                <th>Kosten</th>
+                <th>Datum</th>
+              </tr>
+            </thead>
+            <tbody id="ai-history-body">
+              <tr><td colspan="5" style="color: var(--text-dim);">Lade...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <style>
+          @keyframes spin { 100% { transform: rotate(360deg); } }
+          .status-badge { padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; }
+          .status-completed { background: rgba(39,174,96,0.15); color: #27ae60; }
+          .status-processing { background: rgba(201,169,110,0.15); color: #c9a96e; }
+          .status-failed { background: rgba(231,76,60,0.15); color: #e74c3c; }
+          .status-pending { background: rgba(122,125,138,0.15); color: #7a7d8a; }
+        </style>
+      </div>
+
       <!-- ===== STATISTIKEN ===== -->
       <div id="section-stats" class="section">
         <h2 class="page-title">📊 Statistiken</h2>
@@ -883,6 +979,7 @@
           case 'config': loadConfig(); break;
           case 'stats': loadStats(); break;
           case 'outfits': loadOutfitView(); break;
+          case 'ai': loadAiSection(); break;
         }
       });
     });
@@ -1295,6 +1392,173 @@
           <td>${a.redirects}</td>
         </tr>
       `).join('');
+    }
+
+    // ===== KI-GENERIERUNG =====
+    async function loadAiSection() {
+      await loadAiStatus();
+      await loadAiCosts();
+      await loadAiHistory();
+
+      // Avatar-Dropdown füllen
+      if (allAvatars.length === 0) allAvatars = await apiFetch('/avatars');
+      const sel = document.getElementById('ai-avatar-select');
+      sel.innerHTML = '<option value="">Avatar wählen...</option>';
+      allAvatars.forEach(a => {
+        sel.innerHTML += `<option value="${a.id}">${a.name}</option>`;
+      });
+      document.getElementById('ai-date').value = new Date().toISOString().split('T')[0];
+    }
+
+    async function loadAiStatus() {
+      try {
+        const status = await apiFetch('/generate/status');
+        const el = document.getElementById('ai-status');
+        const configured = status.configured;
+        el.innerHTML = `
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px;">
+            <div><strong>Provider:</strong> ${status.provider}</div>
+            <div><strong>Status:</strong> <span style="color: ${configured ? 'var(--success)' : 'var(--danger)'};">${configured ? '✅ Konfiguriert' : '❌ Token fehlt'}</span></div>
+            <div><strong>Try-On Modell:</strong> ${status.tryonModel}</div>
+            <div><strong>Qualität:</strong> ${status.quality}</div>
+            <div><strong>Kosten/Try-On:</strong> ${status.costEstimate.perTryOn}</div>
+            <div><strong>Kosten/Monat (6 Avatare):</strong> ${status.costEstimate.monthly6Avatars}</div>
+          </div>
+          ${!configured ? '<p style="margin-top: 12px; padding: 10px; background: rgba(231,76,60,0.1); border-radius: 6px; font-size: 0.85rem;">⚠️ Setze <code>REPLICATE_API_TOKEN</code> in der <code>.env</code> Datei. Registrierung: <a href="https://replicate.com" target="_blank" style="color: var(--accent);">replicate.com</a></p>' : ''}
+        `;
+      } catch (e) {
+        document.getElementById('ai-status').textContent = 'Fehler: ' + e.message;
+      }
+    }
+
+    async function loadAiCosts() {
+      try {
+        const costs = await apiFetch('/generate/costs?days=30');
+        document.getElementById('cost-total').textContent = '$' + (costs.total_cost || 0).toFixed(2);
+        document.getElementById('cost-count').textContent = costs.total_generations || 0;
+        document.getElementById('cost-avg').textContent = '$' + (costs.avg_cost || 0).toFixed(4);
+        const rate = costs.total_generations > 0
+          ? Math.round((costs.successful / costs.total_generations) * 100)
+          : 0;
+        document.getElementById('cost-success').textContent = rate + '%';
+      } catch (e) { /* silently ignore if generations table doesn't exist yet */ }
+    }
+
+    async function loadAiHistory() {
+      try {
+        const history = await apiFetch('/generate/history?limit=20');
+        const tbody = document.getElementById('ai-history-body');
+        if (!history || history.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" style="color: var(--text-dim);">Noch keine Generierungen</td></tr>';
+          return;
+        }
+        tbody.innerHTML = history.map(h => `
+          <tr>
+            <td>${h.avatar_name || '–'}</td>
+            <td>${h.type === 'tryon' ? '👗 Try-On' : h.type === 'walk_animation' ? '🎬 Animation' : h.type}</td>
+            <td><span class="status-badge status-${h.status}">${h.status}</span></td>
+            <td>${h.cost ? '$' + h.cost.toFixed(4) : '–'}</td>
+            <td>${new Date(h.created_at).toLocaleString('de-CH')}</td>
+          </tr>
+        `).join('');
+      } catch (e) {
+        document.getElementById('ai-history-body').innerHTML =
+          '<tr><td colspan="5" style="color: var(--text-dim);">Noch keine Generierungen</td></tr>';
+      }
+    }
+
+    async function generateSingle() {
+      const avatarId = document.getElementById('ai-avatar-select').value;
+      const date = document.getElementById('ai-date').value;
+      if (!avatarId) { showToast('Bitte Avatar wählen', 'error'); return; }
+
+      const progress = document.getElementById('generation-progress');
+      const result = document.getElementById('generation-result');
+      progress.style.display = 'block';
+      result.style.display = 'none';
+      document.getElementById('generation-status').textContent = 'Generierung läuft... (kann 30-60 Sekunden dauern)';
+
+      try {
+        const res = await apiFetch('/generate/outfit/' + avatarId, {
+          method: 'POST',
+          body: JSON.stringify({ date }),
+        });
+
+        progress.style.display = 'none';
+        result.style.display = 'block';
+
+        if (res.success) {
+          const costStr = res.cost ? ' | Kosten: $' + res.cost.toFixed(4) : '';
+          const imgHtml = res.outputUrl
+            ? `<img src="${res.outputUrl}" style="max-height: 200px; border-radius: 8px; margin-top: 8px;" />`
+            : '';
+          result.innerHTML = `
+            <div style="padding: 12px; background: rgba(39,174,96,0.1); border-radius: 8px;">
+              ✅ ${res.cached ? 'Aus Cache geladen' : 'Erfolgreich generiert'}${costStr}
+              ${res.noBaseImage ? '<br>⚠️ ' + res.message : ''}
+              ${imgHtml}
+            </div>
+          `;
+          showToast('Generierung erfolgreich!');
+        } else {
+          result.innerHTML = `
+            <div style="padding: 12px; background: rgba(231,76,60,0.1); border-radius: 8px;">
+              ❌ ${res.error || 'Unbekannter Fehler'}
+            </div>
+          `;
+          showToast('Generierung fehlgeschlagen', 'error');
+        }
+
+        loadAiCosts();
+        loadAiHistory();
+      } catch (e) {
+        progress.style.display = 'none';
+        result.style.display = 'block';
+        result.innerHTML = `<div style="padding: 12px; background: rgba(231,76,60,0.1); border-radius: 8px;">❌ ${e.message}</div>`;
+        showToast(e.message, 'error');
+      }
+    }
+
+    async function generateAll() {
+      const date = document.getElementById('ai-date').value;
+      if (!confirm('Alle Avatare für ' + date + ' generieren? Das kann einige Minuten dauern.')) return;
+
+      const progress = document.getElementById('generation-progress');
+      const result = document.getElementById('generation-result');
+      progress.style.display = 'block';
+      result.style.display = 'none';
+      document.getElementById('generation-status').textContent = 'Batch-Generierung läuft... (kann mehrere Minuten dauern)';
+
+      try {
+        const res = await apiFetch('/generate/batch', {
+          method: 'POST',
+          body: JSON.stringify({ date }),
+        });
+
+        progress.style.display = 'none';
+        result.style.display = 'block';
+
+        const successful = res.results.filter(r => r.success).length;
+        const failed = res.results.filter(r => !r.success).length;
+
+        result.innerHTML = `
+          <div style="padding: 12px; background: rgba(39,174,96,0.1); border-radius: 8px;">
+            ✅ ${successful} erfolgreich | ❌ ${failed} fehlgeschlagen | 💰 Kosten: $${(res.totalCost || 0).toFixed(4)}
+            <ul style="margin-top: 8px; padding-left: 20px; font-size: 0.85rem;">
+              ${res.results.map(r => `
+                <li>${r.name}: ${r.success ? '✅' : '❌ ' + (r.error || '')}</li>
+              `).join('')}
+            </ul>
+          </div>
+        `;
+
+        loadAiCosts();
+        loadAiHistory();
+      } catch (e) {
+        progress.style.display = 'none';
+        result.style.display = 'block';
+        result.innerHTML = `<div style="padding: 12px; background: rgba(231,76,60,0.1); border-radius: 8px;">❌ ${e.message}</div>`;
+      }
     }
 
     // ===== INIT =====

@@ -25,11 +25,31 @@ if (!fs.existsSync(DB_PATH)) {
   require('./init-db');
 }
 
+// .env Unterstützung (ohne dotenv-Dependency)
+const envPath = path.join(__dirname, '..', '.env');
+if (fs.existsSync(envPath)) {
+  const envContent = fs.readFileSync(envPath, 'utf8');
+  for (const line of envContent.split('\n')) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+    const eqIdx = trimmed.indexOf('=');
+    if (eqIdx > 0) {
+      const key = trimmed.slice(0, eqIdx).trim();
+      const val = trimmed.slice(eqIdx + 1).trim();
+      if (!process.env[key]) process.env[key] = val;
+    }
+  }
+}
+
+// Generated-Verzeichnis sicherstellen
+fs.mkdirSync(path.join(__dirname, '..', 'public', 'generated'), { recursive: true });
+
 // API Routes
 app.use('/api/avatars', require('./routes/avatars'));
 app.use('/api/providers', require('./routes/providers'));
 app.use('/api/articles', require('./routes/articles'));
 app.use('/api/catwalk', require('./routes/catwalk'));
+app.use('/api/generate', require('./routes/generate'));
 
 // Admin Dashboard
 app.get('/admin', (req, res) => {

@@ -175,6 +175,46 @@
       justify-content: flex-end;
     }
 
+    /* KI-generiertes Avatar-Bild */
+    .avatar-generated-img {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      height: 100%;
+      width: auto;
+      max-width: 160px;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 20px rgba(0,0,0,0.5));
+    }
+
+    .avatar-generated-video {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      height: 100%;
+      width: auto;
+      max-width: 160px;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 20px rgba(0,0,0,0.5));
+    }
+
+    /* KI-Badge */
+    .ai-badge {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: linear-gradient(135deg, #9b59b6, #6c3483);
+      color: white;
+      font-size: 0.55rem;
+      padding: 2px 6px;
+      border-radius: 8px;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+      z-index: 5;
+    }
+
     /* Avatar Silhouette (CSS-generiert) */
     .avatar-silhouette {
       position: relative;
@@ -731,8 +771,26 @@
       const shoeColor = getOutfitColor(avatar.outfit, 'schuhe') || palette.shoes;
       const jacketColor = getOutfitColor(avatar.outfit, 'jacke');
 
-      wrapper.innerHTML = `
-        <div class="avatar-figure">
+      // Entscheide: KI-generiertes Bild oder CSS-Silhouette
+      let avatarBody;
+      if (avatar.generated_video) {
+        // KI-generiertes Walking-Video (Premium)
+        avatarBody = `
+          <video class="avatar-generated-video" autoplay loop muted playsinline>
+            <source src="${avatar.generated_video}" type="video/mp4">
+          </video>
+          <span class="ai-badge">AI</span>
+        `;
+      } else if (avatar.generated_image) {
+        // KI-generiertes Outfit-Bild
+        avatarBody = `
+          <img class="avatar-generated-img" src="${avatar.generated_image}"
+               alt="${avatar.name}" loading="lazy" />
+          <span class="ai-badge">AI</span>
+        `;
+      } else {
+        // CSS-Silhouette (kostenlos, Standard)
+        avatarBody = `
           <div class="avatar-silhouette">
             <div class="avatar-hair" style="background: ${palette.hair}"></div>
             <div class="avatar-head"></div>
@@ -749,6 +807,12 @@
               <div class="avatar-shoe" style="background: ${shoeColor}"></div>
             </div>
           </div>
+        `;
+      }
+
+      wrapper.innerHTML = `
+        <div class="avatar-figure">
+          ${avatarBody}
           <div class="avatar-shadow"></div>
           <div class="avatar-name">${avatar.name}</div>
         </div>
