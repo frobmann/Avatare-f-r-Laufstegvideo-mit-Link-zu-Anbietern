@@ -27,6 +27,7 @@ node --version
 :: npm Pakete installieren
 echo.
 echo 📦 Installiere Abhängigkeiten...
+echo    (Reines JavaScript – kein C++ Compiler nötig!)
 call npm install
 if %errorlevel% neq 0 (
     echo ❌ npm install fehlgeschlagen
@@ -56,23 +57,13 @@ if not exist .env (
     echo ✅ .env existiert bereits
 )
 
-:: Datenbank initialisieren
-echo.
-echo 🗃️  Initialisiere Datenbank...
-call node server/init-db.js
-echo ✅ Datenbank bereit
-
-:: Beispieldaten laden
-echo.
-echo 🎭 Lade Beispieldaten (6 Avatare, 5 Anbieter, 18 Artikel)...
-call node server/seed-data.js
-echo ✅ Beispieldaten geladen
-
-:: Starten
+:: Starten (Datenbank wird automatisch initialisiert)
 echo.
 echo ══════════════════════════════════════════════════
 echo   ✅ Setup abgeschlossen! Server wird gestartet...
 echo ══════════════════════════════════════════════════
+echo.
+echo   Datenbank und Beispieldaten werden automatisch erstellt.
 echo.
 echo   Öffne im Browser:
 echo     🎬 Catwalk:  http://localhost:3000/catwalk

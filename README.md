@@ -175,7 +175,7 @@ Für eine detaillierte Vergleichsanalyse aller AI-Modelle (Seed 2.5, Runway Gen-
 ## 🛠 Technologie-Stack
 
 - **Backend**: Node.js + Express
-- **Datenbank**: SQLite (better-sqlite3)
+- **Datenbank**: SQLite (sql.js – reines JavaScript, kein C++ Compiler nötig)
 - **Frontend**: Vanilla HTML/CSS/JS
 - **Animation**: CSS Animations + JavaScript
 - **Deployment**: Jeder Node.js Host (Vercel, Railway, Render, etc.)

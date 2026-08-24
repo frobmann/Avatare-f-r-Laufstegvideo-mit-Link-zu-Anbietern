@@ -6,25 +6,6 @@ const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Statische Dateien
-app.use(express.static(path.join(__dirname, '..', 'public')));
-app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
-
-// Uploads-Verzeichnis sicherstellen
-fs.mkdirSync(path.join(__dirname, '..', 'uploads'), { recursive: true });
-
-// Datenbank initialisieren (falls noch nicht geschehen)
-const { DB_PATH } = require('./db');
-if (!fs.existsSync(DB_PATH)) {
-  console.log('📦 Initialisiere Datenbank...');
-  require('./init-db');
-}
-
 // .env Unterstützung (ohne dotenv-Dependency)
 const envPath = path.join(__dirname, '..', '.env');
 if (fs.existsSync(envPath)) {
@@ -41,39 +22,60 @@ if (fs.existsSync(envPath)) {
   }
 }
 
-// Generated-Verzeichnis sicherstellen
+// Middleware
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Statische Dateien
+app.use(express.static(path.join(__dirname, '..', 'public')));
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
+
+// Verzeichnisse sicherstellen
+fs.mkdirSync(path.join(__dirname, '..', 'uploads'), { recursive: true });
 fs.mkdirSync(path.join(__dirname, '..', 'public', 'generated'), { recursive: true });
 
-// API Routes
-app.use('/api/avatars', require('./routes/avatars'));
-app.use('/api/providers', require('./routes/providers'));
-app.use('/api/articles', require('./routes/articles'));
-app.use('/api/catwalk', require('./routes/catwalk'));
-app.use('/api/generate', require('./routes/generate'));
+// ─── Server starten (async wegen sql.js Initialisierung) ───
 
-// Admin Dashboard
-app.get('/admin', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'public', 'admin.html'));
-});
+async function startServer() {
+  // Datenbank initialisieren
+  const { initDatabase, DB_PATH } = require('./db');
+  await initDatabase();
 
-// Catwalk Ansicht
-app.get('/catwalk', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'public', 'catwalk.html'));
-});
+  // Tabellen erstellen falls nötig
+  const { initTables } = require('./init-db');
+  await initTables();
 
-// Startseite
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
-});
+  // API Routes (erst nach DB-Initialisierung laden!)
+  app.use('/api/avatars', require('./routes/avatars'));
+  app.use('/api/providers', require('./routes/providers'));
+  app.use('/api/articles', require('./routes/articles'));
+  app.use('/api/catwalk', require('./routes/catwalk'));
+  app.use('/api/generate', require('./routes/generate'));
 
-// Error Handler
-app.use((err, req, res, next) => {
-  console.error('Server Error:', err);
-  res.status(500).json({ error: 'Interner Serverfehler', details: err.message });
-});
+  // Admin Dashboard
+  app.get('/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'public', 'admin.html'));
+  });
 
-app.listen(PORT, () => {
-  console.log(`
+  // Catwalk Ansicht
+  app.get('/catwalk', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'public', 'catwalk.html'));
+  });
+
+  // Startseite
+  app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
+  });
+
+  // Error Handler
+  app.use((err, req, res, next) => {
+    console.error('Server Error:', err);
+    res.status(500).json({ error: 'Interner Serverfehler', details: err.message });
+  });
+
+  app.listen(PORT, () => {
+    console.log(`
 ╔══════════════════════════════════════════════════╗
 ║  🎭 Avatar Catwalk Shop System                  ║
 ║  ────────────────────────────────────────────    ║
@@ -82,5 +84,11 @@ app.listen(PORT, () => {
 ║  🎬 Catwalk:   http://localhost:${PORT}/catwalk     ║
 ║  📡 API:       http://localhost:${PORT}/api         ║
 ╚══════════════════════════════════════════════════╝
-  `);
+    `);
+  });
+}
+
+startServer().catch(err => {
+  console.error('❌ Server konnte nicht gestartet werden:', err);
+  process.exit(1);
 });
