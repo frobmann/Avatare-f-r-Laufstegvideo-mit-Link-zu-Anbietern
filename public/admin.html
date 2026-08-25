@@ -841,6 +841,7 @@
             </select>
             <button class="btn btn-primary" onclick="generateAvatarImage()">📸 Avatar-Bild generieren</button>
             <button class="btn btn-secondary" onclick="generateAllAvatarImages()">📸 Alle Avatare generieren</button>
+            <button class="btn btn-danger" onclick="resetAndRegenerateAvatars()">🔄 Alle zurücksetzen & neu generieren</button>
           </div>
           <div id="avatar-gen-result" style="margin-top: 16px; display: none;"></div>
         </div>
@@ -1572,6 +1573,35 @@
           showResult(`<div style="padding: 12px; background: rgba(231,76,60,0.1); border-radius: 8px;">❌ ${res.error}</div>`);
           showToast('Fehler', 'error');
         }
+      } catch (e) {
+        showResult(`<div style="padding: 12px; background: rgba(231,76,60,0.1); border-radius: 8px;">❌ ${e.message}</div>`);
+        showToast(e.message, 'error');
+      }
+    }
+
+    async function resetAndRegenerateAvatars() {
+      if (!confirm('⚠️ Alle vorhandenen Avatar-Bilder LÖSCHEN und komplett NEU generieren?\n\nDie alten (falschen) Bilder werden entfernt und neue, einzigartige Frauen-Bilder erstellt.\n\nGeschätzte Kosten: ~$0.20-0.30 für 6 Avatare.')) return;
+
+      showProgress('🔄 Setze alle Avatar-Bilder zurück...');
+
+      try {
+        // Schritt 1: Bilder zurücksetzen
+        const resetRes = await apiFetch('/avatars/reset-images', { method: 'POST' });
+        showToast(`${resetRes.count} Avatar-Bilder zurückgesetzt`);
+
+        // Schritt 2: Neu generieren
+        document.getElementById('generation-status').textContent = '📸 Generiere neue Avatar-Bilder... (kann 2-3 Minuten dauern)';
+        const res = await apiFetch('/generate/avatars/batch', { method: 'POST' });
+        const successful = res.results.filter(r => r.success).length;
+        showResult(`
+          <div style="padding: 12px; background: rgba(39,174,96,0.1); border-radius: 8px;">
+            🔄 Reset & Neugenerierung abgeschlossen!
+            <br>✅ ${successful}/${res.results.length} Avatar-Bilder generiert | 💰 $${(res.totalCost || 0).toFixed(4)}
+            <ul style="margin-top: 8px; padding-left: 20px; font-size: 0.85rem;">
+              ${res.results.map(r => `<li>${r.name}: ${r.success ? '✅' : '❌ ' + (r.error || '')}</li>`).join('')}
+            </ul>
+          </div>
+        `);
       } catch (e) {
         showResult(`<div style="padding: 12px; background: rgba(231,76,60,0.1); border-radius: 8px;">❌ ${e.message}</div>`);
         showToast(e.message, 'error');

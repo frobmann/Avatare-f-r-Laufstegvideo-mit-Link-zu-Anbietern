@@ -137,4 +137,20 @@ router.delete('/:id/outfit', (req, res) => {
   res.json({ message: 'Outfit gelöscht' });
 });
 
+// Alle Avatar-Bild-URLs zurücksetzen (für Neugenerierung)
+router.post('/reset-images', (req, res) => {
+  const db = getDb();
+  db.prepare(`
+    UPDATE avatars SET image_url = '', silhouette_url = '', updated_at = datetime('now')
+    WHERE is_active = 1
+  `).run();
+
+  const avatars = db.prepare('SELECT id, name FROM avatars WHERE is_active = 1').all();
+  res.json({
+    message: `${avatars.length} Avatar-Bilder zurückgesetzt`,
+    count: avatars.length,
+    avatars: avatars.map(a => a.name),
+  });
+});
+
 module.exports = router;

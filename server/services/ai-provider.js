@@ -123,34 +123,66 @@ async function downloadImage(url, outputPath) {
 
 /**
  * Erstellt einen optimalen Prompt für Avatar-Basisbild-Generierung.
+ * Jeder Avatar bekommt ein einzigartiges Aussehen (Haarfarbe, Ethnie, Stil).
  * Das Bild zeigt die Person in neutraler Kleidung, damit IDM-VTON
  * die eigentliche Mode auftragen kann.
  */
 function buildAvatarPrompt(avatar) {
-  // Geschlecht aus dem Namen ableiten (oder Beschreibung)
-  const femaleNames = ['sophia', 'mia', 'emma', 'anna', 'lisa', 'laura', 'nina', 'sarah', 'julia'];
-  const isFemale = femaleNames.includes((avatar.name || '').toLowerCase());
+  // Bekannte männliche Namen – alles andere wird als weiblich behandelt
+  const maleNames = ['liam', 'noah', 'felix', 'max', 'leon', 'tim', 'david', 'paul', 'ben', 'tom'];
+  const isMale = maleNames.includes((avatar.name || '').toLowerCase());
 
-  const gender = isFemale ? 'woman' : 'man';
-  const genderDetails = isFemale
-    ? 'young woman, 24 years old, slim athletic build, 175cm tall, beautiful face'
-    : 'young man, 26 years old, athletic build, 185cm tall, handsome face';
+  // Einzigartige Looks für jeden Avatar-Namen
+  const uniqueLooks = {
+    // Weibliche Avatare – jede ist anders!
+    'sol':     { age: 23, look: 'latina woman, golden brown skin, long dark wavy hair, warm brown eyes, radiant smile, sun-kissed complexion' },
+    'elena':   { age: 27, look: 'eastern european woman, fair skin, sleek straight blonde hair in a low bun, blue-grey eyes, sharp elegant features, confident expression' },
+    'mira':    { age: 24, look: 'south asian woman, medium brown skin, long black hair in a high ponytail, dark brown eyes, athletic build, bright energetic smile' },
+    'lauren':  { age: 26, look: 'scandinavian woman, pale porcelain skin, short platinum bob haircut, light green eyes, minimal makeup, serene composed expression' },
+    'claire':  { age: 28, look: 'french woman, light olive skin, shoulder-length chestnut brown hair with soft waves, hazel eyes, classic beauty, subtle knowing smile' },
+    'amy':     { age: 22, look: 'mixed race woman, light caramel skin, long curly auburn hair, green-brown eyes, freckles across nose, playful warm expression' },
 
-  // Stil-basierte Haar-/Look-Variationen
-  const styleVariations = {
-    'Eleganter Business-Stil':   'straight dark hair, confident expression, professional look',
-    'Casual Streetwear':         'short modern haircut, relaxed expression, youthful look',
-    'Boho & Vintage':            'long wavy hair, warm smile, bohemian look, freckles',
-    'Smart Casual':              'well-groomed hair, friendly smile, clean-cut look',
-    'Sportlich & Modern':        'ponytail hairstyle, energetic expression, fit physique',
-    'High Fashion':              'striking features, sharp cheekbones, editorial look, bold eyebrows',
+    // Weitere weibliche Namen
+    'sophia':  { age: 25, look: 'mediterranean woman, olive skin, dark brown straight hair, brown eyes, elegant features, confident look' },
+    'mia':     { age: 23, look: 'asian woman, light skin, long straight black hair, dark eyes, delicate features, gentle smile' },
+    'emma':    { age: 24, look: 'british woman, fair skin, strawberry blonde hair in a ponytail, blue eyes, athletic build, cheerful expression' },
+    'nina':    { age: 26, look: 'african woman, dark brown skin, short natural curly hair, dark brown eyes, striking high cheekbones, powerful confident gaze' },
   };
 
-  const look = styleVariations[avatar.description] || 'natural look, friendly expression';
+  // Stil-basierte Ergänzungen
+  const styleAdditions = {
+    'Jeans Style':                   'casual relaxed pose',
+    'Business Style':                'professional confident posture',
+    'Sportlich-elegant':             'athletic graceful stance',
+    'Quiet Luxury / Minimalismus':   'refined understated elegance',
+    'Klassisch-zeitlos':             'timeless classic poise',
+    'Romantisch-verspielt / Boho':   'free-spirited bohemian vibe',
+  };
 
-  return `Full body professional fashion photograph of a ${genderDetails}, ${look}, ` +
+  const nameKey = (avatar.name || '').toLowerCase();
+  const avatarLook = uniqueLooks[nameKey];
+  const styleNote = styleAdditions[avatar.description] || '';
+
+  if (avatarLook) {
+    const gender = isMale ? 'man' : 'woman';
+    return `Full body professional fashion photograph of a ${avatarLook.look}, ` +
+      `${avatarLook.age} years old, fashion model, 170-178cm tall, slim figure, ${styleNote}, ` +
+      `standing in a natural front-facing pose, wearing a simple fitted white t-shirt ` +
+      `and plain dark fitted jeans, simple white sneakers, ` +
+      `clean pure white studio background, professional fashion photography lighting, ` +
+      `sharp focus, high resolution, photorealistic, no accessories, full body visible head to toe, ` +
+      `center frame, 8k quality, fashion catalog style`;
+  }
+
+  // Fallback für unbekannte Namen
+  const gender = isMale ? 'man' : 'woman';
+  const genderDetails = isMale
+    ? 'young man, 26 years old, athletic build, 185cm tall, handsome face'
+    : 'young woman, 24 years old, slim athletic build, 175cm tall, beautiful face, natural look';
+
+  return `Full body professional fashion photograph of a ${genderDetails}, ${styleNote}, ` +
     `fashion model standing in a natural front-facing pose, wearing a simple fitted white t-shirt ` +
-    `and plain dark fitted jeans, barefoot or simple white sneakers, ` +
+    `and plain dark fitted jeans, simple white sneakers, ` +
     `clean pure white studio background, professional fashion photography lighting, ` +
     `sharp focus, high resolution, photorealistic, no accessories, full body visible head to toe, ` +
     `center frame, 8k quality, fashion catalog style`;
@@ -160,9 +192,9 @@ function buildAvatarPrompt(avatar) {
  * Erstellt einen Prompt für die Catwalk-Walking-Animation
  */
 function buildWalkPrompt(avatar) {
-  const femaleNames = ['sophia', 'mia', 'emma', 'anna', 'lisa', 'laura', 'nina', 'sarah', 'julia'];
-  const isFemale = femaleNames.includes((avatar.name || '').toLowerCase());
-  const gender = isFemale ? 'female' : 'male';
+  const maleNames = ['liam', 'noah', 'felix', 'max', 'leon', 'tim', 'david', 'paul', 'ben', 'tom'];
+  const isMale = maleNames.includes((avatar.name || '').toLowerCase());
+  const gender = isMale ? 'male' : 'female';
 
   return `Professional fashion show, ${gender} model walking confidently on a catwalk runway, ` +
     `elegant walking motion, one foot in front of the other, straight posture, ` +
