@@ -10,6 +10,7 @@ const {
   getCostSummary,
 } = require('../services/generation-pipeline');
 const { CONFIG, buildAvatarPrompt } = require('../services/ai-provider');
+const { autoAssignOutfits, rotateOutfits, previewOutfits } = require('../services/outfit-rotation');
 const { getDb } = require('../db');
 const { execSync } = require('child_process');
 
@@ -152,6 +153,52 @@ router.get('/costs', (req, res) => {
   const days = parseInt(req.query.days) || 30;
   const costs = getCostSummary(days);
   res.json(costs);
+});
+
+// ═══════════════════════════════════════════════════
+// OUTFIT-ROTATION (Automatische Outfit-Zuordnung)
+// ═══════════════════════════════════════════════════
+
+// Vorschau: Was würde zugeordnet werden?
+router.get('/outfits/preview', (req, res) => {
+  const date = req.query.date || new Date().toISOString().split('T')[0];
+  const preview = previewOutfits(date);
+  res.json(preview);
+});
+
+// Auto-Zuordnung: Outfits für heute (oder gewähltes Datum) automatisch zuweisen
+router.post('/outfits/auto-assign', (req, res) => {
+  try {
+    const date = req.body.date || new Date().toISOString().split('T')[0];
+    const result = autoAssignOutfits(date, {
+      clearExisting: req.body.clearExisting !== false,
+      respectStyles: req.body.respectStyles !== false,
+    });
+    if (!result.success) {
+      return res.status(400).json(result);
+    }
+    console.log(`👗 Auto-Outfits zugewiesen für ${date}:`, result.summary);
+    res.json(result);
+  } catch (err) {
+    console.error('❌ Auto-Outfit Fehler:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Rotation: Alte Outfits löschen und neue zuweisen
+router.post('/outfits/rotate', (req, res) => {
+  try {
+    const date = req.body.date || new Date().toISOString().split('T')[0];
+    const result = rotateOutfits(date);
+    if (!result.success) {
+      return res.status(400).json(result);
+    }
+    console.log(`🔄 Outfits rotiert für ${date}:`, result.summary);
+    res.json(result);
+  } catch (err) {
+    console.error('❌ Rotation Fehler:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 module.exports = router;

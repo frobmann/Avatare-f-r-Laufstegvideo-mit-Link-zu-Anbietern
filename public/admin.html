@@ -535,6 +535,28 @@
       <div id="section-outfits" class="section active">
         <h2 class="page-title">👔 Avatare einkleiden</h2>
 
+        <!-- Auto-Outfit Bereich -->
+        <div class="card" style="margin-bottom: 20px; border: 1px solid var(--accent); background: var(--accent-bg);">
+          <div class="card-header">
+            <span class="card-title">🤖 Automatische Outfit-Zuordnung</span>
+          </div>
+          <div style="padding: 16px;">
+            <p style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 12px;">
+              Weist allen Avataren automatisch passende Outfits zu — basierend auf ihrem Stil und den verfügbaren Artikeln.
+            </p>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+              <button class="btn btn-primary" onclick="autoAssignOutfits()" style="background: var(--accent); color: #000; font-weight: 600;">
+                🎲 Outfits automatisch zuweisen
+              </button>
+              <button class="btn btn-secondary" onclick="rotateOutfits()" style="border-color: var(--accent); color: var(--accent);">
+                🔄 Neue Outfits rotieren
+              </button>
+              <span id="auto-outfit-status" style="font-size: 0.8rem; color: var(--text-dim);"></span>
+            </div>
+            <div id="auto-outfit-result" style="margin-top: 12px; display: none;"></div>
+          </div>
+        </div>
+
         <div class="outfit-builder">
           <div>
             <h3 style="font-size: 0.9rem; margin-bottom: 12px; color: var(--text-dim);">Avatar wählen</h3>
@@ -778,9 +800,35 @@
           </div>
         </div>
 
+        <!-- Schnell-Import -->
+        <div class="card" style="border: 1px solid var(--accent); background: var(--accent-bg);">
+          <div class="card-header">
+            <span class="card-title">📋 Schnell-Import (mehrere Artikel)</span>
+          </div>
+          <div style="padding: 16px;">
+            <p style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 8px;">
+              Füge mehrere Artikel auf einmal ein — ein Artikel pro Zeile im Format:<br>
+              <code style="background: var(--bg-input); padding: 2px 6px; border-radius: 4px; font-size: 0.8rem;">
+                Anbieter | Name | Kategorie | Preis | Produkt-URL
+              </code>
+            </p>
+            <textarea id="batch-import-text" rows="6" style="width: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: 6px; color: var(--text); padding: 10px; font-family: monospace; font-size: 0.8rem; resize: vertical;" placeholder="Zalando | Wollmantel Camel | jacke | 189.90 | https://www.zalando.ch/wollmantel
+H&M | Strickpullover Beige | oberteil | 39.90 | https://www2.hm.com/strickpulli
+ZARA | Midi-Rock Gold | rock | 49.90 | https://www.zara.com/ch/midi-rock"></textarea>
+            <div style="display: flex; gap: 10px; margin-top: 10px; align-items: center;">
+              <button class="btn btn-primary" onclick="batchImportArticles()" style="background: var(--accent); color: #000; font-weight: 600;">
+                📥 Importieren
+              </button>
+              <span id="batch-import-status" style="font-size: 0.8rem; color: var(--text-dim);"></span>
+            </div>
+            <div id="batch-import-result" style="margin-top: 10px; display: none;"></div>
+          </div>
+        </div>
+
         <div class="card">
           <div class="card-header">
             <span class="card-title">Alle Artikel</span>
+            <span id="article-count" style="font-size: 0.8rem; color: var(--text-dim);"></span>
           </div>
           <table class="data-table">
             <thead>
@@ -1248,6 +1296,9 @@
           </td>
         </tr>
       `).join('');
+
+      const countEl = document.getElementById('article-count');
+      if (countEl) countEl.textContent = `(${allArticles.length} Artikel)`;
     }
 
     async function createArticle() {
@@ -1277,6 +1328,136 @@
       await apiFetch('/articles/' + id, { method: 'DELETE' });
       showToast('Artikel entfernt');
       loadArticles();
+    }
+
+    // ===== BATCH-IMPORT =====
+    async function batchImportArticles() {
+      const text = document.getElementById('batch-import-text').value.trim();
+      if (!text) { showToast('Bitte Artikel-Daten einfügen', 'error'); return; }
+
+      const lines = text.split('\n').filter(l => l.trim());
+      const articles = [];
+
+      for (const line of lines) {
+        const parts = line.split('|').map(s => s.trim());
+        if (parts.length < 5) {
+          showToast(`Ungültige Zeile: "${line.substring(0, 40)}..." — braucht 5 Felder mit |`, 'error');
+          return;
+        }
+        articles.push({
+          brand_name: parts[0],
+          name: parts[1],
+          category: parts[2].toLowerCase(),
+          price: parseFloat(parts[3]),
+          product_url: parts[4],
+          color: parts[5] || '',
+        });
+      }
+
+      const statusEl = document.getElementById('batch-import-status');
+      statusEl.textContent = `⏳ Importiere ${articles.length} Artikel...`;
+
+      try {
+        const res = await apiFetch('/articles/batch', {
+          method: 'POST',
+          body: JSON.stringify({ articles }),
+        });
+
+        const resultEl = document.getElementById('batch-import-result');
+        resultEl.style.display = 'block';
+        const successful = res.results.filter(r => r.success).length;
+        resultEl.innerHTML = `
+          <div style="padding: 10px; background: rgba(39,174,96,0.1); border-radius: 6px; font-size: 0.85rem;">
+            ✅ ${successful}/${res.results.length} Artikel importiert
+            <ul style="margin-top: 6px; padding-left: 18px;">
+              ${res.results.map(r => `<li>${r.success ? '✅' : '❌'} ${r.name} ${r.error ? '— ' + r.error : ''}</li>`).join('')}
+            </ul>
+          </div>
+        `;
+        statusEl.textContent = '';
+        if (successful > 0) {
+          document.getElementById('batch-import-text').value = '';
+          loadArticles();
+        }
+        showToast(`${successful} Artikel importiert!`);
+      } catch (e) {
+        statusEl.textContent = '';
+        showToast(e.message, 'error');
+      }
+    }
+
+    // ===== AUTO-OUTFIT =====
+    async function autoAssignOutfits() {
+      if (!confirm('🎲 Allen Avataren automatisch Outfits zuweisen?\n\nBestehende Outfits für heute werden dabei ersetzt.')) return;
+
+      const statusEl = document.getElementById('auto-outfit-status');
+      statusEl.textContent = '⏳ Weise Outfits zu...';
+
+      try {
+        const res = await apiFetch('/generate/outfits/auto-assign', {
+          method: 'POST',
+          body: JSON.stringify({ clearExisting: true, respectStyles: true }),
+        });
+
+        const resultEl = document.getElementById('auto-outfit-result');
+        resultEl.style.display = 'block';
+        resultEl.innerHTML = `
+          <div style="padding: 10px; background: rgba(39,174,96,0.1); border-radius: 6px; font-size: 0.85rem;">
+            ✅ ${res.summary.avatars} Avatare eingekleidet | ${res.summary.totalArticles} Artikel | CHF ${res.summary.totalValue.toFixed(2)} Gesamtwert
+            <ul style="margin-top: 6px; padding-left: 18px;">
+              ${res.results.map(r => `
+                <li><strong>${r.avatar}</strong> (${r.style}): ${r.articles.map(a => a.name).join(', ') || 'keine Artikel verfügbar'}</li>
+              `).join('')}
+            </ul>
+          </div>
+        `;
+        statusEl.textContent = '';
+        showToast(`${res.summary.avatars} Avatare eingekleidet!`);
+
+        // Outfit-Ansicht aktualisieren falls ein Avatar ausgewählt ist
+        if (typeof selectedAvatarId !== 'undefined' && selectedAvatarId) {
+          loadOutfit(selectedAvatarId);
+        }
+      } catch (e) {
+        statusEl.textContent = '';
+        showToast(e.message, 'error');
+      }
+    }
+
+    async function rotateOutfits() {
+      if (!confirm('🔄 Outfits komplett neu mischen?\n\nAlle heutigen Outfits werden gelöscht und zufällig neue zugewiesen.')) return;
+
+      const statusEl = document.getElementById('auto-outfit-status');
+      statusEl.textContent = '🔄 Rotiere Outfits...';
+
+      try {
+        const res = await apiFetch('/generate/outfits/rotate', {
+          method: 'POST',
+          body: JSON.stringify({}),
+        });
+
+        const resultEl = document.getElementById('auto-outfit-result');
+        resultEl.style.display = 'block';
+        resultEl.innerHTML = `
+          <div style="padding: 10px; background: rgba(201,169,110,0.1); border-radius: 6px; font-size: 0.85rem;">
+            🔄 Outfits rotiert! ${res.summary.avatars} Avatare | ${res.summary.totalArticles} Artikel | CHF ${res.summary.totalValue.toFixed(2)}
+            <ul style="margin-top: 6px; padding-left: 18px;">
+              ${res.results.map(r => `
+                <li><strong>${r.avatar}</strong>: ${r.articles.map(a => `${a.name} (${a.brand})`).join(', ') || '—'}</li>
+              `).join('')}
+            </ul>
+          </div>
+        `;
+        statusEl.textContent = '';
+        showToast('Outfits rotiert!');
+
+        if (typeof selectedAvatarId !== 'undefined' && selectedAvatarId) {
+          loadOutfit(selectedAvatarId);
+        }
+      } catch (e) {
+        statusEl.textContent = '';
+        showToast(e.message, 'error');
+      }
     }
 
     // ===== OUTFIT / EINKLEIDEN =====
