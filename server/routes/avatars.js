@@ -51,6 +51,11 @@ router.post('/reset-images', (req, res) => {
       WHERE is_active = 1
     `).run();
 
+    // Generations-Cache löschen damit Bilder wirklich neu generiert werden
+    db.prepare(`
+      DELETE FROM generations WHERE type = 'avatar_base'
+    `).run();
+
     const avatars = db.prepare('SELECT id, name FROM avatars WHERE is_active = 1').all();
     console.log(`✅ ${avatars.length} Avatar-Bilder zurückgesetzt:`, avatars.map(a => a.name).join(', '));
     res.json({

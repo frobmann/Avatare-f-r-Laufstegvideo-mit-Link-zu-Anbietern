@@ -197,7 +197,8 @@ async function generateAvatarBaseImage(avatarId) {
       await downloadImage(outputUrl, localPath);
 
       // Avatar-Tabelle mit dem neuen Bild aktualisieren
-      const publicUrl = `/generated/${filename}`;
+      // Cache-Busting: ?t=timestamp verhindert dass der Browser alte Bilder zeigt
+      const publicUrl = `/generated/${filename}?t=${Date.now()}`;
       db.prepare('UPDATE avatars SET image_url = ?, updated_at = datetime(\'now\') WHERE id = ?')
         .run(publicUrl, avatarId);
 
