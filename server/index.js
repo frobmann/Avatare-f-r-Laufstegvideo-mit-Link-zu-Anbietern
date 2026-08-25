@@ -28,6 +28,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Statische Dateien
+// Generierte Bilder: kein Browser-Cache damit neue Bilder sofort sichtbar sind
+app.use('/generated', express.static(path.join(__dirname, '..', 'public', 'generated'), {
+  setHeaders: (res) => {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+  }
+}));
 app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 

@@ -40,7 +40,7 @@ router.get('/show', (req, res) => {
         ORDER BY created_at DESC LIMIT 1
       `).get(avatar.id);
       if (genImg && genImg.output_path) {
-        generated_image = '/' + genImg.output_path.replace(/^public\//, '');
+        generated_image = '/' + genImg.output_path.replace(/^public\//, '') + '?t=' + Date.now();
       }
 
       const genVid = db.prepare(`

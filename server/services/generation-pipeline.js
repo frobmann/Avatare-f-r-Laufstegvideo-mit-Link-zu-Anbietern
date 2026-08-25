@@ -190,15 +190,27 @@ async function generateAvatarBaseImage(avatarId) {
       const outputUrl = Array.isArray(result.output) ? result.output[0] : result.output;
 
       // Bild herunterladen und lokal speichern
-      const filename = `avatar_${avatarId}_base.png`;
+      // Zeitstempel im Dateinamen verhindert Browser-Caching komplett
+      const timestamp = Date.now();
+      const filename = `avatar_${avatarId}_base_${timestamp}.png`;
       const localPath = path.join(GENERATED_DIR, filename);
       const relativePath = `public/generated/${filename}`;
+
+      // Alte Bilder dieses Avatars löschen
+      try {
+        const oldFiles = fs.readdirSync(GENERATED_DIR)
+          .filter(f => f.startsWith(`avatar_${avatarId}_base`) && f.endsWith('.png'));
+        for (const oldFile of oldFiles) {
+          if (oldFile !== filename) {
+            fs.unlinkSync(path.join(GENERATED_DIR, oldFile));
+          }
+        }
+      } catch (e) { /* ignore cleanup errors */ }
 
       await downloadImage(outputUrl, localPath);
 
       // Avatar-Tabelle mit dem neuen Bild aktualisieren
-      // Cache-Busting: ?t=timestamp verhindert dass der Browser alte Bilder zeigt
-      const publicUrl = `/generated/${filename}?t=${Date.now()}`;
+      const publicUrl = `/generated/${filename}`;
       db.prepare('UPDATE avatars SET image_url = ?, updated_at = datetime(\'now\') WHERE id = ?')
         .run(publicUrl, avatarId);
 
