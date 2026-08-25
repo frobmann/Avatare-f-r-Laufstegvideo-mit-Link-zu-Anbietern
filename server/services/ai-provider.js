@@ -135,7 +135,7 @@ function buildAvatarPrompt(avatar) {
   // Einzigartige Looks für jeden Avatar-Namen
   const uniqueLooks = {
     // Weibliche Avatare – jede ist anders!
-    'sol':     { age: 23, look: 'latina woman, golden brown skin, long dark wavy hair, warm brown eyes, radiant smile, sun-kissed complexion' },
+    'sol':     { age: 23, look: 'korean woman, smooth light skin, long straight silky black hair, dark brown almond-shaped eyes, soft natural makeup, gentle warm smile, elegant K-beauty look' },
     'elena':   { age: 27, look: 'eastern european woman, fair skin, sleek straight blonde hair in a low bun, blue-grey eyes, sharp elegant features, confident expression' },
     'mira':    { age: 24, look: 'south asian woman, medium brown skin, long black hair in a high ponytail, dark brown eyes, athletic build, bright energetic smile' },
     'lauren':  { age: 26, look: 'scandinavian woman, pale porcelain skin, short platinum bob haircut, light green eyes, minimal makeup, serene composed expression' },
