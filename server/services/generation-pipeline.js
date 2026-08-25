@@ -238,6 +238,12 @@ async function generateAllAvatarImages() {
 
     const result = await generateAvatarBaseImage(avatar.id);
     results.push({ avatarId: avatar.id, name: avatar.name, ...result });
+
+    // 15 Sekunden warten um Rate-Limits zu vermeiden
+    if (avatars.indexOf(avatar) < avatars.length - 1) {
+      console.log('   ⏳ Warte 15 Sekunden (Rate-Limit)...');
+      await new Promise(resolve => setTimeout(resolve, 15000));
+    }
   }
 
   const totalCost = results.reduce((sum, r) => sum + (r.cost || 0), 0);

@@ -217,10 +217,10 @@ class ReplicateProvider {
       delete input.guidance_scale;
     }
 
-    const prediction = await httpRequest(`${this.baseUrl}/predictions`, {
+    const prediction = await httpRequest(`${this.baseUrl}/models/${model}/predictions`, {
       method: 'POST',
       headers: this.headers,
-      body: JSON.stringify({ model, input }),
+      body: JSON.stringify({ input }),
     });
 
     return this._waitForPrediction(prediction.id);
@@ -238,11 +238,11 @@ class ReplicateProvider {
 
     const quality = QUALITY_PRESETS[CONFIG.imageQuality] || QUALITY_PRESETS.medium;
 
-    const prediction = await httpRequest(`${this.baseUrl}/predictions`, {
+    const tryonModel = CONFIG.replicate.tryonModel;
+    const prediction = await httpRequest(`${this.baseUrl}/models/${tryonModel}/predictions`, {
       method: 'POST',
       headers: this.headers,
       body: JSON.stringify({
-        model: CONFIG.replicate.tryonModel,
         input: {
           human_img: avatarImageUrl,
           garm_img: garmentImageUrl,
@@ -313,10 +313,10 @@ class ReplicateProvider {
       };
     }
 
-    const prediction = await httpRequest(`${this.baseUrl}/predictions`, {
+    const prediction = await httpRequest(`${this.baseUrl}/models/${model}/predictions`, {
       method: 'POST',
       headers: this.headers,
-      body: JSON.stringify({ model, input }),
+      body: JSON.stringify({ input }),
     });
 
     return this._waitForPrediction(prediction.id, 600000); // 10 Min Timeout für Video
@@ -328,11 +328,11 @@ class ReplicateProvider {
   async imageToImage({ imageUrl, prompt, strength }) {
     if (!this.token) throw new Error('REPLICATE_API_TOKEN nicht gesetzt');
 
-    const prediction = await httpRequest(`${this.baseUrl}/predictions`, {
+    const img2imgModel = 'stability-ai/sdxl';
+    const prediction = await httpRequest(`${this.baseUrl}/models/${img2imgModel}/predictions`, {
       method: 'POST',
       headers: this.headers,
       body: JSON.stringify({
-        model: 'stability-ai/sdxl',
         input: {
           image: imageUrl,
           prompt: prompt || 'fashion model walking on catwalk, professional lighting',
