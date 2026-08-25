@@ -176,7 +176,10 @@ async function generateAvatarBaseImage(avatarId) {
 
   console.log(`\n🎨 Generiere Avatar-Basisbild für "${avatar.name}"...`);
   console.log(`   Modell: ${CONFIG.replicate.avatarModel}`);
-  console.log(`   Prompt: ${prompt.substring(0, 80)}...`);
+  console.log(`   Prompt (vollständig): ${prompt}`);
+  console.log(`   ✅ Enthält "woman": ${prompt.includes('woman') ? 'JA' : '⚠️ NEIN!'}`);
+  console.log(`   ✅ Enthält "man" (ohne woman): ${prompt.includes(' man,') || prompt.includes(' man ') ? '⚠️ JA!' : 'NEIN'}`);
+
 
   const genId = createGenerationRecord(avatarId, 'img2img', cacheKey);
   updateGeneration(genId, { status: 'processing' });

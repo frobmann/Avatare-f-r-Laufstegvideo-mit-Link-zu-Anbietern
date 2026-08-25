@@ -9,9 +9,37 @@ const {
   getGenerationHistory,
   getCostSummary,
 } = require('../services/generation-pipeline');
-const { CONFIG } = require('../services/ai-provider');
+const { CONFIG, buildAvatarPrompt } = require('../services/ai-provider');
+const { getDb } = require('../db');
+const { execSync } = require('child_process');
 
 const router = express.Router();
+
+// Debug: Zeigt die aktuellen Prompts (ohne Generierung)
+router.get('/debug-prompts', (req, res) => {
+  try {
+    const db = getDb();
+    const avatars = db.prepare('SELECT * FROM avatars WHERE is_active = 1').all();
+
+    let gitBranch = 'unknown';
+    try { gitBranch = execSync('git branch --show-current', { encoding: 'utf8' }).trim(); } catch(e) {}
+
+    const prompts = avatars.map(a => ({
+      name: a.name,
+      prompt: buildAvatarPrompt(a),
+      containsWoman: buildAvatarPrompt(a).includes('woman'),
+      imageUrl: a.image_url,
+    }));
+
+    res.json({
+      gitBranch,
+      avatarCount: avatars.length,
+      prompts,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // Provider-Status prüfen
 router.get('/status', (req, res) => {
