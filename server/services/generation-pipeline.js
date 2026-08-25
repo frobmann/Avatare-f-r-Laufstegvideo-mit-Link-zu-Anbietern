@@ -24,6 +24,28 @@ const { getDb } = require('../db');
 
 const GENERATED_DIR = path.join(__dirname, '..', '..', 'public', 'generated');
 const CACHE_DIR = path.join(__dirname, '..', '..', 'data', 'cache');
+const PUBLIC_DIR = path.join(__dirname, '..', '..', 'public');
+
+/**
+ * Lokales Bild in Base64 Data-URI umwandeln.
+ * Replicate braucht eine URL – lokale Dateien werden als data:image/... gesendet.
+ */
+function localImageToDataUri(localPath) {
+  // Relativen Pfad auflösen (z.B. "/generated/avatar_xxx.png")
+  let fullPath = localPath;
+  if (localPath.startsWith('/generated/') || localPath.startsWith('generated/')) {
+    fullPath = path.join(PUBLIC_DIR, localPath.startsWith('/') ? localPath.slice(1) : localPath);
+  } else if (localPath.startsWith('public/')) {
+    fullPath = path.join(__dirname, '..', '..', localPath);
+  }
+
+  if (!fs.existsSync(fullPath)) return null;
+
+  const buffer = fs.readFileSync(fullPath);
+  const ext = path.extname(fullPath).toLowerCase();
+  const mime = ext === '.png' ? 'image/png' : ext === '.jpg' || ext === '.jpeg' ? 'image/jpeg' : 'image/png';
+  return `data:${mime};base64,${buffer.toString('base64')}`;
+}
 
 // Verzeichnisse sicherstellen
 fs.mkdirSync(GENERATED_DIR, { recursive: true });
@@ -309,7 +331,6 @@ async function generateOutfitImage(avatarId, date) {
       const avatarResult = await generateAvatarBaseImage(avatarId);
 
       if (avatarResult.success && avatarResult.outputUrl) {
-        // Bild als absolute URL für Replicate bereitstellen
         currentImageUrl = avatarResult.outputUrl;
         totalCost += avatarResult.cost || 0;
 
@@ -344,6 +365,10 @@ async function generateOutfitImage(avatarId, date) {
     );
 
     console.log(`\n👗 Try-On für ${avatar.name}: ${clothingItems.length} Kleidungsstücke`);
+
+    // Avatar-Bild als Data-URI für Replicate vorbereiten
+    const avatarDataUri = localImageToDataUri(currentImageUrl);
+    if (avatarDataUri) currentImageUrl = avatarDataUri;
 
     // Try-On für jeden Kleidungsartikel
     for (const item of clothingItems) {
@@ -430,8 +455,11 @@ async function generateWalkAnimation(avatarId, date) {
   const avatar = db.prepare('SELECT * FROM avatars WHERE id = ?').get(avatarId);
   if (!avatar) throw new Error('Avatar nicht gefunden');
 
-  // Outfit-Bild suchen
+  // Bild suchen: Zuerst Try-On-Bild, dann Avatar-Basisbild
   let sourceImageUrl;
+  let sourceLocalPath;
+
+  // 1. Fertiges Outfit-Bild (Try-On)?
   const existingGen = db.prepare(`
     SELECT * FROM generations
     WHERE avatar_id = ? AND type = 'tryon' AND status = 'completed'
@@ -442,20 +470,33 @@ async function generateWalkAnimation(avatarId, date) {
   if (existingGen && existingGen.output_path) {
     const fullPath = path.join(__dirname, '..', '..', existingGen.output_path);
     if (fs.existsSync(fullPath)) {
-      // Lokales Bild verwenden – Replicate braucht aber eine URL
-      // Daher: Avatar-Bild-URL als Fallback
-      sourceImageUrl = avatar.image_url;
+      sourceLocalPath = existingGen.output_path;
     }
   }
 
-  if (!sourceImageUrl && avatar.image_url) {
-    sourceImageUrl = avatar.image_url;
+  // 2. Fallback: Avatar-Basisbild
+  if (!sourceLocalPath && avatar.image_url) {
+    sourceLocalPath = avatar.image_url;
+  }
+
+  if (!sourceLocalPath) {
+    return {
+      success: false,
+      error: 'Kein Bild vorhanden. Erstelle zuerst ein Avatar-Basisbild und/oder Outfit-Bild.',
+    };
+  }
+
+  // Lokales Bild zu Base64 Data-URI konvertieren (Replicate braucht eine URL)
+  sourceImageUrl = localImageToDataUri(sourceLocalPath);
+  if (!sourceImageUrl) {
+    // Falls lokal nicht gefunden, als URL versuchen (externe Bilder)
+    sourceImageUrl = sourceLocalPath.startsWith('http') ? sourceLocalPath : null;
   }
 
   if (!sourceImageUrl) {
     return {
       success: false,
-      error: 'Kein Bild vorhanden. Erstelle zuerst ein Avatar-Basisbild und/oder Outfit-Bild.',
+      error: 'Bild-Datei nicht gefunden. Bitte Avatar-Basisbild neu generieren.',
     };
   }
 
