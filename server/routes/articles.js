@@ -100,6 +100,60 @@ router.put('/:id', (req, res) => {
   res.json(article);
 });
 
+// Mehrere Artikel auf einmal importieren (Batch-Import)
+router.post('/batch', (req, res) => {
+  const db = getDb();
+  const { articles } = req.body;
+
+  if (!Array.isArray(articles) || articles.length === 0) {
+    return res.status(400).json({ error: 'articles Array ist erforderlich' });
+  }
+
+  const results = [];
+  const insertArticle = db.prepare(`
+    INSERT OR IGNORE INTO articles (id, provider_id, name, category, price, currency, product_url, image_url, color, size)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+
+  for (const a of articles) {
+    try {
+      // Anbieter per Brand-Name oder ID finden
+      let provider;
+      if (a.provider_id) {
+        provider = db.prepare('SELECT id FROM providers WHERE id = ?').get(a.provider_id);
+      } else if (a.brand_name) {
+        provider = db.prepare('SELECT id FROM providers WHERE brand_name = ? AND is_active = 1').get(a.brand_name);
+      }
+
+      if (!provider) {
+        results.push({ name: a.name, success: false, error: `Anbieter nicht gefunden: ${a.brand_name || a.provider_id}` });
+        continue;
+      }
+
+      if (!a.name || !a.category || a.price == null || !a.product_url) {
+        results.push({ name: a.name || '?', success: false, error: 'Fehlende Pflichtfelder (name, category, price, product_url)' });
+        continue;
+      }
+
+      const id = require('uuid').v4();
+      insertArticle.run(
+        id, provider.id, a.name, a.category,
+        a.price, a.currency || 'CHF', a.product_url,
+        a.image_url || '', a.color || '', a.size || ''
+      );
+      results.push({ name: a.name, success: true, id });
+    } catch (err) {
+      results.push({ name: a.name || '?', success: false, error: err.message });
+    }
+  }
+
+  const successful = results.filter(r => r.success).length;
+  res.json({
+    message: `${successful}/${articles.length} Artikel importiert`,
+    results,
+  });
+});
+
 // Artikel deaktivieren
 router.delete('/:id', (req, res) => {
   const db = getDb();
