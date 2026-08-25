@@ -1,5 +1,7 @@
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
+const fs = require('fs');
+const path = require('path');
 const { getDb } = require('../db');
 
 const router = express.Router();
@@ -140,6 +142,23 @@ router.delete('/:id/outfit', (req, res) => {
 // Alle Avatar-Bild-URLs zurücksetzen (für Neugenerierung)
 router.post('/reset-images', (req, res) => {
   const db = getDb();
+
+  // Alte Bild-Dateien löschen
+  const generatedDir = path.join(__dirname, '..', '..', 'public', 'generated');
+  if (fs.existsSync(generatedDir)) {
+    const files = fs.readdirSync(generatedDir);
+    let deleted = 0;
+    for (const file of files) {
+      if (file.startsWith('avatar_') && (file.endsWith('.png') || file.endsWith('.jpg'))) {
+        try {
+          fs.unlinkSync(path.join(generatedDir, file));
+          deleted++;
+        } catch (e) { /* ignore */ }
+      }
+    }
+    if (deleted > 0) console.log(`🗑️ ${deleted} alte Avatar-Bilder gelöscht`);
+  }
+
   db.prepare(`
     UPDATE avatars SET image_url = '', silhouette_url = '', updated_at = datetime('now')
     WHERE is_active = 1
@@ -150,6 +169,49 @@ router.post('/reset-images', (req, res) => {
     message: `${avatars.length} Avatar-Bilder zurückgesetzt`,
     count: avatars.length,
     avatars: avatars.map(a => a.name),
+  });
+});
+
+// Gelöschte Avatare anzeigen
+router.get('/deleted/list', (req, res) => {
+  const db = getDb();
+  const deleted = db.prepare(`
+    SELECT * FROM avatars WHERE is_active = 0 ORDER BY name ASC
+  `).all();
+  res.json(deleted);
+});
+
+// Gelöschten Avatar wiederherstellen
+router.post('/restore/:id', (req, res) => {
+  const db = getDb();
+  const avatar = db.prepare('SELECT * FROM avatars WHERE id = ?').get(req.params.id);
+  if (!avatar) return res.status(404).json({ error: 'Avatar nicht gefunden' });
+
+  db.prepare(`
+    UPDATE avatars SET is_active = 1, updated_at = datetime('now') WHERE id = ?
+  `).run(req.params.id);
+
+  const restored = db.prepare('SELECT * FROM avatars WHERE id = ?').get(req.params.id);
+  res.json({ message: `Avatar "${restored.name}" wiederhergestellt`, avatar: restored });
+});
+
+// ALLE gelöschten Avatare wiederherstellen
+router.post('/restore-all/batch', (req, res) => {
+  const db = getDb();
+  const deleted = db.prepare('SELECT id, name FROM avatars WHERE is_active = 0').all();
+
+  if (deleted.length === 0) {
+    return res.json({ message: 'Keine gelöschten Avatare gefunden', count: 0, avatars: [] });
+  }
+
+  db.prepare(`
+    UPDATE avatars SET is_active = 1, updated_at = datetime('now') WHERE is_active = 0
+  `).run();
+
+  res.json({
+    message: `${deleted.length} Avatar(e) wiederhergestellt`,
+    count: deleted.length,
+    avatars: deleted.map(a => a.name),
   });
 });
 

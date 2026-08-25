@@ -633,14 +633,32 @@
               <tr>
                 <th>Name</th>
                 <th>Beschreibung</th>
+                <th>Bild</th>
                 <th>Position</th>
-                <th>Erstellt</th>
                 <th>Aktionen</th>
               </tr>
             </thead>
             <tbody id="avatars-table-body">
               <tr><td colspan="5" style="color: var(--text-dim);">Lade...</td></tr>
             </tbody>
+          </table>
+        </div>
+
+        <!-- Gelöschte Avatare wiederherstellen -->
+        <div class="card" id="deleted-avatars-card" style="display: none; border-color: rgba(231,76,60,0.3);">
+          <div class="card-header">
+            <span class="card-title">🗑️ Gelöschte Avatare</span>
+            <button class="btn btn-primary btn-sm" onclick="restoreAllAvatars()">♻️ Alle wiederherstellen</button>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Beschreibung</th>
+                <th>Aktionen</th>
+              </tr>
+            </thead>
+            <tbody id="deleted-avatars-body"></tbody>
           </table>
         </div>
       </div>
@@ -1064,19 +1082,59 @@
       const tbody = document.getElementById('avatars-table-body');
       if (allAvatars.length === 0) {
         tbody.innerHTML = '<tr><td colspan="5" style="color: var(--text-dim);">Keine Avatare vorhanden</td></tr>';
-        return;
+      } else {
+        tbody.innerHTML = allAvatars.map(a => `
+          <tr>
+            <td><strong>${a.name}</strong></td>
+            <td>${a.description || '–'}</td>
+            <td>${a.image_url ? '<span style="color: var(--success);">✅ Bild vorhanden</span>' : '<span style="color: var(--text-dim);">⬜ Kein Bild</span>'}</td>
+            <td>${a.position_order}</td>
+            <td>
+              <button class="btn btn-danger btn-sm" onclick="deleteAvatar('${a.id}')">Entfernen</button>
+            </td>
+          </tr>
+        `).join('');
       }
-      tbody.innerHTML = allAvatars.map(a => `
-        <tr>
-          <td><strong>${a.name}</strong></td>
-          <td>${a.description || '–'}</td>
-          <td>${a.position_order}</td>
-          <td>${new Date(a.created_at).toLocaleDateString('de-CH')}</td>
-          <td>
-            <button class="btn btn-danger btn-sm" onclick="deleteAvatar('${a.id}')">Entfernen</button>
-          </td>
-        </tr>
-      `).join('');
+
+      // Gelöschte Avatare laden
+      await loadDeletedAvatars();
+    }
+
+    async function loadDeletedAvatars() {
+      try {
+        const deleted = await apiFetch('/avatars/deleted/list');
+        const card = document.getElementById('deleted-avatars-card');
+        if (deleted.length === 0) {
+          card.style.display = 'none';
+          return;
+        }
+        card.style.display = 'block';
+        document.getElementById('deleted-avatars-body').innerHTML = deleted.map(a => `
+          <tr style="opacity: 0.7;">
+            <td>${a.name}</td>
+            <td>${a.description || '–'}</td>
+            <td>
+              <button class="btn btn-primary btn-sm" onclick="restoreAvatar('${a.id}')">♻️ Wiederherstellen</button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (e) { /* ignore if endpoint not yet available */ }
+    }
+
+    async function restoreAvatar(id) {
+      try {
+        const res = await apiFetch('/avatars/restore/' + id, { method: 'POST' });
+        showToast(res.message);
+        loadAvatars();
+      } catch (e) { showToast(e.message, 'error'); }
+    }
+
+    async function restoreAllAvatars() {
+      try {
+        const res = await apiFetch('/avatars/restore-all/batch', { method: 'POST' });
+        showToast(res.message);
+        loadAvatars();
+      } catch (e) { showToast(e.message, 'error'); }
     }
 
     async function createAvatar() {
