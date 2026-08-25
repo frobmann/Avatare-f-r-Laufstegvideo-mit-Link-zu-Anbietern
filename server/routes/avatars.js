@@ -30,20 +30,20 @@ router.post('/reset-images', (req, res) => {
   try {
     const db = getDb();
 
-    // Alte Bild-Dateien löschen
+    // ALLE generierten Bild- und Video-Dateien löschen
     const generatedDir = path.join(__dirname, '..', '..', 'public', 'generated');
     if (fs.existsSync(generatedDir)) {
       const files = fs.readdirSync(generatedDir);
       let deleted = 0;
       for (const file of files) {
-        if (file.startsWith('avatar_') && (file.endsWith('.png') || file.endsWith('.jpg'))) {
+        if (file.endsWith('.png') || file.endsWith('.jpg') || file.endsWith('.mp4') || file.endsWith('.webm')) {
           try {
             fs.unlinkSync(path.join(generatedDir, file));
             deleted++;
           } catch (e) { /* ignore */ }
         }
       }
-      if (deleted > 0) console.log(`🗑️ ${deleted} alte Avatar-Bilder gelöscht`);
+      if (deleted > 0) console.log(`🗑️ ${deleted} alte generierte Dateien gelöscht`);
     }
 
     db.prepare(`
@@ -51,10 +51,9 @@ router.post('/reset-images', (req, res) => {
       WHERE is_active = 1
     `).run();
 
-    // Generations-Cache löschen damit Bilder wirklich neu generiert werden
-    db.prepare(`
-      DELETE FROM generations WHERE type = 'avatar_base'
-    `).run();
+    // ALLE Generations-Cache-Einträge löschen (avatar_base, img2img, tryon, walk_animation)
+    // damit keine alten (Männer-)Bilder mehr angezeigt werden
+    db.prepare(`DELETE FROM generations`).run();
 
     const avatars = db.prepare('SELECT id, name FROM avatars WHERE is_active = 1').all();
     console.log(`✅ ${avatars.length} Avatar-Bilder zurückgesetzt:`, avatars.map(a => a.name).join(', '));

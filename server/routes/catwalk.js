@@ -29,10 +29,11 @@ router.get('/show', (req, res) => {
 
     const totalPrice = outfit.reduce((sum, item) => sum + item.price, 0);
 
-    // Generiertes Bild suchen (falls vorhanden)
+    // Generiertes Bild suchen (Priorität: Try-On > Avatar-Basisbild)
     let generated_image = null;
     let generated_video = null;
     try {
+      // 1. Try-On Bild (Avatar mit Outfit)
       const genImg = db.prepare(`
         SELECT output_path FROM generations
         WHERE avatar_id = ? AND type = 'tryon' AND status = 'completed'
@@ -43,6 +44,12 @@ router.get('/show', (req, res) => {
         generated_image = '/' + genImg.output_path.replace(/^public\//, '') + '?t=' + Date.now();
       }
 
+      // 2. Fallback: Avatar-Basisbild aus der avatars-Tabelle
+      if (!generated_image && avatar.image_url) {
+        generated_image = avatar.image_url;
+      }
+
+      // 3. Walking-Video
       const genVid = db.prepare(`
         SELECT output_path FROM generations
         WHERE avatar_id = ? AND type = 'walk_animation' AND status = 'completed'
@@ -50,7 +57,7 @@ router.get('/show', (req, res) => {
         ORDER BY created_at DESC LIMIT 1
       `).get(avatar.id);
       if (genVid && genVid.output_path) {
-        generated_video = '/' + genVid.output_path.replace(/^public\//, '');
+        generated_video = '/' + genVid.output_path.replace(/^public\//, '') + '?t=' + Date.now();
       }
     } catch (e) { /* generations table may not exist yet */ }
 
