@@ -15,37 +15,37 @@ const STYLE_PREFERENCES = {
     required: ['oberteil', 'hose', 'schuhe'],
     optional: ['accessoire', 'kopfbedeckung'],
     priceRange: 'budget',
-    preferBrands: ['Amazon Fashion'],
+    preferBrands: ['ONLY', 'Levi\'s', 'Vero Moda', 'Tom Tailor', 'Tamaris'],
   },
   'Business Style': {
     required: ['oberteil', 'hose', 'schuhe'],
     optional: ['jacke', 'schmuck', 'tasche'],
     priceRange: 'premium',
-    preferBrands: ['Amazon Fashion'],
+    preferBrands: ['Esprit', 'SELECTED FEMME', 'BOSS', 'GANT', 'Tommy Hilfiger'],
   },
   'Sportlich-elegant': {
     required: ['oberteil', 'hose', 'schuhe'],
     optional: ['jacke', 'accessoire'],
     priceRange: 'mid',
-    preferBrands: ['Amazon Fashion'],
+    preferBrands: ['Marc O\'Polo', 'Calvin Klein', 'ONLY', 'Geox', 'Jack Wolfskin'],
   },
   'Quiet Luxury / Minimalismus': {
     required: ['oberteil', 'hose', 'schuhe'],
     optional: ['jacke', 'accessoire', 'tasche'],
     priceRange: 'premium',
-    preferBrands: ['Amazon Fashion'],
+    preferBrands: ['Calvin Klein', 'VILA', 'Esprit', 'Clarks', 'BOSS'],
   },
   'Klassisch-zeitlos': {
     required: ['kleid', 'schuhe'],
     optional: ['jacke', 'schmuck', 'tasche'],
     priceRange: 'mid',
-    preferBrands: ['Amazon Fashion'],
+    preferBrands: ['VILA', 's.Oliver', 'ONLY', 'Gabor', 'SWAROVSKI'],
   },
   'Romantisch-verspielt / Boho': {
     required: ['kleid', 'schuhe'],
     optional: ['accessoire', 'tasche'],
     priceRange: 'budget',
-    preferBrands: ['Amazon Fashion'],
+    preferBrands: ['Desigual', 'ONLY', 'Geox', 'Liebeskind Berlin'],
   },
 };
 
