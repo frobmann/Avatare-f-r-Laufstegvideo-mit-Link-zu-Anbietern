@@ -49,6 +49,8 @@ const BOT_PROTECTED_DOMAINS = [
   'zalando.de', 'www.zalando.de',
   'aboutyou.com', 'www.aboutyou.com',
   'zalando.com', 'www.zalando.com',
+  'amazon.de', 'www.amazon.de',
+  'amazon.com', 'www.amazon.com',
 ];
 
 /**

@@ -149,6 +149,13 @@ async function seedProviders() {
       affiliate_base_url: '',
       info: 'SE – Gratis Versand ab €45',
     },
+    {
+      name: 'Amazon Fashion (Amazon EU S.à r.l.)',
+      brand_name: 'Amazon Fashion',
+      website_url: 'https://www.amazon.de/fashion',
+      affiliate_base_url: 'https://www.amazon.de/dp/',
+      info: 'LU/DE – Gratis Versand ab €39 (Prime: immer gratis)',
+    },
   ];
 
   const providerMap = {}; // brand_name -> id
@@ -227,6 +234,22 @@ async function seedProviders() {
     { brand: '& Other Stories', name: 'Satin-Wickelbluse',   category: 'oberteil', price: 79.00,  color: 'Smaragd',   product_url: 'https://www.stories.com/de-de/satin-wickelbluse' },
     { brand: '& Other Stories', name: 'Perlen-Armband',      category: 'schmuck',  price: 29.00,  color: 'Gold/Perle', product_url: 'https://www.stories.com/de-de/perlen-armband' },
     { brand: '& Other Stories', name: 'Seidenschal Muster',  category: 'accessoire', price: 49.00, color: 'Bunt',     product_url: 'https://www.stories.com/de-de/seidenschal' },
+
+    // ── Amazon Fashion (LU/DE) – Gratis Versand ab €39 / Prime gratis ──
+    { brand: 'Amazon Fashion', name: 'Levi\'s 501 Original Jeans',     category: 'hose',      price: 79.95,  color: 'Indigo',     product_url: 'https://www.amazon.de/dp/B07D4F3KYN' },
+    { brand: 'Amazon Fashion', name: 'Tommy Hilfiger Steppjacke',      category: 'jacke',     price: 129.90, color: 'Schwarz',    product_url: 'https://www.amazon.de/dp/B0B5KXQZ8M' },
+    { brand: 'Amazon Fashion', name: 'Calvin Klein T-Shirt 2er-Pack',  category: 'oberteil',  price: 34.95,  color: 'Weiss',      product_url: 'https://www.amazon.de/dp/B07BFQF3RJ' },
+    { brand: 'Amazon Fashion', name: 'BOSS Sneaker Low Weiss',         category: 'schuhe',    price: 149.00, color: 'Weiss',      product_url: 'https://www.amazon.de/dp/B09FSCM4KZ' },
+    { brand: 'Amazon Fashion', name: 'Fossil Armbanduhr Rosé',         category: 'schmuck',   price: 89.00,  color: 'Roségold',   product_url: 'https://www.amazon.de/dp/B07N8JVKQ4' },
+    { brand: 'Amazon Fashion', name: 'Esprit Wollmantel Grau',         category: 'jacke',     price: 99.99,  color: 'Grau',       product_url: 'https://www.amazon.de/dp/B0BK3NLZFR' },
+    { brand: 'Amazon Fashion', name: 'GANT Chino Slim Beige',          category: 'hose',      price: 99.00,  color: 'Beige',      product_url: 'https://www.amazon.de/dp/B0BGLM2R3N' },
+    { brand: 'Amazon Fashion', name: 'Vero Moda Bluse Satin',          category: 'oberteil',  price: 29.99,  color: 'Schwarz',    product_url: 'https://www.amazon.de/dp/B0CK4LNRFH' },
+    { brand: 'Amazon Fashion', name: 'ONLY Wintermantel Lang',         category: 'jacke',     price: 69.99,  color: 'Camel',      product_url: 'https://www.amazon.de/dp/B0BDP2XYZQ' },
+    { brand: 'Amazon Fashion', name: 'Tamaris Stiefeletten Leder',     category: 'schuhe',    price: 79.95,  color: 'Cognac',     product_url: 'https://www.amazon.de/dp/B0B8FLM9QZ' },
+    { brand: 'Amazon Fashion', name: 's.Oliver Strickkleid Midi',      category: 'kleid',     price: 59.99,  color: 'Dunkelgrün', product_url: 'https://www.amazon.de/dp/B0CKXR7TPM' },
+    { brand: 'Amazon Fashion', name: 'Liebeskind Berlin Ledertasche',  category: 'tasche',    price: 119.00, color: 'Schwarz',    product_url: 'https://www.amazon.de/dp/B07QFNR3YZ' },
+    { brand: 'Amazon Fashion', name: 'PIECES Midi-Rock Plissee',       category: 'rock',      price: 27.99,  color: 'Schwarz',    product_url: 'https://www.amazon.de/dp/B0CJXW3R5H' },
+    { brand: 'Amazon Fashion', name: 'SELECTED FEMME Blazer Slim',     category: 'jacke',     price: 89.99,  color: 'Navy',       product_url: 'https://www.amazon.de/dp/B0BN5RFLKM' },
   ];
 
   const insertArticle = db.prepare(`
@@ -276,12 +299,12 @@ async function seedProviders() {
 
     // Outfit-Zuordnungen nach Avatar-Stil
     const outfitPlans = {
-      'Sol':    { brands: ['H&M', 'About You'],             categories: ['oberteil', 'hose', 'schuhe'] },
-      'Elena':  { brands: ['ZARA', 'Massimo Dutti'],        categories: ['oberteil', 'jacke', 'hose', 'schuhe'] },
-      'Mira':   { brands: ['H&M', 'Mango'],                 categories: ['oberteil', 'hose', 'schuhe'] },
-      'Lauren': { brands: ['COS', 'Massimo Dutti'],          categories: ['oberteil', 'jacke', 'schuhe', 'accessoire'] },
-      'Claire': { brands: ['Zalando', 'ZARA'],               categories: ['kleid', 'jacke', 'schuhe', 'schmuck'] },
-      'Amy':    { brands: ['About You', '& Other Stories'],   categories: ['oberteil', 'rock', 'schuhe', 'tasche'] },
+      'Sol':    { brands: ['Amazon Fashion', 'H&M'],                     categories: ['oberteil', 'hose', 'schuhe'] },
+      'Elena':  { brands: ['Amazon Fashion', 'ZARA', 'Massimo Dutti'],  categories: ['oberteil', 'jacke', 'hose', 'schuhe'] },
+      'Mira':   { brands: ['Amazon Fashion', 'H&M', 'Mango'],           categories: ['oberteil', 'hose', 'schuhe'] },
+      'Lauren': { brands: ['Amazon Fashion', 'COS', 'Massimo Dutti'],   categories: ['oberteil', 'jacke', 'schuhe', 'schmuck'] },
+      'Claire': { brands: ['Amazon Fashion', 'Zalando', 'ZARA'],        categories: ['jacke', 'hose', 'schuhe', 'schmuck'] },
+      'Amy':    { brands: ['Amazon Fashion', 'About You', '& Other Stories'], categories: ['oberteil', 'jacke', 'schuhe', 'tasche'] },
     };
 
     const insertOutfit = db.prepare(`
@@ -295,15 +318,27 @@ async function seedProviders() {
       if (!plan) continue;
 
       let layer = 1;
+      const usedArticleIds = new Set(); // Keine doppelten Artikel pro Avatar
       for (const cat of plan.categories) {
-        // Finde einen passenden Artikel (bevorzugt von gewünschten Brands)
-        const article = allArticles.find(a =>
-          a.category === cat && plan.brands.includes(a.brand_name)
-        ) || allArticles.find(a => a.category === cat);
+        // Bevorzugte Marken in Reihenfolge durchgehen (erste = höchste Priorität)
+        let article = null;
+        for (const brand of plan.brands) {
+          article = allArticles.find(a =>
+            a.category === cat && a.brand_name === brand && !usedArticleIds.has(a.id)
+          );
+          if (article) break;
+        }
+        // Fallback: irgendein passender Artikel
+        if (!article) {
+          article = allArticles.find(a =>
+            a.category === cat && !usedArticleIds.has(a.id)
+          );
+        }
 
         if (article) {
           try {
             insertOutfit.run(uuidv4(), avatar.id, article.id, today, layer);
+            usedArticleIds.add(article.id);
             outfitCount++;
           } catch (e) { /* UNIQUE constraint = already assigned */ }
           layer++;

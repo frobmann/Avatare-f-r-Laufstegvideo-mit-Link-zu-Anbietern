@@ -14,37 +14,37 @@ const STYLE_PREFERENCES = {
     required: ['oberteil', 'hose', 'schuhe'],
     optional: ['accessoire', 'kopfbedeckung'],
     priceRange: 'budget',
-    preferBrands: ['H&M', 'About You'],
+    preferBrands: ['Amazon Fashion', 'H&M', 'About You'],
   },
   'Business Style': {
     required: ['oberteil', 'hose', 'schuhe'],
     optional: ['jacke', 'schmuck', 'tasche'],
     priceRange: 'premium',
-    preferBrands: ['Massimo Dutti', 'ZARA', 'COS'],
+    preferBrands: ['Amazon Fashion', 'Massimo Dutti', 'ZARA', 'COS'],
   },
   'Sportlich-elegant': {
     required: ['oberteil', 'hose', 'schuhe'],
     optional: ['jacke', 'accessoire'],
     priceRange: 'mid',
-    preferBrands: ['H&M', 'Mango'],
+    preferBrands: ['Amazon Fashion', 'H&M', 'Mango'],
   },
   'Quiet Luxury / Minimalismus': {
     required: ['oberteil', 'hose', 'schuhe'],
     optional: ['jacke', 'accessoire', 'tasche'],
     priceRange: 'premium',
-    preferBrands: ['COS', 'Massimo Dutti'],
+    preferBrands: ['Amazon Fashion', 'COS', 'Massimo Dutti'],
   },
   'Klassisch-zeitlos': {
     required: ['oberteil', 'schuhe'],
     optional: ['kleid', 'jacke', 'schmuck', 'tasche'],
     priceRange: 'mid',
-    preferBrands: ['Zalando', 'ZARA'],
+    preferBrands: ['Amazon Fashion', 'Zalando', 'ZARA'],
   },
   'Romantisch-verspielt / Boho': {
     required: ['oberteil', 'schuhe'],
     optional: ['rock', 'kleid', 'accessoire', 'tasche'],
     priceRange: 'budget',
-    preferBrands: ['About You', '& Other Stories'],
+    preferBrands: ['Amazon Fashion', 'About You', '& Other Stories'],
   },
 };
 
