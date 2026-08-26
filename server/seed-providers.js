@@ -58,6 +58,37 @@ async function seedProviders() {
   console.log('  ✅ URLs auf .de aktualisiert\n');
 
   // ═══════════════════════════════════════════════════
+  // AVATARE — 6 Fashion Models
+  // ═══════════════════════════════════════════════════
+
+  const avatarDefs = [
+    { name: 'Sol',    description: 'Jeans Style',                    position_order: 1 },
+    { name: 'Elena',  description: 'Business Style',                 position_order: 2 },
+    { name: 'Mira',   description: 'Sportlich-elegant',              position_order: 3 },
+    { name: 'Lauren', description: 'Quiet Luxury / Minimalismus',    position_order: 4 },
+    { name: 'Claire', description: 'Klassisch-zeitlos',              position_order: 5 },
+    { name: 'Amy',    description: 'Romantisch-verspielt / Boho',    position_order: 6 },
+  ];
+
+  const insertAvatar = db.prepare(`
+    INSERT OR IGNORE INTO avatars (id, name, description, position_order, is_active)
+    VALUES (?, ?, ?, ?, 1)
+  `);
+
+  let newAvatars = 0;
+  for (const a of avatarDefs) {
+    const existing = db.prepare('SELECT id FROM avatars WHERE name = ?').get(a.name);
+    if (existing) {
+      console.log(`  ⏭ Avatar "${a.name}" existiert bereits`);
+    } else {
+      insertAvatar.run(uuidv4(), a.name, a.description, a.position_order);
+      newAvatars++;
+      console.log(`  ✅ Avatar "${a.name}" (${a.description})`);
+    }
+  }
+  console.log(`\n👩 ${newAvatars} neue Avatare hinzugefügt\n`);
+
+  // ═══════════════════════════════════════════════════
   // ANBIETER — EU-Modehändler mit kostenlosem Versand
   // ═══════════════════════════════════════════════════
 
@@ -240,6 +271,9 @@ async function seedProviders() {
   `).all();
 
   if (avatars.length > 0 && allArticles.length > 0) {
+    // Bestehende Outfits für heute löschen und neu zuweisen
+    db.prepare('DELETE FROM avatar_outfits WHERE outfit_date = ?').run(today);
+
     // Outfit-Zuordnungen nach Avatar-Stil
     const outfitPlans = {
       'Sol':    { brands: ['H&M', 'About You'],             categories: ['oberteil', 'hose', 'schuhe'] },
