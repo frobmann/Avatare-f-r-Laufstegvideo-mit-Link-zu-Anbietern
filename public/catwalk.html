@@ -146,10 +146,10 @@
     /* Avatar Container */
     .avatar-track {
       position: absolute;
-      bottom: 8%;
+      bottom: 6%;
       left: 0;
       width: 100%;
-      height: 70%;
+      height: 75%;
       pointer-events: none;
     }
 
@@ -167,8 +167,8 @@
 
     .avatar-figure {
       position: relative;
-      width: 120px;
-      height: 320px;
+      width: 140px;
+      height: 500px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -215,157 +215,95 @@
       z-index: 5;
     }
 
-    /* Avatar SVG Fashion-Illustration */
+    /* ── Fashion-Illustration SVG Silhouette ── */
     .avatar-silhouette {
       position: relative;
       width: 100%;
       height: 100%;
     }
 
-    /* ── Avatar Fashion-Silhouette Styles ── */
-
-    /* Kopf */
-    .avatar-head {
-      position: absolute;
-      top: 18px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 32px;
-      height: 36px;
-      background: linear-gradient(180deg, #e8c9a0 0%, #d4a574 100%);
-      border-radius: 50% 50% 48% 48%;
-      z-index: 5;
-      box-shadow: inset 0 -3px 6px rgba(0,0,0,0.1);
-    }
-
-    /* Haare */
-    .avatar-hair {
-      position: absolute;
-      top: 6px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 42px;
-      height: 28px;
-      border-radius: 50% 50% 30% 30%;
-      z-index: 6;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    }
-    .walking .avatar-hair {
-      animation: hairSway 1.5s ease-in-out infinite;
-    }
-    @keyframes hairSway {
-      0%, 100% { transform: translateX(-50%) skewX(0deg); }
-      30% { transform: translateX(-50%) skewX(2deg); }
-      70% { transform: translateX(-50%) skewX(-1.5deg); }
-    }
-
-    /* Hals */
-    .avatar-neck {
-      position: absolute;
-      top: 50px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 12px;
-      height: 12px;
-      background: linear-gradient(180deg, #d4a574 0%, #c89660 100%);
-      z-index: 4;
-    }
-
-    /* Oberkörper */
-    .avatar-torso {
-      position: absolute;
-      top: 58px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 56px;
-      height: 80px;
-      border-radius: 8px 8px 4px 4px;
-      z-index: 3;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-    .walking .avatar-torso {
-      animation: torsoSway 1.2s ease-in-out infinite;
-    }
-    @keyframes torsoSway {
-      0%, 100% { transform: translateX(-50%) rotate(-0.5deg); }
-      50% { transform: translateX(-50%) rotate(0.5deg); }
-    }
-
-    /* Arme */
-    .avatar-arm-left, .avatar-arm-right {
-      position: absolute;
-      top: 62px;
-      width: 16px;
-      height: 70px;
-      border-radius: 8px;
-      z-index: 2;
-      transform-origin: top center;
-    }
-    .avatar-arm-left {
-      left: 50%;
-      margin-left: -42px;
-    }
-    .avatar-arm-right {
-      left: 50%;
-      margin-left: 26px;
-    }
-
-    /* Beine */
-    .avatar-legs {
-      position: absolute;
-      top: 135px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 48px;
-      height: 130px;
-      display: flex;
-      gap: 4px;
-      z-index: 2;
-    }
-
-    .avatar-leg {
-      flex: 1;
-      border-radius: 6px 6px 3px 3px;
-      transform-origin: top center;
-    }
-
-    /* Schuhe */
-    .avatar-shoes {
-      position: absolute;
-      bottom: 18px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 52px;
-      display: flex;
-      gap: 6px;
-      z-index: 3;
-    }
-
-    .avatar-shoe {
-      width: 22px;
-      height: 12px;
-      border-radius: 6px 12px 4px 4px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    .avatar-silhouette svg {
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0 2px 12px rgba(0,0,0,0.3))
+             drop-shadow(0 0 20px rgba(201, 169, 110, 0.08));
     }
 
     /* Sanftes Schwingen beim Gehen */
     .walking .avatar-silhouette {
-      animation: modelSway 1.2s ease-in-out infinite;
+      animation: modelSway 1.8s ease-in-out infinite;
     }
     @keyframes modelSway {
-      0%, 100% { transform: rotate(-0.6deg); }
-      50% { transform: rotate(0.6deg); }
+      0%, 100% { transform: rotate(-0.5deg) translateY(0); }
+      25% { transform: rotate(0.3deg) translateY(-1px); }
+      50% { transform: rotate(0.5deg) translateY(0); }
+      75% { transform: rotate(-0.3deg) translateY(-1px); }
+    }
+
+    /* Haar-Animation */
+    .walking .avatar-hair-flow {
+      animation: hairFlow 2s ease-in-out infinite;
+    }
+    @keyframes hairFlow {
+      0%, 100% { transform: skewX(0deg) translateX(0); }
+      30% { transform: skewX(1.5deg) translateX(0.5px); }
+      70% { transform: skewX(-1deg) translateX(-0.3px); }
+    }
+
+    /* Arm-Schwingen */
+    .walking .avatar-arm-l {
+      animation: armSwingL 0.8s ease-in-out infinite;
+      transform-origin: 50% 0%;
+    }
+    .walking .avatar-arm-r {
+      animation: armSwingR 0.8s ease-in-out infinite;
+      transform-origin: 50% 0%;
+    }
+    @keyframes armSwingL {
+      0%, 100% { transform: rotate(3deg); }
+      50% { transform: rotate(-4deg); }
+    }
+    @keyframes armSwingR {
+      0%, 100% { transform: rotate(-4deg); }
+      50% { transform: rotate(3deg); }
+    }
+
+    /* Bein-Schwingen */
+    .walking .avatar-leg-l {
+      animation: legSwingL 0.8s ease-in-out infinite;
+      transform-origin: 50% 0%;
+    }
+    .walking .avatar-leg-r {
+      animation: legSwingR 0.8s ease-in-out infinite;
+      transform-origin: 50% 0%;
+    }
+    @keyframes legSwingL {
+      0%, 100% { transform: rotate(-3deg); }
+      50% { transform: rotate(4deg); }
+    }
+    @keyframes legSwingR {
+      0%, 100% { transform: rotate(4deg); }
+      50% { transform: rotate(-3deg); }
+    }
+
+    /* Hüft-Schwung */
+    .walking .avatar-hips {
+      animation: hipSway 0.8s ease-in-out infinite;
+    }
+    @keyframes hipSway {
+      0%, 100% { transform: translateX(0); }
+      50% { transform: translateX(1px); }
     }
 
     /* Avatar Shadow */
     .avatar-shadow {
       position: absolute;
-      bottom: -8px;
+      bottom: -10px;
       left: 50%;
       transform: translateX(-50%);
       width: 80px;
-      height: 16px;
-      background: radial-gradient(ellipse, rgba(0,0,0,0.4) 0%, transparent 70%);
+      height: 14px;
+      background: radial-gradient(ellipse, rgba(0,0,0,0.35) 0%, transparent 70%);
     }
 
     /* Walk Animation */
@@ -376,29 +314,6 @@
     @keyframes avatarWalk {
       0% { left: 110%; }
       100% { left: -15%; }
-    }
-
-    /* Walking leg motion */
-    .walking .avatar-leg:first-child {
-      animation: legSwing 0.6s ease-in-out infinite alternate;
-    }
-    .walking .avatar-leg:last-child {
-      animation: legSwing 0.6s ease-in-out infinite alternate-reverse;
-    }
-    .walking .avatar-arm-left {
-      animation: armSwing 0.6s ease-in-out infinite alternate;
-    }
-    .walking .avatar-arm-right {
-      animation: armSwing 0.6s ease-in-out infinite alternate-reverse;
-    }
-
-    @keyframes legSwing {
-      0% { transform: rotate(-8deg); transform-origin: top center; }
-      100% { transform: rotate(8deg); transform-origin: top center; }
-    }
-    @keyframes armSwing {
-      0% { transform: rotate(8deg); transform-origin: top center; }
-      100% { transform: rotate(-5deg); transform-origin: top center; }
     }
 
     /* Avatar Name Label */
@@ -776,18 +691,7 @@
     @media (max-width: 768px) {
       .catwalk-title { font-size: 1.5rem; top: 15px; }
       .catwalk-subtitle { font-size: 0.7rem; top: 55px; }
-      .avatar-figure { width: 80px; height: 220px; }
-      .avatar-head { width: 22px; height: 26px; top: 12px; }
-      .avatar-hair { width: 30px; height: 18px; top: 4px; }
-      .avatar-neck { top: 36px; width: 10px; height: 8px; }
-      .avatar-torso { width: 40px; height: 56px; top: 42px; }
-      .avatar-arm-left, .avatar-arm-right { width: 12px; height: 50px; top: 44px; }
-      .avatar-arm-left { margin-left: -30px; }
-      .avatar-arm-right { margin-left: 18px; }
-      .avatar-legs { height: 90px; top: 96px; width: 36px; }
-      .avatar-leg { border-radius: 4px 4px 2px 2px; }
-      .avatar-shoes { width: 40px; bottom: 12px; }
-      .avatar-shoe { width: 16px; height: 9px; }
+      .avatar-figure { width: 100px; height: 320px; }
       .product-card { width: 240px; padding: 12px; }
     }
   </style>
@@ -1031,17 +935,49 @@
       return `${curr.symbol} ${formatted}`;
     }
 
-    // Farbpaletten für Avatare
+    // Farbpaletten für Avatare (Hautton, Haare, Default-Kleidung)
     const AVATAR_PALETTES = [
-      { hair: '#2c1810', top: '#c9a96e', bottom: '#1a1a2e', shoes: '#0a0a14', accent: '#e8d5b0' },
-      { hair: '#4a3728', top: '#8b4557', bottom: '#2c2c3a', shoes: '#1a1a1a', accent: '#d4869a' },
-      { hair: '#1a1a2e', top: '#4a7c6f', bottom: '#f5f0e8', shoes: '#c9a96e', accent: '#7ab5a3' },
-      { hair: '#8b6914', top: '#2c3e6b', bottom: '#1a1a2e', shoes: '#8b4557', accent: '#5a7ab5' },
-      { hair: '#d4a77a', top: '#f5f0e8', bottom: '#c9a96e', shoes: '#2c1810', accent: '#e8d5b0' },
-      { hair: '#1a0a0a', top: '#e74c3c', bottom: '#0a0a14', shoes: '#c9a96e', accent: '#ff6b6b' },
-      { hair: '#6b4423', top: '#9b59b6', bottom: '#2c2c3a', shoes: '#1a1a1a', accent: '#c39bd3' },
-      { hair: '#2c3e50', top: '#f39c12', bottom: '#1a1a2e', shoes: '#2c1810', accent: '#f5b041' },
+      { skin: '#e8c9a0', skinDark: '#d4a574', hair: '#2c1810', top: '#c9a96e', bottom: '#3a4a6b', shoes: '#2a2a3a', hairStyle: 'long' },
+      { skin: '#d4a574', skinDark: '#c08c5a', hair: '#1a0a0a', top: '#8b4557', bottom: '#4a4a5a', shoes: '#3a3a3a', hairStyle: 'curly' },
+      { skin: '#f0d5b8', skinDark: '#dfc09d', hair: '#d4a77a', top: '#4a7c6f', bottom: '#f5f0e8', shoes: '#c9a96e', hairStyle: 'bob' },
+      { skin: '#c68642', skinDark: '#a56b32', hair: '#1a1a2e', top: '#2c3e6b', bottom: '#6b6b7a', shoes: '#8b4557', hairStyle: 'updo' },
+      { skin: '#e8c9a0', skinDark: '#d4a574', hair: '#8b6914', top: '#f5f0e8', bottom: '#c9a96e', shoes: '#5a3a1a', hairStyle: 'wavy' },
+      { skin: '#8d5524', skinDark: '#6b3a12', hair: '#0a0505', top: '#e74c3c', bottom: '#3a3a4a', shoes: '#c9a96e', hairStyle: 'afro' },
+      { skin: '#f0d5b8', skinDark: '#dfc09d', hair: '#6b4423', top: '#9b59b6', bottom: '#4a4a5a', shoes: '#3a3a3a', hairStyle: 'ponytail' },
+      { skin: '#d4a574', skinDark: '#c08c5a', hair: '#2c3e50', top: '#f39c12', bottom: '#3a4a6b', shoes: '#5a3a1a', hairStyle: 'straight' },
     ];
+
+    // ── SVG Frisuren (als SVG-Path-Daten, viewBox 0 0 120 300) ──
+    function getHairSVG(style, hairColor) {
+      const darkHair = adjustColor(hairColor, -20);
+      const styles = {
+        long: `<path class="avatar-hair-flow" d="M42,18 C42,6 52,0 60,0 C68,0 78,6 78,18 L78,25 C78,30 80,36 82,48 L82,62 C82,67 80,69 76,67 L76,26 C76,12 44,12 44,26 L44,67 C40,69 38,67 38,62 L38,48 C40,36 42,30 42,25 Z" fill="${hairColor}" />
+              <path d="M45,14 C45,8 52,3 60,3 C68,3 75,8 75,14" fill="${darkHair}" opacity="0.5"/>`,
+        curly: `<path class="avatar-hair-flow" d="M40,18 C40,4 50,-2 60,-2 C70,-2 80,4 80,18 L80,26 C83,28 84,34 82,38 C85,40 84,46 81,48 L81,56 C79,58 76,55 76,52 L76,26 C76,12 44,12 44,26 L44,52 C44,55 41,58 39,56 L39,48 C36,46 35,40 38,38 C36,34 37,28 40,26 Z" fill="${hairColor}" />
+              <circle cx="40" cy="32" r="4.5" fill="${hairColor}" opacity="0.6"/>
+              <circle cx="80" cy="32" r="4.5" fill="${hairColor}" opacity="0.6"/>
+              <circle cx="38" cy="44" r="3.5" fill="${hairColor}" opacity="0.5"/>
+              <circle cx="82" cy="44" r="3.5" fill="${hairColor}" opacity="0.5"/>`,
+        bob: `<path class="avatar-hair-flow" d="M42,18 C42,6 50,0 60,0 C70,0 78,6 78,18 L78,25 L80,38 C80,46 76,49 70,49 L50,49 C44,49 40,46 40,38 L42,25 Z" fill="${hairColor}" />
+              <path d="M45,16 C45,8 52,3 60,3 C68,3 75,8 75,16" fill="${darkHair}" opacity="0.5"/>`,
+        updo: `<path class="avatar-hair-flow" d="M44,20 C44,8 52,2 60,2 C68,2 76,8 76,20 L76,25 L44,25 Z" fill="${hairColor}" />
+              <ellipse cx="60" cy="2" rx="11" ry="9" fill="${hairColor}" />
+              <path d="M49,2 C49,-3 71,-3 71,2" fill="${darkHair}" opacity="0.5"/>
+              <circle cx="60" cy="-4" r="3" fill="${hairColor}" opacity="0.4"/>`,
+        wavy: `<path class="avatar-hair-flow" d="M42,18 C42,6 50,-1 60,-1 C70,-1 78,6 78,18 L78,25 C78,30 80,38 82,50 C83,56 80,62 76,60 C74,55 76,45 75,35 L75,25 C75,12 45,12 45,25 L45,35 C44,45 46,55 44,60 C40,62 37,56 38,50 C40,38 42,30 42,25 Z" fill="${hairColor}" />
+              <path d="M80,44 C82,48 80,54 78,52 C76,48 78,42 80,44 Z" fill="${hairColor}" opacity="0.5"/>
+              <path d="M40,44 C38,48 40,54 42,52 C44,48 42,42 40,44 Z" fill="${hairColor}" opacity="0.5"/>`,
+        afro: `<path class="avatar-hair-flow" d="M32,24 C30,6 44,-6 60,-6 C76,-6 90,6 88,24 C90,30 88,40 84,46 C82,50 78,48 78,44 L78,24 C78,12 42,12 42,24 L42,44 C42,48 38,50 36,46 C32,40 30,30 32,24 Z" fill="${hairColor}" />
+              <circle cx="34" cy="26" r="5.5" fill="${hairColor}" opacity="0.5"/>
+              <circle cx="86" cy="26" r="5.5" fill="${hairColor}" opacity="0.5"/>
+              <circle cx="60" cy="-6" r="4.5" fill="${hairColor}" opacity="0.4"/>`,
+        ponytail: `<path class="avatar-hair-flow" d="M44,20 C44,8 52,1 60,1 C68,1 76,8 76,20 L76,25 L44,25 Z" fill="${hairColor}" />
+              <path d="M68,12 C72,10 78,12 80,18 C82,26 80,40 76,52 C74,56 70,54 72,48 C74,38 76,26 74,18 C72,14 70,12 68,12 Z" fill="${hairColor}" opacity="0.85"/>`,
+        straight: `<path class="avatar-hair-flow" d="M42,18 C42,6 50,0 60,0 C70,0 78,6 78,18 L78,25 L78,55 C78,59 76,61 74,59 L74,25 C74,14 46,14 46,25 L46,59 C44,61 42,59 42,55 L42,25 Z" fill="${hairColor}" />
+              <path d="M46,16 C46,8 52,3 60,3 C68,3 74,8 74,16" fill="${darkHair}" opacity="0.5"/>`,
+      };
+      return styles[style] || styles.long;
+    }
 
     // Datum formatieren (sprachabhängig)
     function formatDate(dateStr) {
@@ -1080,14 +1016,14 @@
 
       // Outfit items für Farben verwenden wenn vorhanden
       const topColor = getOutfitColor(avatar.outfit, 'oberteil') || getOutfitColor(avatar.outfit, 'kleid') || palette.top;
-      const bottomColor = getOutfitColor(avatar.outfit, 'hose') || getOutfitColor(avatar.outfit, 'rock') || palette.bottom;
-      const shoeColor = getOutfitColor(avatar.outfit, 'schuhe') || palette.shoes;
+      const bottomColor = ensureVisible(getOutfitColor(avatar.outfit, 'hose') || getOutfitColor(avatar.outfit, 'rock') || palette.bottom);
+      const shoeColor = ensureVisible(getOutfitColor(avatar.outfit, 'schuhe') || palette.shoes);
       const jacketColor = getOutfitColor(avatar.outfit, 'jacke');
+      const hasDress = avatar.outfit.some(o => o.category === 'kleid');
 
-      // Entscheide: KI-generiertes Bild oder CSS-Silhouette
+      // Entscheide: KI-generiertes Bild oder SVG-Silhouette
       let avatarBody;
       if (avatar.generated_video) {
-        // KI-generiertes Walking-Video (Premium)
         avatarBody = `
           <video class="avatar-generated-video" autoplay loop muted playsinline>
             <source src="${avatar.generated_video}" type="video/mp4">
@@ -1095,30 +1031,205 @@
           <span class="ai-badge">AI</span>
         `;
       } else if (avatar.generated_image) {
-        // KI-generiertes Outfit-Bild
         avatarBody = `
           <img class="avatar-generated-img" src="${avatar.generated_image}"
                alt="${avatar.name}" loading="lazy" />
           <span class="ai-badge">AI</span>
         `;
       } else {
-        // CSS-Silhouette (kostenlos, Standard)
+        // ── Elegante SVG Fashion-Silhouette (Croquis-Proportionen) ──
+        // Fashion-Croquis: 9-Kopf-Proportionen, schmale Taille, SEHR lange Beine
+        const skin = palette.skin;
+        const skinD = palette.skinDark;
+        const hairColor = palette.hair;
+        const hairStyle = palette.hairStyle;
+        const topDark = adjustColor(topColor, -25);
+        const bottomDark = adjustColor(bottomColor, -20);
+        // Arme: Jacke → Jackenfarbe, sonst Haut (bare arms = eleganter)
+        const armColor = jacketColor || skin;
+        const armDark = jacketColor ? adjustColor(jacketColor, -20) : skinD;
+        // Für dunkle Farben: leichten Rand hinzufügen damit sie auf dem Hintergrund sichtbar sind
+        const bottomEdge = adjustColor(bottomColor, 30);
+        const shoeDark = adjustColor(shoeColor, -30);
+        // Kurzärmel-Bereich (nur wenn keine Jacke)
+        const hasJacket = !!jacketColor;
+        const sleeveColor = hasJacket ? jacketColor : topColor;
+        const sleeveDark = hasJacket ? adjustColor(jacketColor, -20) : topDark;
+
+        // Kleidung: Kleid oder Oberteil+Hose
+        let clothingSVG;
+        if (hasDress) {
+          clothingSVG = `
+            <!-- Kleid -->
+            <path d="M38,75 C37,71 38,67 40,63
+                     C42,58 50,54 60,54 C70,54 78,58 80,63
+                     C82,67 83,71 82,75
+                     L86,120 C89,155 93,195 97,255
+                     C97,260 93,262 88,260
+                     L74,252 L60,258 L46,252
+                     L32,260 C27,262 23,260 23,255
+                     C27,195 31,155 34,120 Z"
+                  fill="${topColor}" stroke="${topDark}" stroke-width="0.5" />
+            <!-- Dekolleté -->
+            <path d="M50,56 C54,59 66,59 70,56" fill="none" stroke="${topDark}" stroke-width="0.5" opacity="0.3"/>
+            <path d="M53,56 L60,67 L67,56" fill="${skin}" opacity="0.5" />
+            <!-- Taillennaht -->
+            <path d="M36,108 C46,102 74,102 84,108" fill="none" stroke="${topDark}" stroke-width="0.8" opacity="0.2"/>
+            <!-- Rockfalten -->
+            <path d="M50,125 L40,255" fill="none" stroke="${topDark}" stroke-width="0.5" opacity="0.12"/>
+            <path d="M70,125 L80,255" fill="none" stroke="${topDark}" stroke-width="0.5" opacity="0.12"/>
+            <path d="M60,110 L60,258" fill="none" stroke="${topDark}" stroke-width="0.3" opacity="0.08"/>
+            <!-- Dezenter Saum -->
+            <path d="M32,258 C44,254 76,254 88,258" fill="none" stroke="${topDark}" stroke-width="0.6" opacity="0.2"/>
+          `;
+        } else {
+          clothingSVG = `
+            <!-- Oberteil -->
+            <path d="M38,75 C37,71 38,67 40,63
+                     C42,58 50,54 60,54 C70,54 78,58 80,63
+                     C82,67 83,71 82,75
+                     L82,108 C82,112 74,115 60,115
+                     C46,115 38,112 38,108 Z"
+                  fill="${topColor}" stroke="${topDark}" stroke-width="0.4" />
+            <!-- Dekolleté -->
+            <path d="M50,56 C54,59 66,59 70,56" fill="none" stroke="${topDark}" stroke-width="0.5" opacity="0.3"/>
+            <path d="M53,56 L60,66 L67,56" fill="${skin}" opacity="0.4" />
+            <!-- Taillierung -->
+            <path d="M39,106 C48,102 72,102 81,106" fill="none" stroke="${topDark}" stroke-width="0.5" opacity="0.2"/>
+
+            <!-- Hose (schmale, elegante Silhouette) -->
+            <g class="avatar-hips">
+              <path class="avatar-leg-l" d="M38,108 C40,110 46,112 55,112
+                       L54,118 L51,175 L47,255
+                       C45,258 42,258 42,255
+                       L45,175 L42,118 L38,112 Z"
+                    fill="${bottomColor}" stroke="${bottomEdge}" stroke-width="0.4" />
+              <path class="avatar-leg-r" d="M82,108 C80,110 74,112 65,112
+                       L66,118 L69,175 L73,255
+                       C75,258 78,258 78,255
+                       L75,175 L78,118 L82,112 Z"
+                    fill="${bottomColor}" stroke="${bottomEdge}" stroke-width="0.4" />
+              <!-- Hosennähte -->
+              <path d="M52,120 L49,175 L47,255" fill="none" stroke="${bottomEdge}" stroke-width="0.3" opacity="0.15"/>
+              <path d="M68,120 L71,175 L73,255" fill="none" stroke="${bottomEdge}" stroke-width="0.3" opacity="0.15"/>
+              <!-- Schrittnaht -->
+              <path d="M55,112 L58,130" fill="none" stroke="${bottomDark}" stroke-width="0.4" opacity="0.15"/>
+              <path d="M65,112 L62,130" fill="none" stroke="${bottomDark}" stroke-width="0.4" opacity="0.15"/>
+            </g>
+          `;
+        }
+
+        const shoeY = hasDress ? 258 : 255;
+
         avatarBody = `
           <div class="avatar-silhouette">
-            <div class="avatar-hair" style="background: ${palette.hair}"></div>
-            <div class="avatar-head"></div>
-            <div class="avatar-neck"></div>
-            <div class="avatar-torso" style="background: linear-gradient(135deg, ${topColor}, ${adjustColor(topColor, -20)})"></div>
-            <div class="avatar-arm-left" style="background: ${jacketColor || topColor}"></div>
-            <div class="avatar-arm-right" style="background: ${jacketColor || topColor}"></div>
-            <div class="avatar-legs">
-              <div class="avatar-leg" style="background: linear-gradient(180deg, ${bottomColor}, ${adjustColor(bottomColor, -15)})"></div>
-              <div class="avatar-leg" style="background: linear-gradient(180deg, ${bottomColor}, ${adjustColor(bottomColor, -15)})"></div>
-            </div>
-            <div class="avatar-shoes">
-              <div class="avatar-shoe" style="background: ${shoeColor}"></div>
-              <div class="avatar-shoe" style="background: ${shoeColor}"></div>
-            </div>
+            <svg viewBox="0 -15 120 300" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="skin-${index}" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="${skin}"/>
+                  <stop offset="100%" stop-color="${skinD}"/>
+                </linearGradient>
+                <linearGradient id="top-grad-${index}" x1="0" y1="0" x2="0.3" y2="1">
+                  <stop offset="0%" stop-color="${topColor}"/>
+                  <stop offset="100%" stop-color="${topDark}"/>
+                </linearGradient>
+                <radialGradient id="blush-${index}" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stop-color="#d48090" stop-opacity="0.15"/>
+                  <stop offset="100%" stop-color="#d48090" stop-opacity="0"/>
+                </radialGradient>
+              </defs>
+
+              <!-- Haare (hinter dem Kopf) -->
+              ${getHairSVG(hairStyle, hairColor)}
+
+              <!-- Kopf (etwas kleiner, eleganter) -->
+              <ellipse cx="60" cy="25" rx="12" ry="14" fill="url(#skin-${index})" />
+              <!-- Augenbrauen -->
+              <path d="M51,20 Q54,18 56,19" fill="none" stroke="#5a3a2a" stroke-width="0.6" opacity="0.35"/>
+              <path d="M64,19 Q66,18 69,20" fill="none" stroke="#5a3a2a" stroke-width="0.6" opacity="0.35"/>
+              <!-- Augen -->
+              <ellipse cx="54" cy="23" rx="2" ry="1.3" fill="#3a2a1a" opacity="0.65"/>
+              <ellipse cx="66" cy="23" rx="2" ry="1.3" fill="#3a2a1a" opacity="0.65"/>
+              <!-- Augenlicht -->
+              <circle cx="54.8" cy="22.5" r="0.5" fill="white" opacity="0.6"/>
+              <circle cx="66.8" cy="22.5" r="0.5" fill="white" opacity="0.6"/>
+              <!-- Wimpern -->
+              <path d="M51.5,22 L50,21" stroke="#3a2a1a" stroke-width="0.5" opacity="0.4"/>
+              <path d="M68.5,22 L70,21" stroke="#3a2a1a" stroke-width="0.5" opacity="0.4"/>
+              <!-- Nase -->
+              <path d="M59,26 Q60,28 61,26" fill="none" stroke="${skinD}" stroke-width="0.5" opacity="0.3"/>
+              <!-- Lippen -->
+              <path d="M56,31 Q60,34 64,31" fill="#c47070" opacity="0.45"/>
+              <path d="M57,31 Q60,32.5 63,31" fill="#d48080" opacity="0.3"/>
+              <!-- Wangen-Rouge -->
+              <circle cx="49" cy="27" r="4" fill="url(#blush-${index})"/>
+              <circle cx="71" cy="27" r="4" fill="url(#blush-${index})"/>
+
+              <!-- Hals (schlank) -->
+              <path d="M56,38 L56,52 Q56,54 58,54 L62,54 Q64,54 64,52 L64,38"
+                    fill="url(#skin-${index})" />
+
+              <!-- Schultern (zart, feminin) -->
+              <path d="M38,66 C42,56 52,52 60,52 C68,52 78,56 82,66"
+                    fill="url(#skin-${index})" />
+
+              ${clothingSVG}
+
+              <!-- Arme -->
+              ${hasJacket ? `
+              <!-- Jacken-Ärmel (volle Länge) -->
+              <g class="avatar-arm-l">
+                <path d="M38,66 C34,72 31,82 30,95
+                         C29,105 29.5,115 30.5,122
+                         L33,122 C32,115 31.5,105 32.5,95
+                         C33.5,82 35.5,74 38,69 Z"
+                      fill="${jacketColor}" stroke="${armDark}" stroke-width="0.3"/>
+                <ellipse cx="31.5" cy="124" rx="2.8" ry="3.5" fill="url(#skin-${index})" />
+              </g>
+              <g class="avatar-arm-r">
+                <path d="M82,66 C86,72 89,82 90,95
+                         C91,105 90.5,115 89.5,122
+                         L87,122 C88,115 88.5,105 87.5,95
+                         C86.5,82 84.5,74 82,69 Z"
+                      fill="${jacketColor}" stroke="${armDark}" stroke-width="0.3"/>
+                <ellipse cx="88.5" cy="124" rx="2.8" ry="3.5" fill="url(#skin-${index})" />
+              </g>
+              ` : `
+              <!-- Bare Arms (Kurzärmel + Haut) -->
+              <g class="avatar-arm-l">
+                <path d="M38,66 C35.5,70 34,75 33,80
+                         L35,80 C35.5,76 36.5,72 38,69 Z"
+                      fill="${topColor}" stroke="${topDark}" stroke-width="0.3"/>
+                <path d="M33,80 C31.5,90 30.5,100 31,112
+                         C31.2,116 31.5,119 32,122
+                         L34,122 C33.5,119 33.2,116 33,112
+                         C32.5,100 33.5,90 35,80 Z"
+                      fill="url(#skin-${index})" />
+                <ellipse cx="33" cy="124" rx="2.8" ry="3.5" fill="url(#skin-${index})" />
+              </g>
+              <g class="avatar-arm-r">
+                <path d="M82,66 C84.5,70 86,75 87,80
+                         L85,80 C84.5,76 83.5,72 82,69 Z"
+                      fill="${topColor}" stroke="${topDark}" stroke-width="0.3"/>
+                <path d="M87,80 C88.5,90 89.5,100 89,112
+                         C88.8,116 88.5,119 88,122
+                         L86,122 C86.5,119 86.8,116 87,112
+                         C87.5,100 86.5,90 85,80 Z"
+                      fill="url(#skin-${index})" />
+                <ellipse cx="87" cy="124" rx="2.8" ry="3.5" fill="url(#skin-${index})" />
+              </g>
+              `}
+
+              <!-- Schuhe (elegante High Heels) -->
+              <path d="M43,${shoeY} L37,${shoeY+5} C35,${shoeY+7} 38,${shoeY+9} 48,${shoeY+7} L51,${shoeY+2}" fill="${shoeColor}" />
+              <path d="M77,${shoeY} L83,${shoeY+5} C85,${shoeY+7} 82,${shoeY+9} 72,${shoeY+7} L69,${shoeY+2}" fill="${shoeColor}" />
+              <!-- Stiletto-Absätze -->
+              <path d="M39,${shoeY+7} L38,${shoeY+14} L40,${shoeY+14} L40,${shoeY+7}" fill="${shoeDark}" />
+              <path d="M81,${shoeY+7} L82,${shoeY+14} L80,${shoeY+14} L80,${shoeY+7}" fill="${shoeDark}" />
+
+              <!-- Dezenter Lichtreflex auf Kleidung -->
+              <path d="M52,62 L53,105" stroke="rgba(255,255,255,0.05)" stroke-width="6" stroke-linecap="round"/>
+            </svg>
           </div>
         `;
       }
@@ -1166,11 +1277,11 @@
     // Deutsche Farbnamen → CSS Hex-Codes
     const COLOR_MAP = {
       'weiss': '#f5f5f5', 'weiß': '#f5f5f5', 'white': '#f5f5f5',
-      'schwarz': '#1a1a1a', 'black': '#1a1a1a',
+      'schwarz': '#2a2a3a', 'black': '#2a2a3a',
       'grau': '#808080', 'grey': '#808080', 'gray': '#808080',
       'rot': '#c0392b', 'red': '#c0392b',
       'blau': '#2c3e6b', 'blue': '#2c3e6b',
-      'dunkelblau': '#1a2744', 'navy': '#1a2744',
+      'dunkelblau': '#2a3a5e', 'navy': '#2a3a5e',
       'grün': '#2d6a4f', 'green': '#2d6a4f', 'dunkelgrün': '#1b4332',
       'olive': '#606c38', 'oliv': '#606c38',
       'beige': '#d4b896', 'sand': '#d2b48c', 'creme': '#f5f0e1',
@@ -1209,6 +1320,20 @@
       const g = Math.min(255, Math.max(0, ((num >> 8) & 0x00FF) + amount));
       const b = Math.min(255, Math.max(0, (num & 0x0000FF) + amount));
       return '#' + (0x1000000 + (r << 16) + (g << 8) + b).toString(16).slice(1);
+    }
+
+    // Dunkle Farben aufhellen, damit sie auf dem Bühnenhintergrund sichtbar bleiben
+    function ensureVisible(hex) {
+      if (!hex || !hex.startsWith('#')) return hex;
+      const num = parseInt(hex.replace('#', ''), 16);
+      const r = (num >> 16) & 0xFF;
+      const g = (num >> 8) & 0xFF;
+      const b = num & 0xFF;
+      const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+      // Wenn die Farbe zu dunkel ist (< 50), aufhellen
+      if (brightness < 50) return adjustColor(hex, 55);
+      if (brightness < 80) return adjustColor(hex, 30);
+      return hex;
     }
 
     // Produkt-Karte erstellen

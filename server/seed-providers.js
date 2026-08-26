@@ -297,14 +297,14 @@ async function seedProviders() {
     // Bestehende Outfits für heute löschen und neu zuweisen
     db.prepare('DELETE FROM avatar_outfits WHERE outfit_date = ?').run(today);
 
-    // Outfit-Zuordnungen nach Avatar-Stil
+    // Outfit-Zuordnungen nach Avatar-Stil — jeder Avatar bekommt einen eigenen, farbenfrohen Look
     const outfitPlans = {
-      'Sol':    { brands: ['Amazon Fashion', 'H&M'],                     categories: ['oberteil', 'hose', 'schuhe'] },
-      'Elena':  { brands: ['Amazon Fashion', 'ZARA', 'Massimo Dutti'],  categories: ['oberteil', 'jacke', 'hose', 'schuhe'] },
-      'Mira':   { brands: ['Amazon Fashion', 'H&M', 'Mango'],           categories: ['oberteil', 'hose', 'schuhe'] },
-      'Lauren': { brands: ['Amazon Fashion', 'COS', 'Massimo Dutti'],   categories: ['oberteil', 'jacke', 'schuhe', 'schmuck'] },
-      'Claire': { brands: ['Amazon Fashion', 'Zalando', 'ZARA'],        categories: ['jacke', 'hose', 'schuhe', 'schmuck'] },
-      'Amy':    { brands: ['Amazon Fashion', 'About You', '& Other Stories'], categories: ['oberteil', 'jacke', 'schuhe', 'tasche'] },
+      'Sol':    { brands: ['H&M', 'Amazon Fashion'],                            categories: ['oberteil', 'hose', 'schuhe'] },
+      'Elena':  { brands: ['Massimo Dutti', 'ZARA', 'Amazon Fashion'],          categories: ['oberteil', 'hose', 'schuhe', 'schmuck'] },
+      'Mira':   { brands: ['Mango', 'H&M', 'Amazon Fashion'],                  categories: ['oberteil', 'hose', 'schuhe'] },
+      'Lauren': { brands: ['COS', 'Massimo Dutti', 'Amazon Fashion'],           categories: ['oberteil', 'jacke', 'schuhe'] },
+      'Claire': { brands: ['ZARA', 'Zalando', 'Amazon Fashion'],               categories: ['kleid', 'schuhe', 'schmuck'] },
+      'Amy':    { brands: ['About You', '& Other Stories', 'Amazon Fashion'],   categories: ['kleid', 'schuhe', 'tasche'] },
     };
 
     const insertOutfit = db.prepare(`

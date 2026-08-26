@@ -9,42 +9,43 @@ const { getDb } = require('../db');
 const { v4: uuidv4 } = require('uuid');
 
 // Stil-zu-Kategorie Zuordnungen (EU-Brands mit Gratis-Versand)
+// Amazon Fashion als Fallback, nicht primär — damit jeder Avatar eigene Farben bekommt
 const STYLE_PREFERENCES = {
   'Jeans Style': {
     required: ['oberteil', 'hose', 'schuhe'],
     optional: ['accessoire', 'kopfbedeckung'],
     priceRange: 'budget',
-    preferBrands: ['Amazon Fashion', 'H&M', 'About You'],
+    preferBrands: ['H&M', 'About You', 'Amazon Fashion'],
   },
   'Business Style': {
     required: ['oberteil', 'hose', 'schuhe'],
     optional: ['jacke', 'schmuck', 'tasche'],
     priceRange: 'premium',
-    preferBrands: ['Amazon Fashion', 'Massimo Dutti', 'ZARA', 'COS'],
+    preferBrands: ['Massimo Dutti', 'ZARA', 'COS', 'Amazon Fashion'],
   },
   'Sportlich-elegant': {
     required: ['oberteil', 'hose', 'schuhe'],
     optional: ['jacke', 'accessoire'],
     priceRange: 'mid',
-    preferBrands: ['Amazon Fashion', 'H&M', 'Mango'],
+    preferBrands: ['Mango', 'H&M', 'Amazon Fashion'],
   },
   'Quiet Luxury / Minimalismus': {
     required: ['oberteil', 'hose', 'schuhe'],
     optional: ['jacke', 'accessoire', 'tasche'],
     priceRange: 'premium',
-    preferBrands: ['Amazon Fashion', 'COS', 'Massimo Dutti'],
+    preferBrands: ['COS', 'Massimo Dutti', 'Amazon Fashion'],
   },
   'Klassisch-zeitlos': {
     required: ['oberteil', 'schuhe'],
     optional: ['kleid', 'jacke', 'schmuck', 'tasche'],
     priceRange: 'mid',
-    preferBrands: ['Amazon Fashion', 'Zalando', 'ZARA'],
+    preferBrands: ['Zalando', 'ZARA', 'Amazon Fashion'],
   },
   'Romantisch-verspielt / Boho': {
     required: ['oberteil', 'schuhe'],
     optional: ['rock', 'kleid', 'accessoire', 'tasche'],
     priceRange: 'budget',
-    preferBrands: ['Amazon Fashion', 'About You', '& Other Stories'],
+    preferBrands: ['About You', '& Other Stories', 'Amazon Fashion'],
   },
 };
 
