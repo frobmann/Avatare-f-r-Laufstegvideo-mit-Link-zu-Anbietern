@@ -1,9 +1,12 @@
 /**
  * Verfügbarkeits-Check: Prüft ob Artikel bei Anbietern noch verfügbar sind
  *
- * Überprüft die product_url jedes aktiven Artikels per HTTP-Request.
- * Artikel die nicht erreichbar sind (404, Timeout, Fehler) werden
- * markiert und optional deaktiviert.
+ * Intelligenter Check mit Bot-Schutz-Erkennung:
+ * - HTTP 200-399: ✅ Verfügbar
+ * - HTTP 403/429: 🛡️ Bot-Schutz (Cloudflare etc.) – Produkt wahrscheinlich verfügbar
+ * - HTTP 404/410: ❌ Produkt entfernt
+ * - Timeout bei bekannten Shops: 🛡️ Wahrscheinlich Bot-Schutz
+ * - Redirect zur Startseite: ❌ Produkt wahrscheinlich entfernt
  */
 
 const { getDb } = require('../db');
@@ -21,6 +24,7 @@ const CHECK_TABLE = `
     status_code INTEGER,
     is_available INTEGER DEFAULT 1,
     error_message TEXT DEFAULT '',
+    check_type TEXT DEFAULT 'ok',
     checked_at TEXT DEFAULT (datetime('now')),
     FOREIGN KEY (article_id) REFERENCES articles(id)
   )
@@ -33,55 +37,153 @@ const LAST_CHECK_TABLE = `
   )
 `;
 
+// Bekannte Shops die Bot-Schutz nutzen (403/Timeout = normal)
+const BOT_PROTECTED_DOMAINS = [
+  'hm.com', 'www2.hm.com',
+  'zara.com', 'www.zara.com',
+  'mango.com', 'shop.mango.com',
+  'cos.com', 'www.cos.com',
+  'massimodutti.com', 'www.massimodutti.com',
+  'stories.com', 'www.stories.com',
+  'aboutyou.de', 'www.aboutyou.de',
+  'zalando.de', 'www.zalando.de',
+  'aboutyou.com', 'www.aboutyou.com',
+  'zalando.com', 'www.zalando.com',
+];
+
 /**
- * URL prüfen – gibt Statuscode zurück
+ * Prüft ob eine Domain bekanntermaßen Bot-Schutz nutzt
  */
-function checkUrl(url, timeout = 10000) {
+function isBotProtectedDomain(url) {
+  try {
+    const hostname = new URL(url).hostname.toLowerCase();
+    return BOT_PROTECTED_DOMAINS.some(d => hostname === d || hostname.endsWith('.' + d));
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * URL prüfen – gibt Statuscode und Bewertung zurück
+ */
+function checkUrl(url, timeout = 15000) {
   return new Promise((resolve) => {
     try {
       const urlObj = new URL(url);
       const client = urlObj.protocol === 'https:' ? https : http;
+      const isProtected = isBotProtectedDomain(url);
 
       const req = client.get(url, {
         timeout,
         headers: {
-          'User-Agent': 'Mozilla/5.0 (compatible; CatwalkBot/1.0; availability-check)',
-          'Accept': 'text/html,application/xhtml+xml',
-          'Accept-Language': 'de-DE,de;q=0.9,en;q=0.8',
+          // Realistischer User-Agent (weniger Bot-Blockaden)
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+          'Accept-Language': 'de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7',
+          'Accept-Encoding': 'gzip, deflate, br',
+          'Connection': 'keep-alive',
+          'Upgrade-Insecure-Requests': '1',
+          'Cache-Control': 'max-age=0',
         },
       }, (res) => {
+        // Body verwerfen
+        res.resume();
+
         // Redirect folgen (301, 302, 307, 308)
         if ([301, 302, 307, 308].includes(res.statusCode) && res.headers.location) {
-          // Prüfe ob Redirect auf Homepage geht (= Produkt gelöscht)
           const location = res.headers.location;
           try {
             const redirectUrl = new URL(location, url);
             const isHomepage = redirectUrl.pathname === '/' || redirectUrl.pathname === '';
             if (isHomepage) {
-              resolve({ statusCode: res.statusCode, available: false, error: 'Redirect zur Startseite – Produkt wahrscheinlich entfernt' });
+              resolve({
+                statusCode: res.statusCode,
+                available: false,
+                checkType: 'removed',
+                error: 'Redirect zur Startseite – Produkt wahrscheinlich entfernt',
+              });
               return;
             }
           } catch (e) { /* ignore parse errors */ }
-          resolve({ statusCode: res.statusCode, available: true, error: '' });
+          // Redirect zu einer anderen Produktseite = OK
+          resolve({ statusCode: res.statusCode, available: true, checkType: 'redirect_ok', error: '' });
+
         } else if (res.statusCode >= 200 && res.statusCode < 400) {
-          resolve({ statusCode: res.statusCode, available: true, error: '' });
+          // ✅ Direkt verfügbar
+          resolve({ statusCode: res.statusCode, available: true, checkType: 'ok', error: '' });
+
+        } else if (res.statusCode === 403 || res.statusCode === 429) {
+          // 🛡️ Bot-Schutz oder Rate-Limiting – NICHT als "nicht verfügbar" werten
+          resolve({
+            statusCode: res.statusCode,
+            available: true,
+            checkType: 'bot_protected',
+            error: `HTTP ${res.statusCode} – Bot-Schutz (Produkt wahrscheinlich verfügbar)`,
+          });
+
+        } else if (res.statusCode === 404 || res.statusCode === 410) {
+          // ❌ Wirklich nicht gefunden / entfernt
+          resolve({
+            statusCode: res.statusCode,
+            available: false,
+            checkType: 'not_found',
+            error: `HTTP ${res.statusCode} – Produkt nicht gefunden`,
+          });
+
+        } else if (res.statusCode >= 500) {
+          // Server-Fehler beim Anbieter – vorübergehend, nicht deaktivieren
+          resolve({
+            statusCode: res.statusCode,
+            available: true,
+            checkType: 'server_error',
+            error: `HTTP ${res.statusCode} – Server-Fehler beim Anbieter (vorübergehend)`,
+          });
+
         } else {
-          resolve({ statusCode: res.statusCode, available: false, error: `HTTP ${res.statusCode}` });
+          // Sonstiger Fehler
+          resolve({
+            statusCode: res.statusCode,
+            available: false,
+            checkType: 'error',
+            error: `HTTP ${res.statusCode}`,
+          });
         }
-        // Body verwerfen
-        res.resume();
       });
 
       req.on('timeout', () => {
         req.destroy();
-        resolve({ statusCode: 0, available: false, error: 'Timeout nach ' + (timeout / 1000) + 's' });
+        if (isProtected) {
+          // Timeout bei bekanntem Shop = Bot-Schutz
+          resolve({
+            statusCode: 0,
+            available: true,
+            checkType: 'bot_protected',
+            error: 'Timeout – Bot-Schutz (bekannter Shop, Produkt wahrscheinlich verfügbar)',
+          });
+        } else {
+          resolve({
+            statusCode: 0,
+            available: false,
+            checkType: 'timeout',
+            error: 'Timeout nach ' + (timeout / 1000) + 's',
+          });
+        }
       });
 
       req.on('error', (err) => {
-        resolve({ statusCode: 0, available: false, error: err.message });
+        if (isProtected && (err.code === 'ECONNRESET' || err.code === 'ECONNREFUSED')) {
+          resolve({
+            statusCode: 0,
+            available: true,
+            checkType: 'bot_protected',
+            error: `${err.code} – Bot-Schutz (bekannter Shop)`,
+          });
+        } else {
+          resolve({ statusCode: 0, available: false, checkType: 'error', error: err.message });
+        }
       });
     } catch (err) {
-      resolve({ statusCode: 0, available: false, error: 'Ungültige URL: ' + err.message });
+      resolve({ statusCode: 0, available: false, checkType: 'invalid_url', error: 'Ungültige URL: ' + err.message });
     }
   });
 }
@@ -90,7 +192,7 @@ function checkUrl(url, timeout = 10000) {
  * Alle aktiven Artikel prüfen
  *
  * @param {object} options
- * @param {boolean} options.deactivateUnavailable - Nicht verfügbare Artikel deaktivieren?
+ * @param {boolean} options.deactivateUnavailable - Nur echte 404/410 deaktivieren (nie Bot-Schutz)
  * @param {number} options.delayMs - Wartezeit zwischen Requests (Rate-Limiting)
  */
 async function checkAllArticles(options = {}) {
@@ -100,6 +202,11 @@ async function checkAllArticles(options = {}) {
   // Tabellen anlegen falls nötig
   db.exec(CHECK_TABLE);
   db.exec(LAST_CHECK_TABLE);
+
+  // check_type Spalte hinzufügen falls nicht vorhanden
+  try {
+    db.exec(`ALTER TABLE availability_checks ADD COLUMN check_type TEXT DEFAULT 'ok'`);
+  } catch (e) { /* Spalte existiert bereits */ }
 
   const articles = db.prepare(`
     SELECT a.id, a.name, a.product_url, a.is_active, p.brand_name
@@ -112,13 +219,14 @@ async function checkAllArticles(options = {}) {
   console.log(`\n🔍 Verfügbarkeits-Check: ${articles.length} Artikel werden geprüft...\n`);
 
   const insertCheck = db.prepare(`
-    INSERT INTO availability_checks (article_id, article_name, brand_name, product_url, status_code, is_available, error_message)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO availability_checks (article_id, article_name, brand_name, product_url, status_code, is_available, error_message, check_type)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
   const results = {
     total: articles.length,
     available: 0,
+    botProtected: 0,
     unavailable: 0,
     errors: [],
     deactivated: 0,
@@ -132,10 +240,15 @@ async function checkAllArticles(options = {}) {
     insertCheck.run(
       article.id, article.name, article.brand_name,
       article.product_url, result.statusCode,
-      result.available ? 1 : 0, result.error
+      result.available ? 1 : 0, result.error,
+      result.checkType
     );
 
-    if (result.available) {
+    if (result.checkType === 'bot_protected' || result.checkType === 'server_error') {
+      results.botProtected++;
+      results.available++;
+      console.log(`  🛡️ ${article.brand_name}: "${article.name}" – ${result.error}`);
+    } else if (result.available) {
       results.available++;
       console.log(`  ✅ ${article.brand_name}: "${article.name}" (HTTP ${result.statusCode})`);
     } else {
@@ -146,10 +259,12 @@ async function checkAllArticles(options = {}) {
         url: article.product_url,
         statusCode: result.statusCode,
         error: result.error,
+        checkType: result.checkType,
       });
       console.log(`  ❌ ${article.brand_name}: "${article.name}" – ${result.error}`);
 
-      if (deactivateUnavailable) {
+      // Nur echte 404/410 deaktivieren, NIE Bot-Schutz
+      if (deactivateUnavailable && (result.checkType === 'not_found' || result.checkType === 'removed')) {
         db.prepare('UPDATE articles SET is_active = 0 WHERE id = ?').run(article.id);
         results.deactivated++;
         console.log(`     🚫 Artikel deaktiviert`);
@@ -169,8 +284,11 @@ async function checkAllArticles(options = {}) {
   `).run();
 
   console.log(`\n📊 Ergebnis: ${results.available}/${results.total} verfügbar`);
+  if (results.botProtected > 0) {
+    console.log(`   🛡️ ${results.botProtected} durch Bot-Schutz blockiert (wahrscheinlich verfügbar)`);
+  }
   if (results.unavailable > 0) {
-    console.log(`   ⚠️ ${results.unavailable} nicht erreichbar`);
+    console.log(`   ❌ ${results.unavailable} wirklich nicht verfügbar`);
   }
   if (results.deactivated > 0) {
     console.log(`   🚫 ${results.deactivated} Artikel deaktiviert`);
@@ -212,6 +330,11 @@ function getLastCheckReport() {
     db.exec(CHECK_TABLE);
     db.exec(LAST_CHECK_TABLE);
 
+    // check_type Spalte hinzufügen falls nicht vorhanden
+    try {
+      db.exec(`ALTER TABLE availability_checks ADD COLUMN check_type TEXT DEFAULT 'ok'`);
+    } catch (e) { /* Spalte existiert bereits */ }
+
     const lastCheck = db.prepare(
       "SELECT value FROM system_state WHERE key = 'last_availability_check'"
     ).get();
@@ -227,6 +350,7 @@ function getLastCheckReport() {
     `).all(lastCheck.value);
 
     const available = checks.filter(c => c.is_available);
+    const botProtected = checks.filter(c => c.check_type === 'bot_protected');
     const unavailable = checks.filter(c => !c.is_available);
 
     return {
@@ -234,6 +358,7 @@ function getLastCheckReport() {
       checkedAt: lastCheck.value,
       total: checks.length,
       available: available.length,
+      botProtected: botProtected.length,
       unavailable: unavailable.length,
       details: checks,
       errors: unavailable.map(c => ({
@@ -242,6 +367,7 @@ function getLastCheckReport() {
         url: c.product_url,
         statusCode: c.status_code,
         error: c.error_message,
+        checkType: c.check_type,
       })),
     };
   } catch (e) {
