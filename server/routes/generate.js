@@ -201,4 +201,28 @@ router.post('/outfits/rotate', (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════════════════
+// VERFÜGBARKEITS-CHECK (Artikel-URLs prüfen)
+// ═══════════════════════════════════════════════════
+
+const { checkAllArticles, getLastCheckReport } = require('../services/availability-checker');
+
+// Alle Artikel-URLs prüfen
+router.post('/availability/check', async (req, res) => {
+  try {
+    const deactivateUnavailable = req.body.deactivateUnavailable === true;
+    const result = await checkAllArticles({ deactivateUnavailable });
+    res.json(result);
+  } catch (err) {
+    console.error('❌ Verfügbarkeits-Check Fehler:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Letzten Check-Bericht abrufen
+router.get('/availability/report', (req, res) => {
+  const report = getLastCheckReport();
+  res.json(report);
+});
+
 module.exports = router;

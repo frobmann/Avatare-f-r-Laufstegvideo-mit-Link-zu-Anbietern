@@ -86,6 +86,30 @@ async function startServer() {
     console.log('⚠️ Auto-Outfit übersprungen:', e.message);
   }
 
+  // Täglicher Verfügbarkeits-Check (im Hintergrund, nach 30s Verzögerung)
+  try {
+    const { wasCheckedToday, checkAllArticles } = require('./services/availability-checker');
+    if (!wasCheckedToday()) {
+      console.log('🔍 Täglicher Verfügbarkeits-Check wird in 30s gestartet...');
+      setTimeout(async () => {
+        try {
+          const result = await checkAllArticles({ deactivateUnavailable: false, delayMs: 2000 });
+          if (result.unavailable > 0) {
+            console.log(`⚠️ ${result.unavailable} Artikel nicht erreichbar – Details: GET /api/generate/availability/report`);
+          } else {
+            console.log('✅ Alle Artikel verfügbar');
+          }
+        } catch (e) {
+          console.log('⚠️ Verfügbarkeits-Check fehlgeschlagen:', e.message);
+        }
+      }, 30000);
+    } else {
+      console.log('🔍 Verfügbarkeits-Check heute bereits durchgeführt');
+    }
+  } catch (e) {
+    console.log('⚠️ Verfügbarkeits-Check übersprungen:', e.message);
+  }
+
   // API Routes (erst nach DB-Initialisierung laden!)
   app.use('/api/avatars', require('./routes/avatars'));
   app.use('/api/providers', require('./routes/providers'));

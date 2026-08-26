@@ -710,7 +710,7 @@
     </div>
 
     <div class="catwalk-title" id="catwalk-title">Fashion Catwalk</div>
-    <div class="catwalk-subtitle">Klicke auf die Models – Shoppe den Look</div>
+    <div class="catwalk-subtitle" id="catwalk-subtitle">Klicke auf die Models – Shoppe den Look</div>
 
     <div class="date-display" id="date-display"></div>
 
@@ -719,6 +719,7 @@
     </div>
 
     <div class="controls">
+      <button class="control-btn" id="btn-lang" title="Deutsch / English">DE</button>
       <button class="control-btn" id="btn-pause" title="Pause/Play">⏯</button>
       <button class="control-btn" id="btn-speed" title="Geschwindigkeit">⚡</button>
       <button class="control-btn" id="btn-fullscreen" title="Vollbild">⛶</button>
@@ -730,18 +731,72 @@
     let catwalkData = null;
     let isPaused = false;
     let speedMultiplier = 1;
-    const CATEGORY_LABELS = {
-      'kopfbedeckung': 'Kopfbedeckung',
-      'oberteil': 'Oberteil',
-      'jacke': 'Jacke',
-      'hose': 'Hose',
-      'rock': 'Rock',
-      'kleid': 'Kleid',
-      'schuhe': 'Schuhe',
-      'accessoire': 'Accessoire',
-      'tasche': 'Tasche',
-      'schmuck': 'Schmuck'
+    let currentLang = localStorage.getItem('catwalk-lang') || 'de';
+
+    // ═══════════════════════════════════════
+    // ÜBERSETZUNGEN – Deutsch & English
+    // ═══════════════════════════════════════
+    const I18N = {
+      de: {
+        title: 'Fashion Catwalk',
+        subtitle: 'Klicke auf die Models – Shoppe den Look',
+        loading: 'FASHION CATWALK',
+        emptyTitle: 'Noch keine Avatare',
+        emptyText: 'Erstelle Avatare im',
+        emptyLink: 'Admin Dashboard',
+        shopAll: 'Ganzen Look shoppen →',
+        shopLink: 'Shop →',
+        freeShipping: 'Gratis EU-Versand',
+        categories: {
+          'kopfbedeckung': 'Kopfbedeckung',
+          'oberteil': 'Oberteil',
+          'jacke': 'Jacke',
+          'hose': 'Hose',
+          'rock': 'Rock',
+          'kleid': 'Kleid',
+          'schuhe': 'Schuhe',
+          'accessoire': 'Accessoire',
+          'tasche': 'Tasche',
+          'schmuck': 'Schmuck',
+        },
+        dateLocale: 'de-DE',
+        pauseTitle: 'Pause/Play',
+        speedTitle: 'Geschwindigkeit',
+        fullscreenTitle: 'Vollbild',
+        langTitle: 'Deutsch / English',
+      },
+      en: {
+        title: 'Fashion Catwalk',
+        subtitle: 'Click the models – Shop the look',
+        loading: 'FASHION CATWALK',
+        emptyTitle: 'No avatars yet',
+        emptyText: 'Create avatars in the',
+        emptyLink: 'Admin Dashboard',
+        shopAll: 'Shop the full look →',
+        shopLink: 'Shop →',
+        freeShipping: 'Free EU shipping',
+        categories: {
+          'kopfbedeckung': 'Headwear',
+          'oberteil': 'Top',
+          'jacke': 'Jacket',
+          'hose': 'Trousers',
+          'rock': 'Skirt',
+          'kleid': 'Dress',
+          'schuhe': 'Shoes',
+          'accessoire': 'Accessory',
+          'tasche': 'Bag',
+          'schmuck': 'Jewellery',
+        },
+        dateLocale: 'en-GB',
+        pauseTitle: 'Pause/Play',
+        speedTitle: 'Speed',
+        fullscreenTitle: 'Fullscreen',
+        langTitle: 'Deutsch / English',
+      },
     };
+
+    function t(key) { return I18N[currentLang][key] || I18N['de'][key] || key; }
+    function tCat(category) { return (I18N[currentLang].categories || {})[category] || category; }
 
     // Farbpaletten für Avatare
     const AVATAR_PALETTES = [
@@ -755,10 +810,10 @@
       { hair: '#2c3e50', top: '#f39c12', bottom: '#1a1a2e', shoes: '#2c1810', accent: '#f5b041' },
     ];
 
-    // Datum formatieren
+    // Datum formatieren (sprachabhängig)
     function formatDate(dateStr) {
       const d = new Date(dateStr + 'T00:00:00');
-      return d.toLocaleDateString('de-DE', {
+      return d.toLocaleDateString(t('dateLocale'), {
         weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
       });
     }
@@ -904,12 +959,12 @@
       let itemsHtml = avatar.outfit.map(item => `
         <li class="product-item" data-url="${item.product_url}" data-avatar="${avatar.id}" data-article="${item.article_id}">
           <div class="product-item-info">
-            <div class="product-item-category">${CATEGORY_LABELS[item.category] || item.category}</div>
+            <div class="product-item-category">${tCat(item.category)}</div>
             <div class="product-item-name">${item.article_name}</div>
             <div class="product-item-brand">${item.brand_name}</div>
           </div>
           <span class="product-item-price">€ ${item.price.toFixed(2)}</span>
-          <span class="product-item-link">Shop →</span>
+          <span class="product-item-link">${t('shopLink')}</span>
         </li>
       `).join('');
 
@@ -921,7 +976,7 @@
           </div>
           <ul class="product-card-items">${itemsHtml}</ul>
           <a class="shop-all-btn" href="#" onclick="shopAll(event, '${avatar.id}')">
-            Ganzen Look shoppen →
+            ${t('shopAll')}
           </a>
         </div>
       `;
@@ -978,19 +1033,18 @@
       if (!catwalkData || catwalkData.avatars.length === 0) {
         track.innerHTML = `
           <div class="empty-state">
-            <h2>Noch keine Avatare</h2>
-            <p>Erstelle Avatare im <a href="/admin">Admin Dashboard</a></p>
+            <h2>${t('emptyTitle')}</h2>
+            <p>${t('emptyText')} <a href="/admin">${t('emptyLink')}</a></p>
           </div>
         `;
         return;
       }
 
-      // Config anwenden
-      if (catwalkData.config) {
-        document.getElementById('catwalk-title').textContent = catwalkData.config.title || 'Fashion Catwalk';
-        if (catwalkData.config.background_color) {
-          document.documentElement.style.setProperty('--bg-dark', catwalkData.config.background_color);
-        }
+      // Config + Sprache anwenden
+      document.getElementById('catwalk-title').textContent = (catwalkData.config && catwalkData.config.title) || t('title');
+      document.getElementById('catwalk-subtitle').textContent = t('subtitle');
+      if (catwalkData.config && catwalkData.config.background_color) {
+        document.documentElement.style.setProperty('--bg-dark', catwalkData.config.background_color);
       }
 
       // Datum anzeigen
@@ -1010,6 +1064,20 @@
         });
       });
     }
+
+    // Sprach-Umschalter
+    function updateLangButton() {
+      document.getElementById('btn-lang').textContent = currentLang === 'de' ? 'DE' : 'EN';
+      document.getElementById('btn-lang').title = t('langTitle');
+    }
+    updateLangButton();
+
+    document.getElementById('btn-lang').addEventListener('click', () => {
+      currentLang = currentLang === 'de' ? 'en' : 'de';
+      localStorage.setItem('catwalk-lang', currentLang);
+      updateLangButton();
+      renderCatwalk(); // Seite neu rendern mit neuer Sprache
+    });
 
     // Controls
     document.getElementById('btn-pause').addEventListener('click', () => {
