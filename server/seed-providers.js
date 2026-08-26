@@ -17,6 +17,47 @@ async function seedProviders() {
   const db = getDb();
 
   // ═══════════════════════════════════════════════════
+  // BEREINIGUNG — Nicht-EU-Anbieter und Duplikate entfernen
+  // ═══════════════════════════════════════════════════
+
+  const nonEuBrands = ['ASOS', 'PKZ', 'Globus', 'Manor', 'Chicorée'];
+  for (const brand of nonEuBrands) {
+    const provider = db.prepare('SELECT id FROM providers WHERE brand_name = ?').get(brand);
+    if (provider) {
+      // Artikel dieses Anbieters deaktivieren
+      db.prepare('UPDATE articles SET is_active = 0 WHERE provider_id = ?').run(provider.id);
+      // Anbieter deaktivieren
+      db.prepare('UPDATE providers SET is_active = 0 WHERE id = ?').run(provider.id);
+      console.log(`  🚫 ${brand} deaktiviert (nicht EU)`);
+    }
+  }
+
+  // Duplikate bereinigen: Wenn gleicher brand_name mehrfach existiert, nur einen behalten
+  const duplicates = db.prepare(`
+    SELECT brand_name, COUNT(*) as cnt FROM providers
+    WHERE is_active = 1
+    GROUP BY brand_name HAVING cnt > 1
+  `).all();
+  for (const dup of duplicates) {
+    const all = db.prepare(
+      'SELECT id FROM providers WHERE brand_name = ? AND is_active = 1 ORDER BY created_at DESC'
+    ).all(dup.brand_name);
+    // Alle außer dem neuesten deaktivieren
+    for (let i = 1; i < all.length; i++) {
+      db.prepare('UPDATE providers SET is_active = 0 WHERE id = ?').run(all[i].id);
+      console.log(`  🔄 Duplikat entfernt: ${dup.brand_name}`);
+    }
+  }
+
+  // Alte .ch URLs auf .de aktualisieren
+  db.prepare(`UPDATE providers SET website_url = 'https://www.zalando.de'    WHERE brand_name = 'Zalando'   AND website_url LIKE '%zalando.ch%'`).run();
+  db.prepare(`UPDATE providers SET website_url = 'https://www2.hm.com/de_de' WHERE brand_name = 'H&M'       AND website_url LIKE '%hm.com/ch%'`).run();
+  db.prepare(`UPDATE providers SET website_url = 'https://www.zara.com/de'   WHERE brand_name = 'ZARA'      AND website_url LIKE '%zara.com/ch%'`).run();
+  db.prepare(`UPDATE providers SET website_url = 'https://www.aboutyou.de'   WHERE brand_name = 'About You' AND website_url LIKE '%aboutyou.ch%'`).run();
+
+  console.log('  ✅ URLs auf .de aktualisiert\n');
+
+  // ═══════════════════════════════════════════════════
   // ANBIETER — EU-Modehändler mit kostenlosem Versand
   // ═══════════════════════════════════════════════════
 
