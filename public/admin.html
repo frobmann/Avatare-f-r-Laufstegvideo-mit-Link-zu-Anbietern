@@ -1752,7 +1752,7 @@ ZARA | Midi-Rock Gold | rock | 49.90 | https://www.zara.com/ch/midi-rock"></text
             <td>${h.type === 'tryon' ? '👗 Try-On' : h.type === 'walk_animation' ? '🎬 Video' : h.type === 'img2img' ? '📸 Avatar-Bild' : h.type}</td>
             <td><span class="status-badge status-${h.status}">${h.status}</span></td>
             <td>${h.cost ? '$' + h.cost.toFixed(4) : '–'}</td>
-            <td>${new Date(h.created_at).toLocaleString('de-CH')}</td>
+            <td>${new Date(h.created_at).toLocaleString('de-DE')}</td>
           </tr>
         `).join('');
       } catch (e) {

@@ -758,7 +758,7 @@
     // Datum formatieren
     function formatDate(dateStr) {
       const d = new Date(dateStr + 'T00:00:00');
-      return d.toLocaleDateString('de-CH', {
+      return d.toLocaleDateString('de-DE', {
         weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
       });
     }
