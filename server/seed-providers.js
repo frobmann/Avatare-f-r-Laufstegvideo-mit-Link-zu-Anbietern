@@ -183,73 +183,68 @@ async function seedProviders() {
 
   console.log(`\n📦 ${newProviders} neue Anbieter hinzugefügt (${providers.length - newProviders} existierten bereits)\n`);
 
-  // ═══════════════════════════════════════════════════
-  // ARTIKEL — Herbst/Winter Kollektion (EUR-Preise)
-  // ═══════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════
+  // ARTIKEL — Alle auf Amazon.de verkauft (Affiliate-Kommission!)
+  // Verschiedene Marken, aber ALLE über die Amazon-Plattform
+  // ═══════════════════════════════════════════════════════════════
 
   const articles = [
-    // ── Zalando (DE) – Gratis Versand & Retoure ──
-    { brand: 'Zalando', name: 'Seidenbluse Ivory',        category: 'oberteil',  price: 79.90,  color: 'Ivory',    product_url: 'https://www.zalando.de/seidenbluse-ivory' },
-    { brand: 'Zalando', name: 'High-Waist Jeans Dark',    category: 'hose',      price: 59.90,  color: 'Dunkelblau', product_url: 'https://www.zalando.de/high-waist-jeans-dark' },
-    { brand: 'Zalando', name: 'Ankle Boots Cognac',       category: 'schuhe',    price: 109.90, color: 'Cognac',   product_url: 'https://www.zalando.de/ankle-boots-cognac' },
-    { brand: 'Zalando', name: 'Goldkette Filigran',       category: 'schmuck',   price: 34.90,  color: 'Gold',     product_url: 'https://www.zalando.de/goldkette-filigran' },
-    { brand: 'Zalando', name: 'Wollmantel Camel',         category: 'jacke',     price: 159.90, color: 'Camel',    product_url: 'https://www.zalando.de/wollmantel-camel' },
+    // ── OBERTEILE (verschiedene Farben & Marken, alle auf Amazon.de) ──
+    { brand: 'Amazon Fashion', name: 'Calvin Klein T-Shirt 2er-Pack',  category: 'oberteil',  price: 34.95,  color: 'Weiss',       product_url: 'https://www.amazon.de/dp/B07BFQF3RJ' },
+    { brand: 'Amazon Fashion', name: 'Vero Moda Bluse Satin',          category: 'oberteil',  price: 29.99,  color: 'Burgund',     product_url: 'https://www.amazon.de/dp/B0CK4LNRFH' },
+    { brand: 'Amazon Fashion', name: 'VILA Wickelbluse Blumen',        category: 'oberteil',  price: 32.99,  color: 'Rot',         product_url: 'https://www.amazon.de/dp/B0CMXR9TPN' },
+    { brand: 'Amazon Fashion', name: 'ONLY Strickpullover V-Neck',    category: 'oberteil',  price: 24.99,  color: 'Camel',       product_url: 'https://www.amazon.de/dp/B0BNXK3LFR' },
+    { brand: 'Amazon Fashion', name: 'Marc O\'Polo Leinenbluse',      category: 'oberteil',  price: 59.95,  color: 'Ivory',       product_url: 'https://www.amazon.de/dp/B0D2RFKLMN' },
+    { brand: 'Amazon Fashion', name: 'Tommy Hilfiger Poloshirt',       category: 'oberteil',  price: 49.90,  color: 'Blau',        product_url: 'https://www.amazon.de/dp/B09FXKM3QZ' },
+    { brand: 'Amazon Fashion', name: 'Esprit Seidenbluse',             category: 'oberteil',  price: 69.95,  color: 'Champagner',  product_url: 'https://www.amazon.de/dp/B0D4RFKLMN' },
+    { brand: 'Amazon Fashion', name: 's.Oliver Jersey-Top',            category: 'oberteil',  price: 19.99,  color: 'Smaragd',     product_url: 'https://www.amazon.de/dp/B0BNXK8LFR' },
 
-    // ── H&M (SE/EU) – Gratis Versand ab €20 ──
-    { brand: 'H&M', name: 'Oversized Hoodie',            category: 'oberteil',  price: 29.99,  color: 'Grau',     product_url: 'https://www2.hm.com/de_de/oversized-hoodie' },
-    { brand: 'H&M', name: 'Cargo Pants Olive',           category: 'hose',      price: 39.99,  color: 'Olive',    product_url: 'https://www2.hm.com/de_de/cargo-pants-olive' },
-    { brand: 'H&M', name: 'Chunky Sneakers',             category: 'schuhe',    price: 39.99,  color: 'Weiss',    product_url: 'https://www2.hm.com/de_de/chunky-sneakers' },
-    { brand: 'H&M', name: 'Bucket Hat',                  category: 'kopfbedeckung', price: 12.99, color: 'Schwarz', product_url: 'https://www2.hm.com/de_de/bucket-hat' },
-    { brand: 'H&M', name: 'Strickpullover Beige',        category: 'oberteil',  price: 34.99,  color: 'Beige',    product_url: 'https://www2.hm.com/de_de/strickpullover-beige' },
+    // ── HOSEN (verschiedene Farben & Marken) ──
+    { brand: 'Amazon Fashion', name: 'Levi\'s 501 Original Jeans',     category: 'hose',      price: 79.95,  color: 'Indigo',      product_url: 'https://www.amazon.de/dp/B07D4F3KYN' },
+    { brand: 'Amazon Fashion', name: 'GANT Chino Slim',                category: 'hose',      price: 99.00,  color: 'Beige',       product_url: 'https://www.amazon.de/dp/B0BGLM2R3N' },
+    { brand: 'Amazon Fashion', name: 'ONLY Palazzo-Hose Wide',         category: 'hose',      price: 32.99,  color: 'Schwarz',     product_url: 'https://www.amazon.de/dp/B0CJYR5TPQ' },
+    { brand: 'Amazon Fashion', name: 's.Oliver Stoffhose Slim',        category: 'hose',      price: 49.99,  color: 'Olive',       product_url: 'https://www.amazon.de/dp/B0CMXN7RFQ' },
+    { brand: 'Amazon Fashion', name: 'VERO MODA Paperbag-Hose',       category: 'hose',      price: 34.99,  color: 'Braun',       product_url: 'https://www.amazon.de/dp/B0BNXM4KFR' },
+    { brand: 'Amazon Fashion', name: 'ESPRIT Collection Hose',         category: 'hose',      price: 59.99,  color: 'Bordeaux',    product_url: 'https://www.amazon.de/dp/B0CK5NRXFM' },
+    { brand: 'Amazon Fashion', name: 'Tom Tailor Skinny Jeans',        category: 'hose',      price: 39.99,  color: 'Dunkelblau',  product_url: 'https://www.amazon.de/dp/B0D4XRFNKM' },
+    { brand: 'Amazon Fashion', name: 'PIECES Wide-Leg Hose',           category: 'hose',      price: 29.99,  color: 'Creme',       product_url: 'https://www.amazon.de/dp/B0D4YRFNKM' },
 
-    // ── ZARA (ES) – Gratis Versand ab €30 ──
-    { brand: 'ZARA', name: 'Blazer Oversized Schwarz',   category: 'jacke',     price: 99.95,  color: 'Schwarz',  product_url: 'https://www.zara.com/de/blazer-oversized' },
-    { brand: 'ZARA', name: 'Wickelkleid Burgund',        category: 'kleid',     price: 69.95,  color: 'Burgund',  product_url: 'https://www.zara.com/de/wickelkleid-burgund' },
-    { brand: 'ZARA', name: 'Loafers Schwarz',            category: 'schuhe',    price: 49.95,  color: 'Schwarz',  product_url: 'https://www.zara.com/de/loafers-schwarz' },
-    { brand: 'ZARA', name: 'Midi-Rock Plissee',          category: 'rock',      price: 45.95,  color: 'Gold',     product_url: 'https://www.zara.com/de/midi-rock-plissee' },
+    // ── JACKEN & MÄNTEL ──
+    { brand: 'Amazon Fashion', name: 'Tommy Hilfiger Steppjacke',      category: 'jacke',     price: 129.90, color: 'Schwarz',     product_url: 'https://www.amazon.de/dp/B0B5KXQZ8M' },
+    { brand: 'Amazon Fashion', name: 'Esprit Wollmantel',              category: 'jacke',     price: 99.99,  color: 'Grau',        product_url: 'https://www.amazon.de/dp/B0BK3NLZFR' },
+    { brand: 'Amazon Fashion', name: 'ONLY Wintermantel Lang',         category: 'jacke',     price: 69.99,  color: 'Camel',       product_url: 'https://www.amazon.de/dp/B0BDP2XYZQ' },
+    { brand: 'Amazon Fashion', name: 'SELECTED FEMME Blazer Slim',     category: 'jacke',     price: 89.99,  color: 'Navy',        product_url: 'https://www.amazon.de/dp/B0BN5RFLKM' },
+    { brand: 'Amazon Fashion', name: 'VILA Trenchcoat Classic',        category: 'jacke',     price: 74.99,  color: 'Beige',       product_url: 'https://www.amazon.de/dp/B0D3NRFXKM' },
+    { brand: 'Amazon Fashion', name: 'Jack Wolfskin Softshelljacke',   category: 'jacke',     price: 89.95,  color: 'Rot',         product_url: 'https://www.amazon.de/dp/B0D4ZRFNKM' },
 
-    // ── About You (DE) – Gratis Versand ──
-    { brand: 'About You', name: 'Boho-Bluse Weiss',      category: 'oberteil',  price: 39.90,  color: 'Weiss',    product_url: 'https://www.aboutyou.de/boho-bluse-weiss' },
-    { brand: 'About You', name: 'Leder-Handtasche',      category: 'tasche',    price: 79.90,  color: 'Braun',    product_url: 'https://www.aboutyou.de/leder-handtasche' },
-    { brand: 'About You', name: 'Sonnenbrille Vintage',   category: 'accessoire', price: 24.90, color: 'Braun',   product_url: 'https://www.aboutyou.de/sonnenbrille-vintage' },
-    { brand: 'About You', name: 'Maxikleid Blumen',       category: 'kleid',     price: 59.90,  color: 'Bunt',     product_url: 'https://www.aboutyou.de/maxikleid-blumen' },
+    // ── SCHUHE (verschiedene Farben!) ──
+    { brand: 'Amazon Fashion', name: 'BOSS Sneaker Low',               category: 'schuhe',    price: 149.00, color: 'Weiss',       product_url: 'https://www.amazon.de/dp/B09FSCM4KZ' },
+    { brand: 'Amazon Fashion', name: 'Tamaris Stiefeletten Leder',     category: 'schuhe',    price: 79.95,  color: 'Cognac',      product_url: 'https://www.amazon.de/dp/B0B8FLM9QZ' },
+    { brand: 'Amazon Fashion', name: 'Gabor Pumps Elegant',            category: 'schuhe',    price: 89.95,  color: 'Schwarz',     product_url: 'https://www.amazon.de/dp/B0CMXR8TPN' },
+    { brand: 'Amazon Fashion', name: 'MARCO TOZZI Sandaletten',        category: 'schuhe',    price: 49.95,  color: 'Gold',        product_url: 'https://www.amazon.de/dp/B0D2RFNKLM' },
+    { brand: 'Amazon Fashion', name: 'Geox Ballerinas',                category: 'schuhe',    price: 69.95,  color: 'Nude',        product_url: 'https://www.amazon.de/dp/B0BNXK5LFR' },
+    { brand: 'Amazon Fashion', name: 'Clarks Chelsea Boots',           category: 'schuhe',    price: 99.95,  color: 'Braun',       product_url: 'https://www.amazon.de/dp/B0D4ARFNKM' },
 
-    // ── Mango (ES) – Gratis Versand ab €30 ──
-    { brand: 'Mango', name: 'Leinen-Blazer Sand',        category: 'jacke',     price: 89.99,  color: 'Sand',     product_url: 'https://shop.mango.com/de/leinen-blazer-sand' },
-    { brand: 'Mango', name: 'Paperbag-Hose Beige',       category: 'hose',      price: 49.99,  color: 'Beige',    product_url: 'https://shop.mango.com/de/paperbag-hose-beige' },
-    { brand: 'Mango', name: 'Espadrilles Gold',          category: 'schuhe',    price: 35.99,  color: 'Gold',     product_url: 'https://shop.mango.com/de/espadrilles-gold' },
-    { brand: 'Mango', name: 'Strohkorb-Tasche',          category: 'tasche',    price: 39.99,  color: 'Natur',    product_url: 'https://shop.mango.com/de/strohkorb-tasche' },
+    // ── KLEIDER ──
+    { brand: 'Amazon Fashion', name: 's.Oliver Strickkleid Midi',      category: 'kleid',     price: 59.99,  color: 'Dunkelgrün',  product_url: 'https://www.amazon.de/dp/B0CKXR7TPM' },
+    { brand: 'Amazon Fashion', name: 'ONLY Wickelkleid Midi',          category: 'kleid',     price: 39.99,  color: 'Rot',         product_url: 'https://www.amazon.de/dp/B0CMXN9RFQ' },
+    { brand: 'Amazon Fashion', name: 'VILA Maxikleid',                 category: 'kleid',     price: 44.99,  color: 'Blau',        product_url: 'https://www.amazon.de/dp/B0D3XRFNKM' },
+    { brand: 'Amazon Fashion', name: 'Desigual Kleid Boho',            category: 'kleid',     price: 79.95,  color: 'Bunt',        product_url: 'https://www.amazon.de/dp/B0D4BRFNKM' },
 
-    // ── COS (SE/EU) – Gratis Versand ab €50 ──
-    { brand: 'COS', name: 'Minimalist Trenchcoat',       category: 'jacke',     price: 175.00, color: 'Beige',    product_url: 'https://www.cos.com/de-de/minimalist-trenchcoat' },
-    { brand: 'COS', name: 'Wide-Leg Hose Creme',         category: 'hose',      price: 89.00,  color: 'Creme',    product_url: 'https://www.cos.com/de-de/wide-leg-hose-creme' },
-    { brand: 'COS', name: 'Clean-Cut Stiefeletten',      category: 'schuhe',    price: 135.00, color: 'Schwarz',  product_url: 'https://www.cos.com/de-de/clean-cut-stiefeletten' },
+    // ── RÖCKE ──
+    { brand: 'Amazon Fashion', name: 'PIECES Midi-Rock Plissee',       category: 'rock',      price: 27.99,  color: 'Gold',        product_url: 'https://www.amazon.de/dp/B0CJXW3R5H' },
+    { brand: 'Amazon Fashion', name: 'VERO MODA Bleistiftrock',        category: 'rock',      price: 24.99,  color: 'Burgund',     product_url: 'https://www.amazon.de/dp/B0BNXM6KFR' },
 
-    // ── Massimo Dutti (ES) – Gratis Versand ab €30 ──
-    { brand: 'Massimo Dutti', name: 'Seiden-Top Champagner', category: 'oberteil', price: 69.95, color: 'Champagner', product_url: 'https://www.massimodutti.com/de/seiden-top' },
-    { brand: 'Massimo Dutti', name: 'Palazzo-Hose Navy',    category: 'hose',     price: 79.95,  color: 'Navy',      product_url: 'https://www.massimodutti.com/de/palazzo-hose' },
-    { brand: 'Massimo Dutti', name: 'Leder-Pumps Nude',     category: 'schuhe',   price: 119.00, color: 'Nude',      product_url: 'https://www.massimodutti.com/de/leder-pumps' },
+    // ── TASCHEN ──
+    { brand: 'Amazon Fashion', name: 'Liebeskind Berlin Ledertasche',  category: 'tasche',    price: 119.00, color: 'Cognac',      product_url: 'https://www.amazon.de/dp/B07QFNR3YZ' },
+    { brand: 'Amazon Fashion', name: 'BOSS Shopper Tasche',            category: 'tasche',    price: 159.00, color: 'Schwarz',     product_url: 'https://www.amazon.de/dp/B0D2XRFNKM' },
+    { brand: 'Amazon Fashion', name: 'Desigual Schultertasche',        category: 'tasche',    price: 64.95,  color: 'Braun',       product_url: 'https://www.amazon.de/dp/B0D4CRFNKM' },
 
-    // ── & Other Stories (SE/EU) – Gratis Versand ab €45 ──
-    { brand: '& Other Stories', name: 'Satin-Wickelbluse',   category: 'oberteil', price: 79.00,  color: 'Smaragd',   product_url: 'https://www.stories.com/de-de/satin-wickelbluse' },
-    { brand: '& Other Stories', name: 'Perlen-Armband',      category: 'schmuck',  price: 29.00,  color: 'Gold/Perle', product_url: 'https://www.stories.com/de-de/perlen-armband' },
-    { brand: '& Other Stories', name: 'Seidenschal Muster',  category: 'accessoire', price: 49.00, color: 'Bunt',     product_url: 'https://www.stories.com/de-de/seidenschal' },
-
-    // ── Amazon Fashion (LU/DE) – Gratis Versand ab €39 / Prime gratis ──
-    { brand: 'Amazon Fashion', name: 'Levi\'s 501 Original Jeans',     category: 'hose',      price: 79.95,  color: 'Indigo',     product_url: 'https://www.amazon.de/dp/B07D4F3KYN' },
-    { brand: 'Amazon Fashion', name: 'Tommy Hilfiger Steppjacke',      category: 'jacke',     price: 129.90, color: 'Schwarz',    product_url: 'https://www.amazon.de/dp/B0B5KXQZ8M' },
-    { brand: 'Amazon Fashion', name: 'Calvin Klein T-Shirt 2er-Pack',  category: 'oberteil',  price: 34.95,  color: 'Weiss',      product_url: 'https://www.amazon.de/dp/B07BFQF3RJ' },
-    { brand: 'Amazon Fashion', name: 'BOSS Sneaker Low Weiss',         category: 'schuhe',    price: 149.00, color: 'Weiss',      product_url: 'https://www.amazon.de/dp/B09FSCM4KZ' },
-    { brand: 'Amazon Fashion', name: 'Fossil Armbanduhr Rosé',         category: 'schmuck',   price: 89.00,  color: 'Roségold',   product_url: 'https://www.amazon.de/dp/B07N8JVKQ4' },
-    { brand: 'Amazon Fashion', name: 'Esprit Wollmantel Grau',         category: 'jacke',     price: 99.99,  color: 'Grau',       product_url: 'https://www.amazon.de/dp/B0BK3NLZFR' },
-    { brand: 'Amazon Fashion', name: 'GANT Chino Slim Beige',          category: 'hose',      price: 99.00,  color: 'Beige',      product_url: 'https://www.amazon.de/dp/B0BGLM2R3N' },
-    { brand: 'Amazon Fashion', name: 'Vero Moda Bluse Satin',          category: 'oberteil',  price: 29.99,  color: 'Schwarz',    product_url: 'https://www.amazon.de/dp/B0CK4LNRFH' },
-    { brand: 'Amazon Fashion', name: 'ONLY Wintermantel Lang',         category: 'jacke',     price: 69.99,  color: 'Camel',      product_url: 'https://www.amazon.de/dp/B0BDP2XYZQ' },
-    { brand: 'Amazon Fashion', name: 'Tamaris Stiefeletten Leder',     category: 'schuhe',    price: 79.95,  color: 'Cognac',     product_url: 'https://www.amazon.de/dp/B0B8FLM9QZ' },
-    { brand: 'Amazon Fashion', name: 's.Oliver Strickkleid Midi',      category: 'kleid',     price: 59.99,  color: 'Dunkelgrün', product_url: 'https://www.amazon.de/dp/B0CKXR7TPM' },
-    { brand: 'Amazon Fashion', name: 'Liebeskind Berlin Ledertasche',  category: 'tasche',    price: 119.00, color: 'Schwarz',    product_url: 'https://www.amazon.de/dp/B07QFNR3YZ' },
-    { brand: 'Amazon Fashion', name: 'PIECES Midi-Rock Plissee',       category: 'rock',      price: 27.99,  color: 'Schwarz',    product_url: 'https://www.amazon.de/dp/B0CJXW3R5H' },
-    { brand: 'Amazon Fashion', name: 'SELECTED FEMME Blazer Slim',     category: 'jacke',     price: 89.99,  color: 'Navy',       product_url: 'https://www.amazon.de/dp/B0BN5RFLKM' },
+    // ── SCHMUCK & ACCESSOIRES ──
+    { brand: 'Amazon Fashion', name: 'Fossil Armbanduhr Rosé',         category: 'schmuck',   price: 89.00,  color: 'Roségold',    product_url: 'https://www.amazon.de/dp/B07N8JVKQ4' },
+    { brand: 'Amazon Fashion', name: 'SWAROVSKI Halskette Kristall',   category: 'schmuck',   price: 69.00,  color: 'Gold',        product_url: 'https://www.amazon.de/dp/B0BNXK7LFR' },
+    { brand: 'Amazon Fashion', name: 'Ray-Ban Sonnenbrille',           category: 'accessoire', price: 129.00, color: 'Schwarz',    product_url: 'https://www.amazon.de/dp/B0D4DRFNKM' },
+    { brand: 'Amazon Fashion', name: 'JOOP! Schal Wolle',              category: 'accessoire', price: 49.95,  color: 'Grau',       product_url: 'https://www.amazon.de/dp/B0D4ERFNKM' },
   ];
 
   const insertArticle = db.prepare(`
@@ -297,14 +292,14 @@ async function seedProviders() {
     // Bestehende Outfits für heute löschen und neu zuweisen
     db.prepare('DELETE FROM avatar_outfits WHERE outfit_date = ?').run(today);
 
-    // Outfit-Zuordnungen nach Avatar-Stil — jeder Avatar bekommt einen eigenen, farbenfrohen Look
+    // Outfit-Zuordnungen — alle Artikel über Amazon (Affiliate-Kommission!)
     const outfitPlans = {
-      'Sol':    { brands: ['H&M', 'Amazon Fashion'],                            categories: ['oberteil', 'hose', 'schuhe'] },
-      'Elena':  { brands: ['Massimo Dutti', 'ZARA', 'Amazon Fashion'],          categories: ['oberteil', 'hose', 'schuhe', 'schmuck'] },
-      'Mira':   { brands: ['Mango', 'H&M', 'Amazon Fashion'],                  categories: ['oberteil', 'hose', 'schuhe'] },
-      'Lauren': { brands: ['COS', 'Massimo Dutti', 'Amazon Fashion'],           categories: ['oberteil', 'jacke', 'schuhe'] },
-      'Claire': { brands: ['ZARA', 'Zalando', 'Amazon Fashion'],               categories: ['kleid', 'schuhe', 'schmuck'] },
-      'Amy':    { brands: ['About You', '& Other Stories', 'Amazon Fashion'],   categories: ['kleid', 'schuhe', 'tasche'] },
+      'Sol':    { brands: ['Amazon Fashion'], categories: ['oberteil', 'hose', 'schuhe'] },
+      'Elena':  { brands: ['Amazon Fashion'], categories: ['oberteil', 'jacke', 'hose', 'schuhe', 'schmuck'] },
+      'Mira':   { brands: ['Amazon Fashion'], categories: ['oberteil', 'hose', 'schuhe', 'accessoire'] },
+      'Lauren': { brands: ['Amazon Fashion'], categories: ['oberteil', 'jacke', 'hose', 'schuhe'] },
+      'Claire': { brands: ['Amazon Fashion'], categories: ['kleid', 'schuhe', 'schmuck', 'tasche'] },
+      'Amy':    { brands: ['Amazon Fashion'], categories: ['kleid', 'schuhe', 'tasche', 'accessoire'] },
     };
 
     const insertOutfit = db.prepare(`

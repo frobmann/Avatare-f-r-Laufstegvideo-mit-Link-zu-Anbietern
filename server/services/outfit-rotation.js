@@ -8,44 +8,44 @@
 const { getDb } = require('../db');
 const { v4: uuidv4 } = require('uuid');
 
-// Stil-zu-Kategorie Zuordnungen (EU-Brands mit Gratis-Versand)
-// Amazon Fashion als Fallback, nicht primär — damit jeder Avatar eigene Farben bekommt
+// Stil-zu-Kategorie Zuordnungen
+// Alle Artikel über Amazon verkauft (Affiliate-Kommission!)
 const STYLE_PREFERENCES = {
   'Jeans Style': {
     required: ['oberteil', 'hose', 'schuhe'],
     optional: ['accessoire', 'kopfbedeckung'],
     priceRange: 'budget',
-    preferBrands: ['H&M', 'About You', 'Amazon Fashion'],
+    preferBrands: ['Amazon Fashion'],
   },
   'Business Style': {
     required: ['oberteil', 'hose', 'schuhe'],
     optional: ['jacke', 'schmuck', 'tasche'],
     priceRange: 'premium',
-    preferBrands: ['Massimo Dutti', 'ZARA', 'COS', 'Amazon Fashion'],
+    preferBrands: ['Amazon Fashion'],
   },
   'Sportlich-elegant': {
     required: ['oberteil', 'hose', 'schuhe'],
     optional: ['jacke', 'accessoire'],
     priceRange: 'mid',
-    preferBrands: ['Mango', 'H&M', 'Amazon Fashion'],
+    preferBrands: ['Amazon Fashion'],
   },
   'Quiet Luxury / Minimalismus': {
     required: ['oberteil', 'hose', 'schuhe'],
     optional: ['jacke', 'accessoire', 'tasche'],
     priceRange: 'premium',
-    preferBrands: ['COS', 'Massimo Dutti', 'Amazon Fashion'],
+    preferBrands: ['Amazon Fashion'],
   },
   'Klassisch-zeitlos': {
-    required: ['oberteil', 'schuhe'],
-    optional: ['kleid', 'jacke', 'schmuck', 'tasche'],
+    required: ['kleid', 'schuhe'],
+    optional: ['jacke', 'schmuck', 'tasche'],
     priceRange: 'mid',
-    preferBrands: ['Zalando', 'ZARA', 'Amazon Fashion'],
+    preferBrands: ['Amazon Fashion'],
   },
   'Romantisch-verspielt / Boho': {
-    required: ['oberteil', 'schuhe'],
-    optional: ['rock', 'kleid', 'accessoire', 'tasche'],
+    required: ['kleid', 'schuhe'],
+    optional: ['accessoire', 'tasche'],
     priceRange: 'budget',
-    preferBrands: ['About You', '& Other Stories', 'Amazon Fashion'],
+    preferBrands: ['Amazon Fashion'],
   },
 };
 

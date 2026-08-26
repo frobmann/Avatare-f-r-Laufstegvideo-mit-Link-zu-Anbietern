@@ -1015,11 +1015,13 @@
       wrapper.dataset.avatarId = avatar.id;
 
       // Outfit items für Farben verwenden wenn vorhanden
-      const topColor = getOutfitColor(avatar.outfit, 'oberteil') || getOutfitColor(avatar.outfit, 'kleid') || palette.top;
+      const hasDress = avatar.outfit.some(o => o.category === 'kleid');
+      const topColor = hasDress
+        ? (getOutfitColor(avatar.outfit, 'kleid') || getOutfitColor(avatar.outfit, 'oberteil') || palette.top)
+        : (getOutfitColor(avatar.outfit, 'oberteil') || palette.top);
       const bottomColor = ensureVisible(getOutfitColor(avatar.outfit, 'hose') || getOutfitColor(avatar.outfit, 'rock') || palette.bottom);
       const shoeColor = ensureVisible(getOutfitColor(avatar.outfit, 'schuhe') || palette.shoes);
       const jacketColor = getOutfitColor(avatar.outfit, 'jacke');
-      const hasDress = avatar.outfit.some(o => o.category === 'kleid');
 
       // Entscheide: KI-generiertes Bild oder SVG-Silhouette
       let avatarBody;
