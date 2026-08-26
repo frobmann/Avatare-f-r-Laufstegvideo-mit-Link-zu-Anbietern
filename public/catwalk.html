@@ -667,6 +667,55 @@
       transition: all 0.2s;
     }
 
+    /* Sprach-Dropdown */
+    .lang-wrapper {
+      position: relative;
+    }
+
+    .lang-dropdown {
+      display: none;
+      position: absolute;
+      bottom: 44px;
+      right: 0;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 6px 0;
+      min-width: 160px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    .lang-wrapper.open .lang-dropdown {
+      display: block;
+    }
+
+    .lang-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      color: var(--text-primary);
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+
+    .lang-option:hover {
+      background: rgba(201, 169, 110, 0.1);
+    }
+
+    .lang-option.active {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .lang-option .lang-flag {
+      font-size: 1.1rem;
+      line-height: 1;
+    }
+
     .control-btn:hover {
       background: rgba(201, 169, 110, 0.15);
       border-color: var(--accent);
@@ -719,7 +768,20 @@
     </div>
 
     <div class="controls">
-      <button class="control-btn" id="btn-lang" title="Deutsch / English">DE</button>
+      <div class="lang-wrapper" id="lang-wrapper">
+        <button class="control-btn" id="btn-lang" title="Language / Sprache">🌐</button>
+        <div class="lang-dropdown" id="lang-dropdown">
+          <div class="lang-option" data-lang="de"><span class="lang-flag">🇩🇪</span> Deutsch</div>
+          <div class="lang-option" data-lang="en"><span class="lang-flag">🇬🇧</span> English</div>
+          <div class="lang-option" data-lang="fr"><span class="lang-flag">🇫🇷</span> Français</div>
+          <div class="lang-option" data-lang="es"><span class="lang-flag">🇪🇸</span> Español</div>
+          <div class="lang-option" data-lang="it"><span class="lang-flag">🇮🇹</span> Italiano</div>
+          <div class="lang-option" data-lang="nl"><span class="lang-flag">🇳🇱</span> Nederlands</div>
+          <div class="lang-option" data-lang="pl"><span class="lang-flag">🇵🇱</span> Polski</div>
+          <div class="lang-option" data-lang="pt"><span class="lang-flag">🇵🇹</span> Português</div>
+          <div class="lang-option" data-lang="sv"><span class="lang-flag">🇸🇪</span> Svenska</div>
+        </div>
+      </div>
       <button class="control-btn" id="btn-pause" title="Pause/Play">⏯</button>
       <button class="control-btn" id="btn-speed" title="Geschwindigkeit">⚡</button>
       <button class="control-btn" id="btn-fullscreen" title="Vollbild">⛶</button>
@@ -733,42 +795,37 @@
     let speedMultiplier = 1;
     let currentLang = localStorage.getItem('catwalk-lang') || 'de';
 
-    // ═══════════════════════════════════════
-    // ÜBERSETZUNGEN – Deutsch & English
-    // ═══════════════════════════════════════
+    // ═══════════════════════════════════════════════════════
+    // ÜBERSETZUNGEN – 9 EU-Sprachen mit Währungsumrechnung
+    // ═══════════════════════════════════════════════════════
+
+    // Währung – alle Preise in EUR
+    const CURRENCY_RATES = {
+      EUR: { symbol: '€', rate: 1, locale: 'de-DE' },
+    };
+
     const I18N = {
       de: {
+        label: 'Deutsch', flag: '🇩🇪',
         title: 'Fashion Catwalk',
         subtitle: 'Klicke auf die Models – Shoppe den Look',
-        loading: 'FASHION CATWALK',
         emptyTitle: 'Noch keine Avatare',
         emptyText: 'Erstelle Avatare im',
         emptyLink: 'Admin Dashboard',
         shopAll: 'Ganzen Look shoppen →',
         shopLink: 'Shop →',
-        freeShipping: 'Gratis EU-Versand',
+        freeShipping: 'Kostenloser EU-Versand',
         categories: {
-          'kopfbedeckung': 'Kopfbedeckung',
-          'oberteil': 'Oberteil',
-          'jacke': 'Jacke',
-          'hose': 'Hose',
-          'rock': 'Rock',
-          'kleid': 'Kleid',
-          'schuhe': 'Schuhe',
-          'accessoire': 'Accessoire',
-          'tasche': 'Tasche',
-          'schmuck': 'Schmuck',
+          'kopfbedeckung': 'Kopfbedeckung', 'oberteil': 'Oberteil', 'jacke': 'Jacke',
+          'hose': 'Hose', 'rock': 'Rock', 'kleid': 'Kleid', 'schuhe': 'Schuhe',
+          'accessoire': 'Accessoire', 'tasche': 'Tasche', 'schmuck': 'Schmuck',
         },
-        dateLocale: 'de-DE',
-        pauseTitle: 'Pause/Play',
-        speedTitle: 'Geschwindigkeit',
-        fullscreenTitle: 'Vollbild',
-        langTitle: 'Deutsch / English',
+        dateLocale: 'de-DE', currency: 'EUR',
       },
       en: {
+        label: 'English', flag: '🇬🇧',
         title: 'Fashion Catwalk',
         subtitle: 'Click the models – Shop the look',
-        loading: 'FASHION CATWALK',
         emptyTitle: 'No avatars yet',
         emptyText: 'Create avatars in the',
         emptyLink: 'Admin Dashboard',
@@ -776,27 +833,147 @@
         shopLink: 'Shop →',
         freeShipping: 'Free EU shipping',
         categories: {
-          'kopfbedeckung': 'Headwear',
-          'oberteil': 'Top',
-          'jacke': 'Jacket',
-          'hose': 'Trousers',
-          'rock': 'Skirt',
-          'kleid': 'Dress',
-          'schuhe': 'Shoes',
-          'accessoire': 'Accessory',
-          'tasche': 'Bag',
-          'schmuck': 'Jewellery',
+          'kopfbedeckung': 'Headwear', 'oberteil': 'Top', 'jacke': 'Jacket',
+          'hose': 'Trousers', 'rock': 'Skirt', 'kleid': 'Dress', 'schuhe': 'Shoes',
+          'accessoire': 'Accessory', 'tasche': 'Bag', 'schmuck': 'Jewellery',
         },
-        dateLocale: 'en-GB',
-        pauseTitle: 'Pause/Play',
-        speedTitle: 'Speed',
-        fullscreenTitle: 'Fullscreen',
-        langTitle: 'Deutsch / English',
+        dateLocale: 'en-GB', currency: 'EUR',
+      },
+      fr: {
+        label: 'Français', flag: '🇫🇷',
+        title: 'Fashion Catwalk',
+        subtitle: 'Cliquez sur les mannequins – Achetez le look',
+        emptyTitle: 'Pas encore d\'avatars',
+        emptyText: 'Créez des avatars dans le',
+        emptyLink: 'Tableau de bord',
+        shopAll: 'Acheter le look complet →',
+        shopLink: 'Acheter →',
+        freeShipping: 'Livraison UE gratuite',
+        categories: {
+          'kopfbedeckung': 'Couvre-chef', 'oberteil': 'Haut', 'jacke': 'Veste',
+          'hose': 'Pantalon', 'rock': 'Jupe', 'kleid': 'Robe', 'schuhe': 'Chaussures',
+          'accessoire': 'Accessoire', 'tasche': 'Sac', 'schmuck': 'Bijoux',
+        },
+        dateLocale: 'fr-FR', currency: 'EUR',
+      },
+      es: {
+        label: 'Español', flag: '🇪🇸',
+        title: 'Fashion Catwalk',
+        subtitle: 'Haz clic en las modelos – Compra el look',
+        emptyTitle: 'Aún no hay avatares',
+        emptyText: 'Crea avatares en el',
+        emptyLink: 'Panel de administración',
+        shopAll: 'Comprar el look completo →',
+        shopLink: 'Comprar →',
+        freeShipping: 'Envío UE gratuito',
+        categories: {
+          'kopfbedeckung': 'Sombrero', 'oberteil': 'Top', 'jacke': 'Chaqueta',
+          'hose': 'Pantalón', 'rock': 'Falda', 'kleid': 'Vestido', 'schuhe': 'Zapatos',
+          'accessoire': 'Accesorio', 'tasche': 'Bolso', 'schmuck': 'Joyería',
+        },
+        dateLocale: 'es-ES', currency: 'EUR',
+      },
+      it: {
+        label: 'Italiano', flag: '🇮🇹',
+        title: 'Fashion Catwalk',
+        subtitle: 'Clicca sulle modelle – Acquista il look',
+        emptyTitle: 'Nessun avatar ancora',
+        emptyText: 'Crea gli avatar nel',
+        emptyLink: 'Pannello di controllo',
+        shopAll: 'Acquista il look completo →',
+        shopLink: 'Acquista →',
+        freeShipping: 'Spedizione UE gratuita',
+        categories: {
+          'kopfbedeckung': 'Copricapo', 'oberteil': 'Top', 'jacke': 'Giacca',
+          'hose': 'Pantaloni', 'rock': 'Gonna', 'kleid': 'Vestito', 'schuhe': 'Scarpe',
+          'accessoire': 'Accessorio', 'tasche': 'Borsa', 'schmuck': 'Gioielli',
+        },
+        dateLocale: 'it-IT', currency: 'EUR',
+      },
+      nl: {
+        label: 'Nederlands', flag: '🇳🇱',
+        title: 'Fashion Catwalk',
+        subtitle: 'Klik op de modellen – Shop de look',
+        emptyTitle: 'Nog geen avatars',
+        emptyText: 'Maak avatars aan in het',
+        emptyLink: 'Beheerpaneel',
+        shopAll: 'Shop de hele look →',
+        shopLink: 'Shop →',
+        freeShipping: 'Gratis EU-verzending',
+        categories: {
+          'kopfbedeckung': 'Hoofddeksel', 'oberteil': 'Top', 'jacke': 'Jas',
+          'hose': 'Broek', 'rock': 'Rok', 'kleid': 'Jurk', 'schuhe': 'Schoenen',
+          'accessoire': 'Accessoire', 'tasche': 'Tas', 'schmuck': 'Sieraden',
+        },
+        dateLocale: 'nl-NL', currency: 'EUR',
+      },
+      pl: {
+        label: 'Polski', flag: '🇵🇱',
+        title: 'Fashion Catwalk',
+        subtitle: 'Kliknij modelki – Kup ten look',
+        emptyTitle: 'Brak avatarów',
+        emptyText: 'Stwórz avatary w',
+        emptyLink: 'Panelu administracyjnym',
+        shopAll: 'Kup cały look →',
+        shopLink: 'Kup →',
+        freeShipping: 'Darmowa wysyłka w UE',
+        categories: {
+          'kopfbedeckung': 'Nakrycie głowy', 'oberteil': 'Góra', 'jacke': 'Kurtka',
+          'hose': 'Spodnie', 'rock': 'Spódnica', 'kleid': 'Sukienka', 'schuhe': 'Buty',
+          'accessoire': 'Akcesorium', 'tasche': 'Torebka', 'schmuck': 'Biżuteria',
+        },
+        dateLocale: 'pl-PL', currency: 'EUR',
+      },
+      pt: {
+        label: 'Português', flag: '🇵🇹',
+        title: 'Fashion Catwalk',
+        subtitle: 'Clique nas modelos – Compre o look',
+        emptyTitle: 'Ainda sem avatares',
+        emptyText: 'Crie avatares no',
+        emptyLink: 'Painel de administração',
+        shopAll: 'Comprar o look completo →',
+        shopLink: 'Comprar →',
+        freeShipping: 'Envio UE grátis',
+        categories: {
+          'kopfbedeckung': 'Chapéu', 'oberteil': 'Blusa', 'jacke': 'Casaco',
+          'hose': 'Calças', 'rock': 'Saia', 'kleid': 'Vestido', 'schuhe': 'Sapatos',
+          'accessoire': 'Acessório', 'tasche': 'Mala', 'schmuck': 'Joias',
+        },
+        dateLocale: 'pt-PT', currency: 'EUR',
+      },
+      sv: {
+        label: 'Svenska', flag: '🇸🇪',
+        title: 'Fashion Catwalk',
+        subtitle: 'Klicka på modellerna – Shoppa looken',
+        emptyTitle: 'Inga avatarer ännu',
+        emptyText: 'Skapa avatarer i',
+        emptyLink: 'Adminpanelen',
+        shopAll: 'Shoppa hela looken →',
+        shopLink: 'Köp →',
+        freeShipping: 'Fri frakt inom EU',
+        categories: {
+          'kopfbedeckung': 'Huvudbonad', 'oberteil': 'Överdel', 'jacke': 'Jacka',
+          'hose': 'Byxor', 'rock': 'Kjol', 'kleid': 'Klänning', 'schuhe': 'Skor',
+          'accessoire': 'Accessoar', 'tasche': 'Väska', 'schmuck': 'Smycke',
+        },
+        dateLocale: 'sv-SE', currency: 'EUR',
       },
     };
 
     function t(key) { return I18N[currentLang][key] || I18N['de'][key] || key; }
     function tCat(category) { return (I18N[currentLang].categories || {})[category] || category; }
+
+    // Preis in die Landeswährung umrechnen
+    function formatPrice(eurPrice) {
+      const currencyCode = I18N[currentLang].currency || 'EUR';
+      const curr = CURRENCY_RATES[currencyCode] || CURRENCY_RATES.EUR;
+      const converted = eurPrice * curr.rate;
+      // Lokales Zahlenformat
+      const formatted = converted.toLocaleString(I18N[currentLang].dateLocale, {
+        minimumFractionDigits: 2, maximumFractionDigits: 2,
+      });
+      return `${curr.symbol} ${formatted}`;
+    }
 
     // Farbpaletten für Avatare
     const AVATAR_PALETTES = [
@@ -895,7 +1072,7 @@
       const outfitInfoHtml = avatar.outfit.length > 0
         ? `<div class="avatar-outfit-info">
              <div class="avatar-outfit-brands">${outfitBrands.join(' · ')}</div>
-             <div class="avatar-outfit-price">€ ${avatar.total_price.toFixed(2)}</div>
+             <div class="avatar-outfit-price">${formatPrice(avatar.total_price)}</div>
            </div>`
         : '';
 
@@ -963,7 +1140,7 @@
             <div class="product-item-name">${item.article_name}</div>
             <div class="product-item-brand">${item.brand_name}</div>
           </div>
-          <span class="product-item-price">€ ${item.price.toFixed(2)}</span>
+          <span class="product-item-price">${formatPrice(item.price)}</span>
           <span class="product-item-link">${t('shopLink')}</span>
         </li>
       `).join('');
@@ -972,7 +1149,7 @@
         <div class="product-card">
           <div class="product-card-header">
             <span class="product-card-brand">${brandLabel}</span>
-            <span class="product-card-total">€ ${avatar.total_price.toFixed(2)}</span>
+            <span class="product-card-total">${formatPrice(avatar.total_price)}</span>
           </div>
           <ul class="product-card-items">${itemsHtml}</ul>
           <a class="shop-all-btn" href="#" onclick="shopAll(event, '${avatar.id}')">
@@ -1065,18 +1242,39 @@
       });
     }
 
-    // Sprach-Umschalter
-    function updateLangButton() {
-      document.getElementById('btn-lang').textContent = currentLang === 'de' ? 'DE' : 'EN';
-      document.getElementById('btn-lang').title = t('langTitle');
+    // Sprach-Dropdown
+    function updateLangUI() {
+      // Aktive Sprache markieren
+      document.querySelectorAll('.lang-option').forEach(opt => {
+        opt.classList.toggle('active', opt.dataset.lang === currentLang);
+      });
+      // Button zeigt Flagge der aktuellen Sprache
+      document.getElementById('btn-lang').textContent = I18N[currentLang].flag;
+      document.getElementById('btn-lang').title = 'Language / Sprache';
     }
-    updateLangButton();
+    updateLangUI();
 
-    document.getElementById('btn-lang').addEventListener('click', () => {
-      currentLang = currentLang === 'de' ? 'en' : 'de';
-      localStorage.setItem('catwalk-lang', currentLang);
-      updateLangButton();
-      renderCatwalk(); // Seite neu rendern mit neuer Sprache
+    // Dropdown öffnen/schließen
+    document.getElementById('btn-lang').addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.getElementById('lang-wrapper').classList.toggle('open');
+    });
+
+    // Sprache wählen
+    document.querySelectorAll('.lang-option').forEach(opt => {
+      opt.addEventListener('click', (e) => {
+        e.stopPropagation();
+        currentLang = opt.dataset.lang;
+        localStorage.setItem('catwalk-lang', currentLang);
+        document.getElementById('lang-wrapper').classList.remove('open');
+        updateLangUI();
+        renderCatwalk();
+      });
+    });
+
+    // Dropdown schließen bei Klick außerhalb
+    document.addEventListener('click', () => {
+      document.getElementById('lang-wrapper').classList.remove('open');
     });
 
     // Controls
