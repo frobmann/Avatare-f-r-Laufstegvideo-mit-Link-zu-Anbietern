@@ -1107,10 +1107,42 @@
       return wrapper;
     }
 
+    // Deutsche Farbnamen → CSS Hex-Codes
+    const COLOR_MAP = {
+      'weiss': '#f5f5f5', 'weiß': '#f5f5f5', 'white': '#f5f5f5',
+      'schwarz': '#1a1a1a', 'black': '#1a1a1a',
+      'grau': '#808080', 'grey': '#808080', 'gray': '#808080',
+      'rot': '#c0392b', 'red': '#c0392b',
+      'blau': '#2c3e6b', 'blue': '#2c3e6b',
+      'dunkelblau': '#1a2744', 'navy': '#1a2744',
+      'grün': '#2d6a4f', 'green': '#2d6a4f', 'dunkelgrün': '#1b4332',
+      'olive': '#606c38', 'oliv': '#606c38',
+      'beige': '#d4b896', 'sand': '#d2b48c', 'creme': '#f5f0e1',
+      'braun': '#6b4423', 'brown': '#6b4423', 'cognac': '#9a6324',
+      'camel': '#c19a6b',
+      'gold': '#c9a96e', 'roségold': '#b76e79', 'rosé': '#b76e79',
+      'ivory': '#fffff0',
+      'indigo': '#3f4fa3',
+      'burgund': '#6b1c2a', 'bordeaux': '#6b1c2a',
+      'champagner': '#f7e7ce',
+      'nude': '#e8c4a2',
+      'smaragd': '#2d6a4f',
+      'natur': '#d4c5a9',
+      'bunt': '#c9a96e',
+      'gold/perle': '#c9a96e',
+    };
+
+    // Farbe in CSS-kompatiblen Hex-Wert umwandeln
+    function resolveColor(colorName) {
+      if (!colorName) return null;
+      if (colorName.startsWith('#')) return colorName;
+      return COLOR_MAP[colorName.toLowerCase()] || null;
+    }
+
     // Outfit-Farbe für Kategorie ermitteln
     function getOutfitColor(outfit, category) {
       const item = outfit.find(o => o.category === category);
-      return item && item.color ? item.color : null;
+      return item && item.color ? resolveColor(item.color) : null;
     }
 
     // Farbe anpassen (heller/dunkler)
