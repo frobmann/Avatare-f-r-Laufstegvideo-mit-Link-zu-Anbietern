@@ -65,7 +65,7 @@ router.post('/', (req, res) => {
   db.prepare(`
     INSERT INTO articles (id, provider_id, name, category, price, currency, product_url, image_url, color, size)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(id, provider_id, name, category, price, currency || 'CHF', product_url, image_url || '', color || '', size || '');
+  `).run(id, provider_id, name, category, price, currency || 'EUR', product_url, image_url || '', color || '', size || '');
 
   const article = db.prepare(`
     SELECT a.*, p.brand_name FROM articles a
@@ -138,7 +138,7 @@ router.post('/batch', (req, res) => {
       const id = require('uuid').v4();
       insertArticle.run(
         id, provider.id, a.name, a.category,
-        a.price, a.currency || 'CHF', a.product_url,
+        a.price, a.currency || 'EUR', a.product_url,
         a.image_url || '', a.color || '', a.size || ''
       );
       results.push({ name: a.name, success: true, id });

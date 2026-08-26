@@ -8,31 +8,31 @@
 const { getDb } = require('../db');
 const { v4: uuidv4 } = require('uuid');
 
-// Stil-zu-Kategorie Zuordnungen
+// Stil-zu-Kategorie Zuordnungen (EU-Brands mit Gratis-Versand)
 const STYLE_PREFERENCES = {
   'Jeans Style': {
     required: ['oberteil', 'hose', 'schuhe'],
     optional: ['accessoire', 'kopfbedeckung'],
     priceRange: 'budget',
-    preferBrands: [],
+    preferBrands: ['H&M', 'About You'],
   },
   'Business Style': {
     required: ['oberteil', 'hose', 'schuhe'],
     optional: ['jacke', 'schmuck', 'tasche'],
     priceRange: 'premium',
-    preferBrands: ['PKZ', 'ZARA', 'Globus'],
+    preferBrands: ['Massimo Dutti', 'ZARA', 'COS'],
   },
   'Sportlich-elegant': {
     required: ['oberteil', 'hose', 'schuhe'],
     optional: ['jacke', 'accessoire'],
     priceRange: 'mid',
-    preferBrands: [],
+    preferBrands: ['H&M', 'Mango'],
   },
   'Quiet Luxury / Minimalismus': {
     required: ['oberteil', 'hose', 'schuhe'],
     optional: ['jacke', 'accessoire', 'tasche'],
     priceRange: 'premium',
-    preferBrands: ['Globus', 'PKZ'],
+    preferBrands: ['COS', 'Massimo Dutti'],
   },
   'Klassisch-zeitlos': {
     required: ['oberteil', 'schuhe'],
@@ -44,7 +44,7 @@ const STYLE_PREFERENCES = {
     required: ['oberteil', 'schuhe'],
     optional: ['rock', 'kleid', 'accessoire', 'tasche'],
     priceRange: 'budget',
-    preferBrands: ['About You', 'Chicorée'],
+    preferBrands: ['About You', '& Other Stories'],
   },
 };
 

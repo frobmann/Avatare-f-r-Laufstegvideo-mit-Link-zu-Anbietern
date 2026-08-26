@@ -67,7 +67,7 @@ router.get('/show', (req, res) => {
       generated_image,
       generated_video,
       total_price: Math.round(totalPrice * 100) / 100,
-      currency: outfit.length > 0 ? outfit[0].currency : 'CHF'
+      currency: outfit.length > 0 ? outfit[0].currency : 'EUR'
     };
   });
 

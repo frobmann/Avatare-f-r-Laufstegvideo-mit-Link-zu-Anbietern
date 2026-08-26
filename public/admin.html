@@ -775,7 +775,7 @@
               </select>
             </div>
             <div class="form-group">
-              <label>Preis (CHF) *</label>
+              <label>Preis (EUR) *</label>
               <input type="number" id="art-price" step="0.01" min="0" placeholder="79.90" />
             </div>
             <div class="form-group">
@@ -1403,7 +1403,7 @@ ZARA | Midi-Rock Gold | rock | 49.90 | https://www.zara.com/ch/midi-rock"></text
         resultEl.style.display = 'block';
         resultEl.innerHTML = `
           <div style="padding: 10px; background: rgba(39,174,96,0.1); border-radius: 6px; font-size: 0.85rem;">
-            ✅ ${res.summary.avatars} Avatare eingekleidet | ${res.summary.totalArticles} Artikel | CHF ${res.summary.totalValue.toFixed(2)} Gesamtwert
+            ✅ ${res.summary.avatars} Avatare eingekleidet | ${res.summary.totalArticles} Artikel | € ${res.summary.totalValue.toFixed(2)} Gesamtwert
             <ul style="margin-top: 6px; padding-left: 18px;">
               ${res.results.map(r => `
                 <li><strong>${r.avatar}</strong> (${r.style}): ${r.articles.map(a => a.name).join(', ') || 'keine Artikel verfügbar'}</li>
@@ -1440,7 +1440,7 @@ ZARA | Midi-Rock Gold | rock | 49.90 | https://www.zara.com/ch/midi-rock"></text
         resultEl.style.display = 'block';
         resultEl.innerHTML = `
           <div style="padding: 10px; background: rgba(201,169,110,0.1); border-radius: 6px; font-size: 0.85rem;">
-            🔄 Outfits rotiert! ${res.summary.avatars} Avatare | ${res.summary.totalArticles} Artikel | CHF ${res.summary.totalValue.toFixed(2)}
+            🔄 Outfits rotiert! ${res.summary.avatars} Avatare | ${res.summary.totalArticles} Artikel | € ${res.summary.totalValue.toFixed(2)}
             <ul style="margin-top: 6px; padding-left: 18px;">
               ${res.results.map(r => `
                 <li><strong>${r.avatar}</strong>: ${r.articles.map(a => `${a.name} (${a.brand})`).join(', ') || '—'}</li>

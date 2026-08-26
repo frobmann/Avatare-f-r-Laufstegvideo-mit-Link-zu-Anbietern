@@ -50,7 +50,7 @@ async function initTables() {
         'kleid', 'schuhe', 'accessoire', 'tasche', 'schmuck'
       )),
       price REAL NOT NULL,
-      currency TEXT DEFAULT 'CHF',
+      currency TEXT DEFAULT 'EUR',
       product_url TEXT NOT NULL,
       image_url TEXT DEFAULT '',
       color TEXT DEFAULT '',
