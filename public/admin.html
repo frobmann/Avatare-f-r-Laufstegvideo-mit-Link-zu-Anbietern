@@ -526,6 +526,7 @@
       <button class="nav-item" data-section="articles">👗 Artikel</button>
       <button class="nav-item" data-section="config">⚙️ Catwalk-Config</button>
       <button class="nav-item" data-section="ai">🤖 KI-Generierung</button>
+      <button class="nav-item" data-section="dsgvo">🔒 DSGVO & Finanzamt</button>
       <button class="nav-item" data-section="stats">📊 Statistiken</button>
     </nav>
 
@@ -1053,6 +1054,124 @@ ZARA | Midi-Rock Gold | rock | 49.90 | https://www.zara.com/ch/midi-rock"></text
         </div>
       </div>
 
+      <!-- ===== DSGVO & FINANZAMT ===== -->
+      <div id="section-dsgvo" class="section">
+        <h2 class="page-title">🔒 Datenschutz & Finanzamt</h2>
+
+        <div class="stats-grid" style="margin-bottom: 24px;">
+          <div class="stat-card" style="cursor:pointer;" onclick="window.open('/impressum','_blank')">
+            <div class="stat-value" style="font-size:1.5rem;">📜</div>
+            <div class="stat-label">Impressum</div>
+          </div>
+          <div class="stat-card" style="cursor:pointer;" onclick="window.open('/datenschutz','_blank')">
+            <div class="stat-value" style="font-size:1.5rem;">🔒</div>
+            <div class="stat-label">Datenschutzerklärung</div>
+          </div>
+        </div>
+
+        <!-- Finanzamt-Exporte -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">📊 Finanzamt-Exporte (CSV für Buchhaltung)</span>
+          </div>
+          <p style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 16px;">
+            Alle CSV-Dateien sind UTF-8 mit BOM (direkt in Excel öffenbar) und verwenden Semikolon als Trennzeichen.
+            Aufbewahrungspflicht: <strong>10 Jahre</strong> gem. § 147 AO / § 257 HGB.
+          </p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <div style="flex:1;min-width:200px;padding:16px;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid rgba(255,255,255,0.06);">
+              <div style="font-size:1.2rem;margin-bottom:6px;">💰</div>
+              <div style="font-weight:500;margin-bottom:4px;">KI-Kosten</div>
+              <div style="font-size:0.75rem;color:var(--text-dim);margin-bottom:10px;">Alle Generierungskosten pro Jahr (Avatar-Bilder, Try-On, Videos)</div>
+              <select id="cost-export-year" style="padding:4px 8px;border-radius:4px;background:rgba(255,255,255,0.05);color:var(--text-primary);border:1px solid rgba(255,255,255,0.1);margin-bottom:8px;">
+              </select>
+              <br>
+              <button class="btn btn-secondary btn-sm" onclick="downloadExport('costs-csv', '?year=' + document.getElementById('cost-export-year').value)">📥 CSV herunterladen</button>
+            </div>
+            <div style="flex:1;min-width:200px;padding:16px;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid rgba(255,255,255,0.06);">
+              <div style="font-size:1.2rem;margin-bottom:6px;">👗</div>
+              <div style="font-weight:500;margin-bottom:4px;">Artikel-Übersicht</div>
+              <div style="font-size:0.75rem;color:var(--text-dim);margin-bottom:10px;">Alle Artikel mit Preisen, Anbietern, Links</div>
+              <button class="btn btn-secondary btn-sm" onclick="downloadExport('articles-csv')">📥 CSV herunterladen</button>
+            </div>
+            <div style="flex:1;min-width:200px;padding:16px;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid rgba(255,255,255,0.06);">
+              <div style="font-size:1.2rem;margin-bottom:6px;">🔍</div>
+              <div style="font-weight:500;margin-bottom:4px;">Verfügbarkeits-Checks</div>
+              <div style="font-size:0.75rem;color:var(--text-dim);margin-bottom:10px;">Alle Prüfungen der Artikel-URLs</div>
+              <button class="btn btn-secondary btn-sm" onclick="downloadExport('availability-csv')">📥 CSV herunterladen</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- DSGVO -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">🔒 DSGVO – Datenschutz-Grundverordnung</span>
+          </div>
+          <p style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 16px;">
+            Funktionen gemäß DSGVO Art. 15 (Auskunft), Art. 17 (Löschung), Art. 20 (Datenportabilität).
+          </p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <div style="flex:1;min-width:240px;padding:16px;background:rgba(39,174,96,0.05);border-radius:8px;border:1px solid rgba(39,174,96,0.15);">
+              <div style="font-size:1.2rem;margin-bottom:6px;">📦</div>
+              <div style="font-weight:500;margin-bottom:4px;">Komplett-Export (Art. 15 + 20)</div>
+              <div style="font-size:0.75rem;color:var(--text-dim);margin-bottom:10px;">Alle gespeicherten Daten als JSON (Avatare, Artikel, Outfits, Generierungen, Statistiken)</div>
+              <button class="btn btn-secondary btn-sm" onclick="downloadExport('dsgvo-complete')">📥 JSON herunterladen</button>
+            </div>
+            <div style="flex:1;min-width:240px;padding:16px;background:rgba(231,76,60,0.05);border-radius:8px;border:1px solid rgba(231,76,60,0.15);">
+              <div style="font-size:1.2rem;margin-bottom:6px;">🗑️</div>
+              <div style="font-weight:500;margin-bottom:4px;">Klick-Statistiken löschen (Art. 17)</div>
+              <div style="font-size:0.75rem;color:var(--text-dim);margin-bottom:10px;">Alle anonymisierten Klick-/Hover-Statistiken unwiderruflich löschen</div>
+              <button class="btn btn-danger btn-sm" onclick="deleteDsgvoStats()">🗑️ Statistiken löschen</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Datenschutz-Info -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">ℹ️ Datenschutz-Übersicht</span>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr><th>Datenart</th><th>Personenbezug</th><th>Speicherdauer</th><th>Rechtsgrundlage</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Klick-Statistiken</td>
+                <td>❌ Nein (anonymisiert, keine IP)</td>
+                <td>90 Tage</td>
+                <td>Art. 6 Abs. 1 lit. f DSGVO</td>
+              </tr>
+              <tr>
+                <td>KI-Generierungen</td>
+                <td>❌ Nein (nur Kosten & Modelle)</td>
+                <td>10 Jahre (§ 147 AO)</td>
+                <td>§ 147 AO, § 257 HGB</td>
+              </tr>
+              <tr>
+                <td>Artikel & Anbieter</td>
+                <td>❌ Nein (nur Produktdaten)</td>
+                <td>Solange aktiv</td>
+                <td>Art. 6 Abs. 1 lit. f DSGVO</td>
+              </tr>
+              <tr>
+                <td>Avatar-Bilder (KI)</td>
+                <td>❌ Nein (fiktive Personen)</td>
+                <td>Bis Löschung</td>
+                <td>Art. 6 Abs. 1 lit. f DSGVO</td>
+              </tr>
+              <tr>
+                <td>Datenbank-Backups</td>
+                <td>❌ Nein</td>
+                <td>Täglich: unbegrenzt (§ 147 AO)</td>
+                <td>§ 147 AO</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- ===== STATISTIKEN ===== -->
       <div id="section-stats" class="section">
         <h2 class="page-title">📊 Statistiken</h2>
@@ -1126,6 +1245,7 @@ ZARA | Midi-Rock Gold | rock | 49.90 | https://www.zara.com/ch/midi-rock"></text
           case 'stats': loadStats(); break;
           case 'outfits': loadOutfitView(); break;
           case 'ai': loadAiSection(); break;
+          case 'dsgvo': loadDsgvoSection(); break;
         }
       });
     });
@@ -2122,6 +2242,77 @@ ZARA | Midi-Rock Gold | rock | 49.90 | https://www.zara.com/ch/midi-rock"></text
           alert('✅ Backup wiederhergestellt!\n\nBitte starte den Server neu:\n1. Drücke Strg+C im Terminal\n2. Tippe: npm start');
         } else {
           showToast('❌ ' + (res.error || 'Fehler'), 'error');
+        }
+      } catch (e) {
+        showToast('❌ ' + e.message, 'error');
+      }
+    }
+
+    // ===== DSGVO & FINANZAMT =====
+
+    async function loadDsgvoSection() {
+      // Jahr-Auswahl für KI-Kosten-Export befüllen
+      const yearSelect = document.getElementById('cost-export-year');
+      if (yearSelect && yearSelect.options.length === 0) {
+        const currentYear = new Date().getFullYear();
+        for (let y = currentYear; y >= currentYear - 10; y--) {
+          const opt = document.createElement('option');
+          opt.value = y;
+          opt.textContent = y;
+          yearSelect.appendChild(opt);
+        }
+      }
+    }
+
+    function downloadExport(type, queryString) {
+      queryString = queryString || '';
+      const urls = {
+        'costs-csv': '/generate/export/costs-csv',
+        'articles-csv': '/generate/export/articles-csv',
+        'availability-csv': '/generate/export/availability-csv',
+        'dsgvo-complete': '/generate/export/dsgvo-complete'
+      };
+      const url = urls[type];
+      if (!url) {
+        showToast('Unbekannter Export-Typ: ' + type, 'error');
+        return;
+      }
+      // Download über versteckten Link auslösen
+      const a = document.createElement('a');
+      a.href = API + url + queryString;
+      a.download = '';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      showToast('📥 Download gestartet...');
+    }
+
+    async function deleteDsgvoStats() {
+      if (!confirm(
+        '⚠️ ACHTUNG: Alle Klick-Statistiken werden unwiderruflich gelöscht!\n\n' +
+        'Dies betrifft:\n' +
+        '• Alle Hover-Statistiken\n' +
+        '• Alle Klick-Statistiken\n' +
+        '• Alle Shop-Weiterleitungen\n\n' +
+        'Diese Aktion kann NICHT rückgängig gemacht werden.\n' +
+        'Möchten Sie fortfahren?'
+      )) return;
+
+      // Doppelte Bestätigung für Löschung (DSGVO-konform: bewusste Handlung)
+      if (!confirm('Wirklich ALLE Statistiken löschen? Letzte Chance!')) return;
+
+      try {
+        const res = await fetch(API + '/generate/export/dsgvo-delete-stats', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(`🗑️ ${data.deleted_records} Statistik-Einträge gelöscht (DSGVO Art. 17)`);
+          // Statistiken aktualisieren falls sichtbar
+          try { loadStats(); } catch (e) { /* ignore */ }
+        } else {
+          showToast('❌ ' + (data.error || 'Fehler beim Löschen'), 'error');
         }
       } catch (e) {
         showToast('❌ ' + e.message, 'error');

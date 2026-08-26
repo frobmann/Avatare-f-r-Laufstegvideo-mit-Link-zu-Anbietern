@@ -325,4 +325,187 @@ router.post('/backups/create', (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════════════════
+// FINANZAMT-EXPORT (CSV-Dateien für Buchhaltung)
+// ═══════════════════════════════════════════════════
+
+// CSV-Export: KI-Generierungskosten (für Finanzamt / Buchhaltung)
+router.get('/export/costs-csv', (req, res) => {
+  try {
+    const db = getDb();
+    const year = req.query.year || new Date().getFullYear();
+
+    const rows = db.prepare(`
+      SELECT
+        g.id,
+        a.name as avatar_name,
+        g.type,
+        g.status,
+        g.cost,
+        g.cache_key,
+        g.created_at,
+        g.error_message
+      FROM generations g
+      JOIN avatars a ON g.avatar_id = a.id
+      WHERE strftime('%Y', g.created_at) = ?
+      ORDER BY g.created_at ASC
+    `).all(String(year));
+
+    // CSV erstellen (UTF-8 BOM für Excel-Kompatibilität)
+    const BOM = '﻿';
+    const header = 'ID;Avatar;Typ;Status;Kosten (USD);Cache-Key;Datum;Fehler\n';
+    const csvRows = rows.map(r => {
+      const type = r.type === 'tryon' ? 'Outfit Try-On' : r.type === 'walk_animation' ? 'Walking-Video' : 'Avatar-Bild';
+      const status = r.status === 'completed' ? 'Erfolgreich' : r.status === 'failed' ? 'Fehlgeschlagen' : r.status;
+      const cost = (r.cost || 0).toFixed(4);
+      return `${r.id};${r.avatar_name};${type};${status};${cost};${r.cache_key || ''};${r.created_at};${(r.error_message || '').replace(/;/g, ',')}`;
+    }).join('\n');
+
+    const totalCost = rows.reduce((sum, r) => sum + (r.cost || 0), 0);
+    const summary = `\n\nZUSAMMENFASSUNG ${year};\n` +
+      `Gesamt Generierungen;${rows.length}\n` +
+      `Erfolgreich;${rows.filter(r => r.status === 'completed').length}\n` +
+      `Fehlgeschlagen;${rows.filter(r => r.status === 'failed').length}\n` +
+      `Gesamtkosten (USD);${totalCost.toFixed(4)}\n` +
+      `Exportiert am;${new Date().toISOString()}\n`;
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="KI-Kosten_${year}.csv"`);
+    res.send(BOM + header + csvRows + summary);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// CSV-Export: Alle Artikel und Anbieter (Warenwirtschaft)
+router.get('/export/articles-csv', (req, res) => {
+  try {
+    const db = getDb();
+    const rows = db.prepare(`
+      SELECT
+        a.id, a.name, a.category, a.price, a.currency,
+        a.color, a.size, a.product_url, a.image_url,
+        a.is_active,
+        p.brand_name, p.name as provider_name, p.website_url,
+        a.created_at
+      FROM articles a
+      JOIN providers p ON a.provider_id = p.id
+      ORDER BY p.brand_name, a.name
+    `).all();
+
+    const BOM = '﻿';
+    const header = 'ID;Artikelname;Kategorie;Preis;Währung;Farbe;Größe;Produkt-URL;Bild-URL;Aktiv;Marke;Anbieter;Anbieter-URL;Erstellt\n';
+    const csvRows = rows.map(r =>
+      `${r.id};${r.name};${r.category};${(r.price || 0).toFixed(2)};${r.currency || 'EUR'};${r.color || ''};${r.size || ''};${r.product_url || ''};${r.image_url || ''};${r.is_active ? 'Ja' : 'Nein'};${r.brand_name};${r.provider_name};${r.website_url || ''};${r.created_at || ''}`
+    ).join('\n');
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="Artikel-Uebersicht_${new Date().toISOString().split('T')[0]}.csv"`);
+    res.send(BOM + header + csvRows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// CSV-Export: Verfügbarkeits-Checks
+router.get('/export/availability-csv', (req, res) => {
+  try {
+    const db = getDb();
+
+    // Tabelle prüfen
+    try { db.exec(`CREATE TABLE IF NOT EXISTS availability_checks (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, article_id TEXT, article_name TEXT,
+      brand_name TEXT, product_url TEXT, status_code INTEGER, is_available INTEGER DEFAULT 1,
+      error_message TEXT DEFAULT '', check_type TEXT DEFAULT 'ok',
+      checked_at TEXT DEFAULT (datetime('now'))
+    )`); } catch(e) {}
+
+    const rows = db.prepare(`
+      SELECT * FROM availability_checks ORDER BY checked_at DESC
+    `).all();
+
+    const BOM = '﻿';
+    const header = 'ID;Artikel;Marke;URL;HTTP-Status;Verfügbar;Fehler;Check-Typ;Geprüft am\n';
+    const csvRows = rows.map(r =>
+      `${r.id};${r.article_name || ''};${r.brand_name || ''};${r.product_url || ''};${r.status_code || ''};${r.is_available ? 'Ja' : 'Nein'};${(r.error_message || '').replace(/;/g, ',')};${r.check_type || ''};${r.checked_at || ''}`
+    ).join('\n');
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="Verfuegbarkeits-Checks_${new Date().toISOString().split('T')[0]}.csv"`);
+    res.send(BOM + header + csvRows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════
+// DSGVO-EXPORT (Art. 15, 17, 20 DSGVO)
+// ═══════════════════════════════════════════════════
+
+// DSGVO Art. 15+20: Alle gespeicherten Daten als JSON exportieren
+router.get('/export/dsgvo-complete', (req, res) => {
+  try {
+    const db = getDb();
+
+    const data = {
+      exportDatum: new Date().toISOString(),
+      hinweis: 'Vollständiger Datenexport gem. Art. 15 DSGVO (Auskunftsrecht) und Art. 20 DSGVO (Datenportabilität)',
+      system: 'Avatar Catwalk Shop System',
+
+      avatare: db.prepare('SELECT * FROM avatars ORDER BY position_order').all(),
+      anbieter: db.prepare('SELECT * FROM providers ORDER BY brand_name').all(),
+      artikel: db.prepare(`
+        SELECT a.*, p.brand_name FROM articles a JOIN providers p ON a.provider_id = p.id ORDER BY p.brand_name, a.name
+      `).all(),
+      outfits: db.prepare(`
+        SELECT ao.*, a.name as article_name, av.name as avatar_name
+        FROM avatar_outfits ao
+        JOIN articles a ON ao.article_id = a.id
+        JOIN avatars av ON ao.avatar_id = av.id
+        ORDER BY ao.outfit_date DESC, av.name
+      `).all(),
+    };
+
+    // Optionale Tabellen
+    try {
+      data.generierungen = db.prepare('SELECT * FROM generations ORDER BY created_at DESC').all();
+    } catch(e) { data.generierungen = []; }
+
+    try {
+      data.klick_statistiken = db.prepare('SELECT * FROM click_stats ORDER BY timestamp DESC').all();
+    } catch(e) { data.klick_statistiken = []; }
+
+    try {
+      data.verfuegbarkeits_checks = db.prepare('SELECT * FROM availability_checks ORDER BY checked_at DESC').all();
+    } catch(e) { data.verfuegbarkeits_checks = []; }
+
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="DSGVO-Datenexport_${new Date().toISOString().split('T')[0]}.json"`);
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DSGVO Art. 17: Klick-Statistiken löschen (Recht auf Löschung)
+router.delete('/export/dsgvo-delete-stats', (req, res) => {
+  try {
+    const db = getDb();
+    let deleted = 0;
+
+    try {
+      const result = db.prepare('DELETE FROM click_stats').run();
+      deleted = result.changes;
+    } catch(e) {}
+
+    res.json({
+      success: true,
+      message: `${deleted} Klick-Statistik-Einträge gelöscht (Art. 17 DSGVO)`,
+      deletedAt: new Date().toISOString(),
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

@@ -51,7 +51,7 @@ app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 fs.mkdirSync(path.join(__dirname, '..', 'uploads'), { recursive: true });
 fs.mkdirSync(path.join(__dirname, '..', 'public', 'generated'), { recursive: true });
 
-// ─── Automatisches Datenbank-Backup ───
+// ─── Automatisches Datenbank-Backup (Finanzamt §147 AO: 10 Jahre Aufbewahrungspflicht) ───
 
 function backupDatabase(dbPath) {
   if (!fs.existsSync(dbPath)) return;
@@ -59,22 +59,40 @@ function backupDatabase(dbPath) {
   fs.mkdirSync(backupDir, { recursive: true });
 
   const now = new Date();
+  const dateStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
   const timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, 19);
-  const backupPath = path.join(backupDir, `catwalk_${timestamp}.db`);
+
+  // Tägliches Backup (max 1 pro Tag, beschriftet mit Datum)
+  const dailyBackup = path.join(backupDir, `catwalk_daily_${dateStr}.db`);
+  const fullBackup = path.join(backupDir, `catwalk_${timestamp}.db`);
 
   try {
-    fs.copyFileSync(dbPath, backupPath);
-    console.log(`💾 Datenbank-Backup erstellt: ${backupPath}`);
+    // Immer ein vollständiges Backup mit Zeitstempel
+    fs.copyFileSync(dbPath, fullBackup);
+    console.log(`💾 Datenbank-Backup erstellt: ${path.basename(fullBackup)}`);
 
-    // Alte Backups aufräumen (nur die letzten 10 behalten)
-    const backups = fs.readdirSync(backupDir)
-      .filter(f => f.startsWith('catwalk_') && f.endsWith('.db'))
+    // Tägliches Backup (1x pro Tag, wird nicht überschrieben)
+    if (!fs.existsSync(dailyBackup)) {
+      fs.copyFileSync(dbPath, dailyBackup);
+      console.log(`📅 Tages-Backup erstellt: ${path.basename(dailyBackup)}`);
+    }
+
+    // Aufräumen: Zeitstempel-Backups (catwalk_2026-...) – nur letzte 30 behalten
+    // ABER: Tages-Backups (catwalk_daily_...) bleiben UNBEGRENZT (Finanzamt!)
+    const timestampBackups = fs.readdirSync(backupDir)
+      .filter(f => f.startsWith('catwalk_2') && f.endsWith('.db') && !f.includes('daily') && !f.includes('pre-restore'))
       .sort()
       .reverse();
 
-    for (let i = 10; i < backups.length; i++) {
-      fs.unlinkSync(path.join(backupDir, backups[i]));
+    for (let i = 30; i < timestampBackups.length; i++) {
+      fs.unlinkSync(path.join(backupDir, timestampBackups[i]));
     }
+
+    // Info: Wie viele Tages-Backups existieren
+    const dailyCount = fs.readdirSync(backupDir)
+      .filter(f => f.startsWith('catwalk_daily_')).length;
+    console.log(`📊 ${dailyCount} Tages-Backups vorhanden (Finanzamt-konform, unbegrenzt aufbewahrt)`);
+
   } catch (e) {
     console.log('⚠️ Backup fehlgeschlagen:', e.message);
   }
@@ -168,6 +186,21 @@ async function startServer() {
     console.log('⚠️ Verfügbarkeits-Check übersprungen:', e.message);
   }
 
+  // ─── DSGVO: Automatische Bereinigung alter Klick-Statistiken (90 Tage) ───
+  try {
+    const { getDb } = require('./db');
+    const db = getDb();
+    const cutoff = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+    const deleted = db.prepare('DELETE FROM click_stats WHERE timestamp < ?').run(cutoff);
+    if (deleted.changes > 0) {
+      console.log(`🔒 DSGVO: ${deleted.changes} Klick-Statistiken älter als 90 Tage gelöscht`);
+    } else {
+      console.log('🔒 DSGVO: Keine alten Klick-Statistiken zu bereinigen');
+    }
+  } catch (e) {
+    console.log('⚠️ DSGVO-Bereinigung übersprungen:', e.message);
+  }
+
   // API Routes (erst nach DB-Initialisierung laden!)
   app.use('/api/avatars', require('./routes/avatars'));
   app.use('/api/providers', require('./routes/providers'));
@@ -183,6 +216,14 @@ async function startServer() {
   // Catwalk Ansicht
   app.get('/catwalk', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'public', 'catwalk.html'));
+  });
+
+  // ── Rechtliche Seiten (Pflicht in Deutschland) ──
+  app.get('/impressum', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'public', 'impressum.html'));
+  });
+  app.get('/datenschutz', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'public', 'datenschutz.html'));
   });
 
   // Startseite
