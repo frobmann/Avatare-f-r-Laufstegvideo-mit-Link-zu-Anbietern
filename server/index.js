@@ -27,8 +27,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Statische Dateien
-// Generierte Bilder: kein Browser-Cache damit neue Bilder sofort sichtbar sind
+// Statische Dateien – KEIN Browser-Cache für HTML/CSS/JS
 app.use('/generated', express.static(path.join(__dirname, '..', 'public', 'generated'), {
   setHeaders: (res) => {
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
@@ -36,7 +35,16 @@ app.use('/generated', express.static(path.join(__dirname, '..', 'public', 'gener
     res.set('Expires', '0');
   }
 }));
-app.use(express.static(path.join(__dirname, '..', 'public')));
+app.use(express.static(path.join(__dirname, '..', 'public'), {
+  setHeaders: (res, filePath) => {
+    // HTML, CSS, JS: nie cachen – Änderungen sofort sichtbar
+    if (filePath.endsWith('.html') || filePath.endsWith('.css') || filePath.endsWith('.js')) {
+      res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+      res.set('Pragma', 'no-cache');
+      res.set('Expires', '0');
+    }
+  }
+}));
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
 // Verzeichnisse sicherstellen
@@ -53,6 +61,30 @@ async function startServer() {
   // Tabellen erstellen falls nötig
   const { initTables } = require('./init-db');
   await initTables();
+
+  // Automatisch Outfits zuweisen wenn nötig
+  try {
+    const { getDb } = require('./db');
+    const db = getDb();
+    const today = new Date().toISOString().split('T')[0];
+
+    const avatarCount = db.prepare('SELECT COUNT(*) as c FROM avatars WHERE is_active = 1').get().c;
+    const articleCount = db.prepare('SELECT COUNT(*) as c FROM articles WHERE is_active = 1').get().c;
+    const outfitCount = db.prepare('SELECT COUNT(*) as c FROM avatar_outfits WHERE outfit_date = ?').get(today).c;
+
+    if (avatarCount > 0 && articleCount > 0 && outfitCount === 0) {
+      console.log('👗 Keine Outfits für heute – weise automatisch zu...');
+      const { autoAssignOutfits } = require('./services/outfit-rotation');
+      const result = autoAssignOutfits(today);
+      if (result.success) {
+        console.log(`✅ ${result.summary.totalArticles} Artikel auf ${result.summary.avatars} Avatare verteilt (€ ${result.summary.totalValue.toFixed(2)})`);
+      }
+    } else if (outfitCount > 0) {
+      console.log(`👗 ${outfitCount} Outfits für heute bereits vorhanden`);
+    }
+  } catch (e) {
+    console.log('⚠️ Auto-Outfit übersprungen:', e.message);
+  }
 
   // API Routes (erst nach DB-Initialisierung laden!)
   app.use('/api/avatars', require('./routes/avatars'));

@@ -362,12 +362,37 @@
       text-transform: uppercase;
       color: var(--accent);
       white-space: nowrap;
-      opacity: 0;
+      opacity: 1;
       transition: opacity 0.3s ease;
     }
 
-    .avatar-wrapper:hover .avatar-name {
+    /* Outfit-Info unter dem Avatar (immer sichtbar) */
+    .avatar-outfit-info {
+      position: absolute;
+      bottom: -60px;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      white-space: nowrap;
+      opacity: 0.8;
+      transition: opacity 0.3s ease;
+    }
+
+    .avatar-wrapper:hover .avatar-outfit-info {
       opacity: 1;
+    }
+
+    .avatar-outfit-brands {
+      font-size: 0.6rem;
+      color: var(--text-secondary);
+      letter-spacing: 0.05em;
+    }
+
+    .avatar-outfit-price {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin-top: 2px;
     }
 
     /* Product Info Card (erscheint bei Hover/Click) */
@@ -810,11 +835,21 @@
         `;
       }
 
+      // Outfit-Info für die Anzeige unter dem Avatar
+      const outfitBrands = [...new Set(avatar.outfit.map(o => o.brand_name))];
+      const outfitInfoHtml = avatar.outfit.length > 0
+        ? `<div class="avatar-outfit-info">
+             <div class="avatar-outfit-brands">${outfitBrands.join(' · ')}</div>
+             <div class="avatar-outfit-price">€ ${avatar.total_price.toFixed(2)}</div>
+           </div>`
+        : '';
+
       wrapper.innerHTML = `
         <div class="avatar-figure">
           ${avatarBody}
           <div class="avatar-shadow"></div>
           <div class="avatar-name">${avatar.name}</div>
+          ${outfitInfoHtml}
         </div>
         ${createProductCard(avatar)}
       `;
@@ -873,7 +908,7 @@
             <div class="product-item-name">${item.article_name}</div>
             <div class="product-item-brand">${item.brand_name}</div>
           </div>
-          <span class="product-item-price">${item.currency} ${item.price.toFixed(2)}</span>
+          <span class="product-item-price">€ ${item.price.toFixed(2)}</span>
           <span class="product-item-link">Shop →</span>
         </li>
       `).join('');
@@ -882,7 +917,7 @@
         <div class="product-card">
           <div class="product-card-header">
             <span class="product-card-brand">${brandLabel}</span>
-            <span class="product-card-total">${avatar.currency} ${avatar.total_price.toFixed(2)}</span>
+            <span class="product-card-total">€ ${avatar.total_price.toFixed(2)}</span>
           </div>
           <ul class="product-card-items">${itemsHtml}</ul>
           <a class="shop-all-btn" href="#" onclick="shopAll(event, '${avatar.id}')">
