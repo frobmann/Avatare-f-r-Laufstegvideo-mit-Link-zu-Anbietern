@@ -215,95 +215,146 @@
       z-index: 5;
     }
 
-    /* Avatar Silhouette (CSS-generiert) */
+    /* Avatar SVG Fashion-Illustration */
     .avatar-silhouette {
       position: relative;
       width: 100%;
       height: 100%;
     }
 
+    /* ── Avatar Fashion-Silhouette Styles ── */
+
+    /* Kopf */
     .avatar-head {
       position: absolute;
-      top: 0;
+      top: 18px;
       left: 50%;
       transform: translateX(-50%);
-      width: 36px;
-      height: 42px;
-      border-radius: 50% 50% 45% 45%;
-      background: linear-gradient(135deg, #d4a77a, #c49066);
+      width: 32px;
+      height: 36px;
+      background: linear-gradient(180deg, #e8c9a0 0%, #d4a574 100%);
+      border-radius: 50% 50% 48% 48%;
+      z-index: 5;
+      box-shadow: inset 0 -3px 6px rgba(0,0,0,0.1);
     }
 
+    /* Haare */
     .avatar-hair {
       position: absolute;
-      top: -4px;
+      top: 6px;
       left: 50%;
       transform: translateX(-50%);
       width: 42px;
-      height: 26px;
-      border-radius: 50% 50% 0 0;
+      height: 28px;
+      border-radius: 50% 50% 30% 30%;
+      z-index: 6;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .walking .avatar-hair {
+      animation: hairSway 1.5s ease-in-out infinite;
+    }
+    @keyframes hairSway {
+      0%, 100% { transform: translateX(-50%) skewX(0deg); }
+      30% { transform: translateX(-50%) skewX(2deg); }
+      70% { transform: translateX(-50%) skewX(-1.5deg); }
     }
 
+    /* Hals */
     .avatar-neck {
       position: absolute;
-      top: 38px;
+      top: 50px;
       left: 50%;
       transform: translateX(-50%);
-      width: 14px;
+      width: 12px;
       height: 12px;
-      background: linear-gradient(135deg, #d4a77a, #c49066);
+      background: linear-gradient(180deg, #d4a574 0%, #c89660 100%);
+      z-index: 4;
     }
 
+    /* Oberkörper */
     .avatar-torso {
       position: absolute;
-      top: 48px;
+      top: 58px;
       left: 50%;
       transform: translateX(-50%);
-      width: 60px;
-      height: 90px;
+      width: 56px;
+      height: 80px;
       border-radius: 8px 8px 4px 4px;
+      z-index: 3;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .walking .avatar-torso {
+      animation: torsoSway 1.2s ease-in-out infinite;
+    }
+    @keyframes torsoSway {
+      0%, 100% { transform: translateX(-50%) rotate(-0.5deg); }
+      50% { transform: translateX(-50%) rotate(0.5deg); }
     }
 
+    /* Arme */
     .avatar-arm-left, .avatar-arm-right {
       position: absolute;
-      top: 55px;
-      width: 18px;
-      height: 75px;
+      top: 62px;
+      width: 16px;
+      height: 70px;
       border-radius: 8px;
+      z-index: 2;
+      transform-origin: top center;
     }
-    .avatar-arm-left { left: 12px; transform: rotate(5deg); }
-    .avatar-arm-right { right: 12px; transform: rotate(-5deg); }
+    .avatar-arm-left {
+      left: 50%;
+      margin-left: -42px;
+    }
+    .avatar-arm-right {
+      left: 50%;
+      margin-left: 26px;
+    }
 
+    /* Beine */
     .avatar-legs {
       position: absolute;
       top: 135px;
       left: 50%;
       transform: translateX(-50%);
-      width: 56px;
+      width: 48px;
       height: 130px;
       display: flex;
-      gap: 6px;
-      justify-content: center;
+      gap: 4px;
+      z-index: 2;
     }
 
     .avatar-leg {
-      width: 22px;
-      height: 100%;
-      border-radius: 4px 4px 6px 6px;
+      flex: 1;
+      border-radius: 6px 6px 3px 3px;
+      transform-origin: top center;
     }
 
+    /* Schuhe */
     .avatar-shoes {
       position: absolute;
-      bottom: 0;
+      bottom: 18px;
       left: 50%;
       transform: translateX(-50%);
+      width: 52px;
       display: flex;
-      gap: 10px;
+      gap: 6px;
+      z-index: 3;
     }
 
     .avatar-shoe {
-      width: 26px;
-      height: 14px;
-      border-radius: 4px 12px 4px 4px;
+      width: 22px;
+      height: 12px;
+      border-radius: 6px 12px 4px 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    /* Sanftes Schwingen beim Gehen */
+    .walking .avatar-silhouette {
+      animation: modelSway 1.2s ease-in-out infinite;
+    }
+    @keyframes modelSway {
+      0%, 100% { transform: rotate(-0.6deg); }
+      50% { transform: rotate(0.6deg); }
     }
 
     /* Avatar Shadow */
@@ -726,12 +777,17 @@
       .catwalk-title { font-size: 1.5rem; top: 15px; }
       .catwalk-subtitle { font-size: 0.7rem; top: 55px; }
       .avatar-figure { width: 80px; height: 220px; }
-      .avatar-head { width: 26px; height: 30px; }
-      .avatar-hair { width: 32px; height: 18px; }
-      .avatar-torso { width: 44px; height: 65px; }
-      .avatar-arm-left, .avatar-arm-right { width: 14px; height: 55px; }
-      .avatar-legs { height: 95px; top: 110px; }
-      .avatar-leg { width: 18px; }
+      .avatar-head { width: 22px; height: 26px; top: 12px; }
+      .avatar-hair { width: 30px; height: 18px; top: 4px; }
+      .avatar-neck { top: 36px; width: 10px; height: 8px; }
+      .avatar-torso { width: 40px; height: 56px; top: 42px; }
+      .avatar-arm-left, .avatar-arm-right { width: 12px; height: 50px; top: 44px; }
+      .avatar-arm-left { margin-left: -30px; }
+      .avatar-arm-right { margin-left: 18px; }
+      .avatar-legs { height: 90px; top: 96px; width: 36px; }
+      .avatar-leg { border-radius: 4px 4px 2px 2px; }
+      .avatar-shoes { width: 40px; bottom: 12px; }
+      .avatar-shoe { width: 16px; height: 9px; }
       .product-card { width: 240px; padding: 12px; }
     }
   </style>
