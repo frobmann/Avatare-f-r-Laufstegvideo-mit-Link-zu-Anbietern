@@ -1016,12 +1016,16 @@
 
       // Outfit items für Farben verwenden wenn vorhanden
       const hasDress = avatar.outfit.some(o => o.category === 'kleid');
-      const topColor = hasDress
+      const skinRef = palette.skin;
+      const rawTopColor = hasDress
         ? (getOutfitColor(avatar.outfit, 'kleid') || getOutfitColor(avatar.outfit, 'oberteil') || palette.top)
         : (getOutfitColor(avatar.outfit, 'oberteil') || palette.top);
-      const bottomColor = ensureVisible(getOutfitColor(avatar.outfit, 'hose') || getOutfitColor(avatar.outfit, 'rock') || palette.bottom);
+      const topColor = ensureSkinContrast(rawTopColor, skinRef);
+      const rawBottomColor = ensureVisible(getOutfitColor(avatar.outfit, 'hose') || getOutfitColor(avatar.outfit, 'rock') || palette.bottom);
+      const bottomColor = ensureSkinContrast(rawBottomColor, skinRef);
       const shoeColor = ensureVisible(getOutfitColor(avatar.outfit, 'schuhe') || palette.shoes);
-      const jacketColor = getOutfitColor(avatar.outfit, 'jacke');
+      const rawJacketColor = getOutfitColor(avatar.outfit, 'jacke');
+      const jacketColor = rawJacketColor ? ensureSkinContrast(rawJacketColor, skinRef) : null;
 
       // Entscheide: KI-generiertes Bild oder SVG-Silhouette
       let avatarBody;
@@ -1062,61 +1066,73 @@
         let clothingSVG;
         if (hasDress) {
           clothingSVG = `
-            <!-- Kleid -->
+            <!-- Kleid-Oberteil (figurbetont mit Taillierung) -->
             <path d="M38,75 C37,71 38,67 40,63
                      C42,58 50,54 60,54 C70,54 78,58 80,63
                      C82,67 83,71 82,75
-                     L86,120 C89,155 93,195 97,255
-                     C97,260 93,262 88,260
-                     L74,252 L60,258 L46,252
-                     L32,260 C27,262 23,260 23,255
-                     C27,195 31,155 34,120 Z"
+                     L80,85 C78,92 76,96 74,100
+                     C72,104 68,106 60,106
+                     C52,106 48,104 46,100
+                     C44,96 42,92 40,85 Z"
+                  fill="${topColor}" stroke="${topDark}" stroke-width="0.5" />
+            <!-- Kleid-Rock (A-Linie, ab Taille weiter) -->
+            <path d="M46,100 C48,104 52,106 60,106
+                     C68,106 72,104 74,100
+                     C78,112 82,132 86,162
+                     C90,195 93,228 95,255
+                     C95,260 91,262 87,260
+                     L73,254 L60,258 L47,254
+                     L33,260 C29,262 25,260 25,255
+                     C27,228 30,195 34,162
+                     C38,132 42,112 46,100 Z"
                   fill="${topColor}" stroke="${topDark}" stroke-width="0.5" />
             <!-- Dekolleté -->
             <path d="M50,56 C54,59 66,59 70,56" fill="none" stroke="${topDark}" stroke-width="0.5" opacity="0.3"/>
             <path d="M53,56 L60,67 L67,56" fill="${skin}" opacity="0.5" />
             <!-- Taillennaht -->
-            <path d="M36,108 C46,102 74,102 84,108" fill="none" stroke="${topDark}" stroke-width="0.8" opacity="0.2"/>
+            <path d="M46,100 C52,104 68,104 74,100" fill="none" stroke="${topDark}" stroke-width="0.8" opacity="0.25"/>
             <!-- Rockfalten -->
-            <path d="M50,125 L40,255" fill="none" stroke="${topDark}" stroke-width="0.5" opacity="0.12"/>
-            <path d="M70,125 L80,255" fill="none" stroke="${topDark}" stroke-width="0.5" opacity="0.12"/>
-            <path d="M60,110 L60,258" fill="none" stroke="${topDark}" stroke-width="0.3" opacity="0.08"/>
+            <path d="M52,112 L38,258" fill="none" stroke="${topDark}" stroke-width="0.5" opacity="0.1"/>
+            <path d="M68,112 L82,258" fill="none" stroke="${topDark}" stroke-width="0.5" opacity="0.1"/>
+            <path d="M60,106 L60,258" fill="none" stroke="${topDark}" stroke-width="0.3" opacity="0.06"/>
             <!-- Dezenter Saum -->
-            <path d="M32,258 C44,254 76,254 88,258" fill="none" stroke="${topDark}" stroke-width="0.6" opacity="0.2"/>
+            <path d="M33,258 C46,254 74,254 87,258" fill="none" stroke="${topDark}" stroke-width="0.6" opacity="0.2"/>
           `;
         } else {
           clothingSVG = `
-            <!-- Oberteil -->
+            <!-- Oberteil (figurbetont mit Taillierung) -->
             <path d="M38,75 C37,71 38,67 40,63
                      C42,58 50,54 60,54 C70,54 78,58 80,63
                      C82,67 83,71 82,75
-                     L82,108 C82,112 74,115 60,115
-                     C46,115 38,112 38,108 Z"
-                  fill="${topColor}" stroke="${topDark}" stroke-width="0.4" />
+                     L80,85 C78,92 76,98 74,104
+                     C72,108 68,110 60,110
+                     C52,110 48,108 46,104
+                     C44,98 42,92 40,85 Z"
+                  fill="${topColor}" stroke="${topDark}" stroke-width="0.8" />
             <!-- Dekolleté -->
             <path d="M50,56 C54,59 66,59 70,56" fill="none" stroke="${topDark}" stroke-width="0.5" opacity="0.3"/>
             <path d="M53,56 L60,66 L67,56" fill="${skin}" opacity="0.4" />
             <!-- Taillierung -->
-            <path d="M39,106 C48,102 72,102 81,106" fill="none" stroke="${topDark}" stroke-width="0.5" opacity="0.2"/>
+            <path d="M46,104 C52,108 68,108 74,104" fill="none" stroke="${topDark}" stroke-width="0.5" opacity="0.2"/>
 
-            <!-- Hose (schmale, elegante Silhouette) -->
+            <!-- Hose (Slim Fit, proportionale Beinbreite) -->
             <g class="avatar-hips">
-              <path class="avatar-leg-l" d="M38,108 C40,110 46,112 55,112
-                       L54,118 L51,175 L47,255
-                       C45,258 42,258 42,255
-                       L45,175 L42,118 L38,112 Z"
+              <path class="avatar-leg-l" d="M38,108 C39,110 44,113 54,113
+                       L53,120 L51,170 L49,220 L48,255
+                       C46,260 39,260 38,255
+                       L38,220 L37,170 L36,120 L36,112 Z"
                     fill="${bottomColor}" stroke="${bottomEdge}" stroke-width="0.4" />
-              <path class="avatar-leg-r" d="M82,108 C80,110 74,112 65,112
-                       L66,118 L69,175 L73,255
-                       C75,258 78,258 78,255
-                       L75,175 L78,118 L82,112 Z"
+              <path class="avatar-leg-r" d="M82,108 C81,110 76,113 66,113
+                       L67,120 L69,170 L71,220 L72,255
+                       C74,260 81,260 82,255
+                       L82,220 L83,170 L84,120 L84,112 Z"
                     fill="${bottomColor}" stroke="${bottomEdge}" stroke-width="0.4" />
               <!-- Hosennähte -->
-              <path d="M52,120 L49,175 L47,255" fill="none" stroke="${bottomEdge}" stroke-width="0.3" opacity="0.15"/>
-              <path d="M68,120 L71,175 L73,255" fill="none" stroke="${bottomEdge}" stroke-width="0.3" opacity="0.15"/>
+              <path d="M50,120 L48,170 L48,255" fill="none" stroke="${bottomEdge}" stroke-width="0.3" opacity="0.12"/>
+              <path d="M70,120 L72,170 L72,255" fill="none" stroke="${bottomEdge}" stroke-width="0.3" opacity="0.12"/>
               <!-- Schrittnaht -->
-              <path d="M55,112 L58,130" fill="none" stroke="${bottomDark}" stroke-width="0.4" opacity="0.15"/>
-              <path d="M65,112 L62,130" fill="none" stroke="${bottomDark}" stroke-width="0.4" opacity="0.15"/>
+              <path d="M54,113 L57,135" fill="none" stroke="${bottomDark}" stroke-width="0.4" opacity="0.1"/>
+              <path d="M66,113 L63,135" fill="none" stroke="${bottomDark}" stroke-width="0.4" opacity="0.1"/>
             </g>
           `;
         }
@@ -1177,57 +1193,57 @@
 
               ${clothingSVG}
 
-              <!-- Arme -->
+              <!-- Arme (breit, natürliche Proportionen) -->
               ${hasJacket ? `
-              <!-- Jacken-Ärmel (volle Länge) -->
+              <!-- Jacken-Ärmel (volle Länge, breite Arme) -->
               <g class="avatar-arm-l">
-                <path d="M38,66 C34,72 31,82 30,95
-                         C29,105 29.5,115 30.5,122
-                         L33,122 C32,115 31.5,105 32.5,95
-                         C33.5,82 35.5,74 38,69 Z"
+                <path d="M36,66 C30,74 25,86 23,98
+                         C21,108 20,118 20,125
+                         L29,125 C29,118 29,110 31,100
+                         C33,88 35,78 38,70 Z"
                       fill="${jacketColor}" stroke="${armDark}" stroke-width="0.3"/>
-                <ellipse cx="31.5" cy="124" rx="2.8" ry="3.5" fill="url(#skin-${index})" />
+                <ellipse cx="24.5" cy="127" rx="4.5" ry="3.5" fill="url(#skin-${index})" />
               </g>
               <g class="avatar-arm-r">
-                <path d="M82,66 C86,72 89,82 90,95
-                         C91,105 90.5,115 89.5,122
-                         L87,122 C88,115 88.5,105 87.5,95
-                         C86.5,82 84.5,74 82,69 Z"
+                <path d="M84,66 C90,74 95,86 97,98
+                         C99,108 100,118 100,125
+                         L91,125 C91,118 91,110 89,100
+                         C87,88 85,78 82,70 Z"
                       fill="${jacketColor}" stroke="${armDark}" stroke-width="0.3"/>
-                <ellipse cx="88.5" cy="124" rx="2.8" ry="3.5" fill="url(#skin-${index})" />
+                <ellipse cx="95.5" cy="127" rx="4.5" ry="3.5" fill="url(#skin-${index})" />
               </g>
               ` : `
-              <!-- Bare Arms (Kurzärmel + Haut) -->
+              <!-- Bare Arms (Kurzärmel + Haut, breite natürliche Arme) -->
               <g class="avatar-arm-l">
-                <path d="M38,66 C35.5,70 34,75 33,80
-                         L35,80 C35.5,76 36.5,72 38,69 Z"
+                <path d="M36,66 C33,70 30,76 28,82
+                         L35,82 C36,78 37,73 38,70 Z"
                       fill="${topColor}" stroke="${topDark}" stroke-width="0.3"/>
-                <path d="M33,80 C31.5,90 30.5,100 31,112
-                         C31.2,116 31.5,119 32,122
-                         L34,122 C33.5,119 33.2,116 33,112
-                         C32.5,100 33.5,90 35,80 Z"
+                <path d="M28,82 C25,92 23,104 22,114
+                         C21,120 20.5,123 21,126
+                         L30,126 C29.5,123 29,120 29.5,114
+                         C30.5,104 32,94 35,82 Z"
                       fill="url(#skin-${index})" />
-                <ellipse cx="33" cy="124" rx="2.8" ry="3.5" fill="url(#skin-${index})" />
+                <ellipse cx="25.5" cy="128" rx="4.5" ry="3.5" fill="url(#skin-${index})" />
               </g>
               <g class="avatar-arm-r">
-                <path d="M82,66 C84.5,70 86,75 87,80
-                         L85,80 C84.5,76 83.5,72 82,69 Z"
+                <path d="M84,66 C87,70 90,76 92,82
+                         L85,82 C84,78 83,73 82,70 Z"
                       fill="${topColor}" stroke="${topDark}" stroke-width="0.3"/>
-                <path d="M87,80 C88.5,90 89.5,100 89,112
-                         C88.8,116 88.5,119 88,122
-                         L86,122 C86.5,119 86.8,116 87,112
-                         C87.5,100 86.5,90 85,80 Z"
+                <path d="M92,82 C95,92 97,104 98,114
+                         C99,120 99.5,123 99,126
+                         L90,126 C90.5,123 91,120 90.5,114
+                         C89.5,104 88,94 85,82 Z"
                       fill="url(#skin-${index})" />
-                <ellipse cx="87" cy="124" rx="2.8" ry="3.5" fill="url(#skin-${index})" />
+                <ellipse cx="94.5" cy="128" rx="4.5" ry="3.5" fill="url(#skin-${index})" />
               </g>
               `}
 
-              <!-- Schuhe (elegante High Heels) -->
-              <path d="M43,${shoeY} L37,${shoeY+5} C35,${shoeY+7} 38,${shoeY+9} 48,${shoeY+7} L51,${shoeY+2}" fill="${shoeColor}" />
-              <path d="M77,${shoeY} L83,${shoeY+5} C85,${shoeY+7} 82,${shoeY+9} 72,${shoeY+7} L69,${shoeY+2}" fill="${shoeColor}" />
+              <!-- Schuhe (elegante Pumps, passend zur Beinbreite) -->
+              <path d="M38,${shoeY} L32,${shoeY+5} C30,${shoeY+7} 34,${shoeY+9} 50,${shoeY+7} L52,${shoeY+2}" fill="${shoeColor}" />
+              <path d="M82,${shoeY} L88,${shoeY+5} C90,${shoeY+7} 86,${shoeY+9} 70,${shoeY+7} L68,${shoeY+2}" fill="${shoeColor}" />
               <!-- Stiletto-Absätze -->
-              <path d="M39,${shoeY+7} L38,${shoeY+14} L40,${shoeY+14} L40,${shoeY+7}" fill="${shoeDark}" />
-              <path d="M81,${shoeY+7} L82,${shoeY+14} L80,${shoeY+14} L80,${shoeY+7}" fill="${shoeDark}" />
+              <path d="M33,${shoeY+7} L32,${shoeY+14} L35,${shoeY+14} L35,${shoeY+7}" fill="${shoeDark}" />
+              <path d="M87,${shoeY+7} L88,${shoeY+14} L85,${shoeY+14} L85,${shoeY+7}" fill="${shoeDark}" />
 
               <!-- Dezenter Lichtreflex auf Kleidung -->
               <path d="M52,62 L53,105" stroke="rgba(255,255,255,0.05)" stroke-width="6" stroke-linecap="round"/>
@@ -1336,6 +1352,34 @@
       if (brightness < 50) return adjustColor(hex, 55);
       if (brightness < 80) return adjustColor(hex, 30);
       return hex;
+    }
+
+    // Kleidungsfarbe anpassen wenn sie zu nah an der Hautfarbe ist
+    function ensureSkinContrast(clothingHex, skinHex) {
+      if (!clothingHex || !skinHex || !clothingHex.startsWith('#') || !skinHex.startsWith('#')) return clothingHex;
+      const c = parseInt(clothingHex.replace('#', ''), 16);
+      const s = parseInt(skinHex.replace('#', ''), 16);
+      const cr = (c >> 16) & 0xFF, cg = (c >> 8) & 0xFF, cb = c & 0xFF;
+      const sr = (s >> 16) & 0xFF, sg = (s >> 8) & 0xFF, sb = s & 0xFF;
+      const dist = Math.abs(cr - sr) + Math.abs(cg - sg) + Math.abs(cb - sb);
+      if (dist >= 190) return clothingHex; // Genug Kontrast
+
+      // Helligkeit berechnen um Richtung zu bestimmen
+      const cLum = (cr * 299 + cg * 587 + cb * 114) / 1000;
+      const sLum = (sr * 299 + sg * 587 + sb * 114) / 1000;
+      const amount = dist < 100 ? 65 : 50;
+
+      if (cLum >= sLum) {
+        // Kleidung heller als Haut → noch heller machen (weg von Haut)
+        // Aber wenn schon sehr hell, stattdessen stark abdunkeln
+        if (cLum < 220) return adjustColor(clothingHex, amount);
+        return adjustColor(clothingHex, -(amount + 25));
+      } else {
+        // Kleidung dunkler als Haut → noch dunkler (weg von Haut)
+        // Aber wenn schon sehr dunkel, stattdessen aufhellen
+        if (cLum > 50) return adjustColor(clothingHex, -amount);
+        return adjustColor(clothingHex, amount + 25);
+      }
     }
 
     // Produkt-Karte erstellen
