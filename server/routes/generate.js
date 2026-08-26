@@ -1,4 +1,6 @@
 const express = require('express');
+const fs = require('fs');
+const path = require('path');
 const {
   generateAvatarBaseImage,
   generateAllAvatarImages,
@@ -223,6 +225,104 @@ router.post('/availability/check', async (req, res) => {
 router.get('/availability/report', (req, res) => {
   const report = getLastCheckReport();
   res.json(report);
+});
+
+// ═══════════════════════════════════════════════════
+// DATENBANK-BACKUP (Automatische Sicherung)
+// ═══════════════════════════════════════════════════
+
+const { DB_PATH } = require('../db');
+
+// Verfügbare Backups auflisten
+router.get('/backups', (req, res) => {
+  try {
+    const backupDir = path.join(path.dirname(DB_PATH), 'backups');
+    if (!fs.existsSync(backupDir)) {
+      return res.json({ backups: [], message: 'Noch keine Backups vorhanden' });
+    }
+
+    const backups = fs.readdirSync(backupDir)
+      .filter(f => f.startsWith('catwalk_') && f.endsWith('.db'))
+      .map(f => {
+        const stats = fs.statSync(path.join(backupDir, f));
+        // Datum aus Dateinamen extrahieren (catwalk_2026-08-26T14-30-00.db)
+        const dateStr = f.replace('catwalk_', '').replace('.db', '').replace(/-/g, (m, i) => {
+          // Nur die T und danach für Zeitformat anpassen
+          return m;
+        });
+        return {
+          filename: f,
+          size: Math.round(stats.size / 1024) + ' KB',
+          created: stats.mtime.toISOString(),
+        };
+      })
+      .sort((a, b) => b.created.localeCompare(a.created));
+
+    res.json({ backups, backupDir });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Backup wiederherstellen
+router.post('/backups/restore', (req, res) => {
+  try {
+    const { filename } = req.body;
+    if (!filename) return res.status(400).json({ error: 'Dateiname fehlt' });
+
+    const backupDir = path.join(path.dirname(DB_PATH), 'backups');
+    const backupPath = path.join(backupDir, filename);
+
+    if (!fs.existsSync(backupPath)) {
+      return res.status(404).json({ error: 'Backup nicht gefunden' });
+    }
+
+    // Aktuelle DB sichern bevor wir überschreiben
+    const now = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    const safePath = path.join(backupDir, `catwalk_pre-restore_${now}.db`);
+    if (fs.existsSync(DB_PATH)) {
+      fs.copyFileSync(DB_PATH, safePath);
+    }
+
+    // Backup wiederherstellen
+    fs.copyFileSync(backupPath, DB_PATH);
+
+    res.json({
+      success: true,
+      message: `Backup "${filename}" wiederhergestellt. Bitte Server neustarten (npm start).`,
+      restoredFrom: filename,
+      previousSavedAs: path.basename(safePath),
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Manuelles Backup erstellen
+router.post('/backups/create', (req, res) => {
+  try {
+    if (!fs.existsSync(DB_PATH)) {
+      return res.status(404).json({ error: 'Keine Datenbank vorhanden' });
+    }
+
+    const backupDir = path.join(path.dirname(DB_PATH), 'backups');
+    fs.mkdirSync(backupDir, { recursive: true });
+
+    const now = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    const label = req.body.label || 'manual';
+    const backupPath = path.join(backupDir, `catwalk_${label}_${now}.db`);
+    fs.copyFileSync(DB_PATH, backupPath);
+
+    const stats = fs.statSync(backupPath);
+    res.json({
+      success: true,
+      filename: path.basename(backupPath),
+      size: Math.round(stats.size / 1024) + ' KB',
+      message: 'Backup erfolgreich erstellt',
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 module.exports = router;

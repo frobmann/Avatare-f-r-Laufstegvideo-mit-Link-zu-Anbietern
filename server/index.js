@@ -51,11 +51,44 @@ app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 fs.mkdirSync(path.join(__dirname, '..', 'uploads'), { recursive: true });
 fs.mkdirSync(path.join(__dirname, '..', 'public', 'generated'), { recursive: true });
 
+// ─── Automatisches Datenbank-Backup ───
+
+function backupDatabase(dbPath) {
+  if (!fs.existsSync(dbPath)) return;
+  const backupDir = path.join(path.dirname(dbPath), 'backups');
+  fs.mkdirSync(backupDir, { recursive: true });
+
+  const now = new Date();
+  const timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  const backupPath = path.join(backupDir, `catwalk_${timestamp}.db`);
+
+  try {
+    fs.copyFileSync(dbPath, backupPath);
+    console.log(`💾 Datenbank-Backup erstellt: ${backupPath}`);
+
+    // Alte Backups aufräumen (nur die letzten 10 behalten)
+    const backups = fs.readdirSync(backupDir)
+      .filter(f => f.startsWith('catwalk_') && f.endsWith('.db'))
+      .sort()
+      .reverse();
+
+    for (let i = 10; i < backups.length; i++) {
+      fs.unlinkSync(path.join(backupDir, backups[i]));
+    }
+  } catch (e) {
+    console.log('⚠️ Backup fehlgeschlagen:', e.message);
+  }
+}
+
 // ─── Server starten (async wegen sql.js Initialisierung) ───
 
 async function startServer() {
   // Datenbank initialisieren
   const { initDatabase, DB_PATH } = require('./db');
+
+  // Automatisches Backup vor dem Start (falls DB existiert)
+  backupDatabase(DB_PATH);
+
   await initDatabase();
 
   // Tabellen erstellen falls nötig

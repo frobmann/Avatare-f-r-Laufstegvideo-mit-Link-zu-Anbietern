@@ -1024,6 +1024,33 @@ ZARA | Midi-Rock Gold | rock | 49.90 | https://www.zara.com/ch/midi-rock"></text
           .status-failed { background: rgba(231,76,60,0.15); color: #e74c3c; }
           .status-pending { background: rgba(122,125,138,0.15); color: #7a7d8a; }
         </style>
+
+        <!-- Datenbank-Backup -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">💾 Datenbank-Backups</span>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-secondary" onclick="createBackup()">💾 Backup erstellen</button>
+              <button class="btn btn-secondary" onclick="loadBackups()">🔄 Aktualisieren</button>
+            </div>
+          </div>
+          <p style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 12px;">
+            Die Datenbank wird bei jedem Serverstart automatisch gesichert. Hier kannst du manuell Backups erstellen oder alte wiederherstellen.
+          </p>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Datei</th>
+                <th>Größe</th>
+                <th>Erstellt</th>
+                <th>Aktion</th>
+              </tr>
+            </thead>
+            <tbody id="backup-list">
+              <tr><td colspan="4" style="color: var(--text-dim);">Lade...</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <!-- ===== STATISTIKEN ===== -->
@@ -2040,8 +2067,70 @@ ZARA | Midi-Rock Gold | rock | 49.90 | https://www.zara.com/ch/midi-rock"></text
       }
     }
 
+    // ── Datenbank-Backups ──
+
+    async function loadBackups() {
+      try {
+        const data = await apiFetch('/generate/backups');
+        const tbody = document.getElementById('backup-list');
+        if (!data.backups || data.backups.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4" style="color: var(--text-dim);">Noch keine Backups vorhanden. Backups werden automatisch bei jedem Serverstart erstellt.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = data.backups.map(b => {
+          const d = new Date(b.created);
+          const dateStr = d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
+            + ' ' + d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+          return `
+            <tr>
+              <td style="font-family: monospace; font-size: 0.78rem;">${b.filename}</td>
+              <td>${b.size}</td>
+              <td>${dateStr}</td>
+              <td><button class="btn btn-secondary btn-sm" onclick="restoreBackup('${b.filename}')">♻️ Wiederherstellen</button></td>
+            </tr>`;
+        }).join('');
+      } catch (e) {
+        document.getElementById('backup-list').innerHTML =
+          `<tr><td colspan="4" style="color: #e74c3c;">${e.message}</td></tr>`;
+      }
+    }
+
+    async function createBackup() {
+      try {
+        const res = await apiFetch('/generate/backups/create', { method: 'POST' });
+        if (res.success) {
+          showToast(`💾 Backup erstellt: ${res.filename} (${res.size})`);
+          loadBackups();
+        } else {
+          showToast('❌ ' + (res.error || 'Fehler'), 'error');
+        }
+      } catch (e) {
+        showToast('❌ ' + e.message, 'error');
+      }
+    }
+
+    async function restoreBackup(filename) {
+      if (!confirm(`⚠️ Datenbank aus Backup "${filename}" wiederherstellen?\n\nDie aktuelle Datenbank wird vorher automatisch gesichert.\nNach der Wiederherstellung muss der Server neugestartet werden.`)) return;
+
+      try {
+        const res = await apiFetch('/generate/backups/restore', {
+          method: 'POST',
+          body: JSON.stringify({ filename }),
+        });
+        if (res.success) {
+          showToast('✅ ' + res.message);
+          alert('✅ Backup wiederhergestellt!\n\nBitte starte den Server neu:\n1. Drücke Strg+C im Terminal\n2. Tippe: npm start');
+        } else {
+          showToast('❌ ' + (res.error || 'Fehler'), 'error');
+        }
+      } catch (e) {
+        showToast('❌ ' + e.message, 'error');
+      }
+    }
+
     // ===== INIT =====
     loadOutfitView();
+    loadBackups();
   </script>
 </body>
 </html>
