@@ -62,7 +62,32 @@ async function startServer() {
   const { initTables } = require('./init-db');
   await initTables();
 
-  // Automatisch Outfits zuweisen wenn nötig
+  // ─── Auto-Seed: Datenbank automatisch befüllen wenn leer oder veraltet ───
+  try {
+    const { getDb } = require('./db');
+    const db = getDb();
+    const today = new Date().toISOString().split('T')[0];
+
+    const avatarCount = db.prepare('SELECT COUNT(*) as c FROM avatars WHERE is_active = 1').get().c;
+    const articleCount = db.prepare('SELECT COUNT(*) as c FROM articles WHERE is_active = 1').get().c;
+    const providerCount = db.prepare('SELECT COUNT(*) as c FROM providers WHERE is_active = 1').get().c;
+
+    // Automatisch Seed-Daten laden wenn DB leer ist
+    if (avatarCount === 0 || articleCount === 0 || providerCount === 0) {
+      console.log('🌱 Datenbank leer – lade Seed-Daten automatisch...');
+      try {
+        const { seedProviders } = require('./seed-providers');
+        await seedProviders();
+        console.log('✅ Seed-Daten erfolgreich geladen');
+      } catch (seedErr) {
+        console.log('⚠️ Seed-Daten konnten nicht geladen werden:', seedErr.message);
+      }
+    }
+  } catch (e) {
+    console.log('⚠️ Auto-Seed übersprungen:', e.message);
+  }
+
+  // ─── Automatisch Outfits zuweisen wenn nötig ───
   try {
     const { getDb } = require('./db');
     const db = getDb();
