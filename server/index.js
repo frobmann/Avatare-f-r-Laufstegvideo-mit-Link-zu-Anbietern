@@ -201,6 +201,63 @@ async function startServer() {
     console.log('⚠️ DSGVO-Bereinigung übersprungen:', e.message);
   }
 
+  // ─── ASIN-Checker: 4x täglich automatische Prüfung aller Amazon-URLs ───
+  try {
+    const { checkAllAsins, getLastCheckResult, getCheckHistory } = require('./services/asin-checker');
+
+    // Erster Check nach 60s, dann alle 6 Stunden (4x täglich)
+    const SIX_HOURS = 6 * 60 * 60 * 1000;
+    console.log('🔗 ASIN-Checker: Automatische Prüfung 4x täglich aktiviert');
+
+    setTimeout(async () => {
+      try {
+        console.log('🔗 ASIN-Check startet (erster Lauf)...');
+        await checkAllAsins();
+      } catch (e) {
+        console.log('⚠️ ASIN-Check fehlgeschlagen:', e.message);
+      }
+    }, 60000); // Nach 60s starten
+
+    setInterval(async () => {
+      try {
+        console.log('🔗 ASIN-Check startet (automatisch, 4x täglich)...');
+        await checkAllAsins();
+      } catch (e) {
+        console.log('⚠️ ASIN-Check fehlgeschlagen:', e.message);
+      }
+    }, SIX_HOURS);
+
+    // API-Endpunkte für ASIN-Check
+    app.get('/api/asin-check/run', async (req, res) => {
+      try {
+        const result = await checkAllAsins();
+        res.json(result);
+      } catch (e) {
+        res.status(500).json({ error: e.message });
+      }
+    });
+
+    app.get('/api/asin-check/last', (req, res) => {
+      const result = getLastCheckResult();
+      if (result) {
+        result.broken_details = JSON.parse(result.broken_details || '[]');
+        res.json(result);
+      } else {
+        res.json({ message: 'Noch kein ASIN-Check durchgeführt' });
+      }
+    });
+
+    app.get('/api/asin-check/history', (req, res) => {
+      const history = getCheckHistory(20);
+      res.json(history.map(h => ({
+        ...h,
+        broken_details: JSON.parse(h.broken_details || '[]'),
+      })));
+    });
+  } catch (e) {
+    console.log('⚠️ ASIN-Checker nicht verfügbar:', e.message);
+  }
+
   // API Routes (erst nach DB-Initialisierung laden!)
   app.use('/api/avatars', require('./routes/avatars'));
   app.use('/api/providers', require('./routes/providers'));

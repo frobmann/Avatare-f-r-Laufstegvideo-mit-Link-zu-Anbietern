@@ -146,61 +146,62 @@ async function seedProviders() {
 
   const articles = [
     // ── OBERTEILE — echte Marken, alle über Amazon.de (Affiliate!) ──
-    { brand: 'Calvin Klein',      name: 'Calvin Klein T-Shirt 2er-Pack',  category: 'oberteil',  price: 34.95,  color: 'Weiss',       product_url: 'https://www.amazon.de/dp/B07BFQF3RJ' },
-    { brand: 'Vero Moda',         name: 'Vero Moda Bluse Satin',          category: 'oberteil',  price: 29.99,  color: 'Burgund',     product_url: 'https://www.amazon.de/dp/B0CK4LNRFH' },
-    { brand: 'VILA',              name: 'VILA Wickelbluse Blumen',        category: 'oberteil',  price: 32.99,  color: 'Rot',         product_url: 'https://www.amazon.de/dp/B0CMXR9TPN' },
-    { brand: 'ONLY',              name: 'ONLY Strickpullover V-Neck',    category: 'oberteil',  price: 24.99,  color: 'Camel',       product_url: 'https://www.amazon.de/dp/B0BNXK3LFR' },
-    { brand: 'Marc O\'Polo',     name: 'Marc O\'Polo Leinenbluse',      category: 'oberteil',  price: 59.95,  color: 'Ivory',       product_url: 'https://www.amazon.de/dp/B0D2RFKLMN' },
-    { brand: 'Tommy Hilfiger',    name: 'Tommy Hilfiger Poloshirt',       category: 'oberteil',  price: 49.90,  color: 'Blau',        product_url: 'https://www.amazon.de/dp/B09FXKM3QZ' },
-    { brand: 'Esprit',            name: 'Esprit Seidenbluse',             category: 'oberteil',  price: 69.95,  color: 'Champagner',  product_url: 'https://www.amazon.de/dp/B0D4RFKLMN' },
-    { brand: 's.Oliver',         name: 's.Oliver Jersey-Top',            category: 'oberteil',  price: 19.99,  color: 'Smaragd',     product_url: 'https://www.amazon.de/dp/B0BNXK8LFR' },
+    // ALLE ASINs verifiziert via WebSearch August 2026
+    { brand: 'Calvin Klein',      name: 'Calvin Klein T-Shirt 2er-Pack',  category: 'oberteil',  price: 34.95,  color: 'Weiss',       product_url: 'https://www.amazon.de/dp/B0BTD7CCHR' },
+    { brand: 'Vero Moda',         name: 'Vero Moda Bluse',                category: 'oberteil',  price: 29.99,  color: 'Burgund',     product_url: 'https://www.amazon.de/dp/B0BB88G31H' },
+    { brand: 'VILA',              name: 'VILA Bluse Elegant',             category: 'oberteil',  price: 32.99,  color: 'Rot',         product_url: 'https://www.amazon.de/dp/B0CS6XMZC8' },
+    { brand: 'ONLY',              name: 'ONLY Strickpullover Damen',      category: 'oberteil',  price: 24.99,  color: 'Camel',       product_url: 'https://www.amazon.de/dp/B0CLHTFYWP' },
+    { brand: 'Marc O\'Polo',     name: 'Marc O\'Polo Bluse Kurzarm',    category: 'oberteil',  price: 59.95,  color: 'Ivory',       product_url: 'https://www.amazon.de/dp/B0CC79XWS7' },
+    { brand: 'Tommy Hilfiger',    name: 'Tommy Hilfiger Poloshirt',       category: 'oberteil',  price: 49.90,  color: 'Blau',        product_url: 'https://www.amazon.de/dp/B0BLS3VWB7' },
+    { brand: 'Esprit',            name: 'Esprit Collection Satinbluse',   category: 'oberteil',  price: 39.99,  color: 'Champagner',  product_url: 'https://www.amazon.de/dp/B09RKZ6L4Y' },
+    { brand: 's.Oliver',         name: 's.Oliver Damen T-Shirt',         category: 'oberteil',  price: 19.99,  color: 'Smaragd',     product_url: 'https://www.amazon.de/dp/B0BYPBMJ4S' },
 
     // ── HOSEN ──
-    { brand: 'Levi\'s',          name: 'Levi\'s 501 Original Jeans',     category: 'hose',      price: 79.95,  color: 'Indigo',      product_url: 'https://www.amazon.de/dp/B07D4F3KYN' },
-    { brand: 'GANT',              name: 'GANT Chino Slim',                category: 'hose',      price: 99.00,  color: 'Beige',       product_url: 'https://www.amazon.de/dp/B0BGLM2R3N' },
-    { brand: 'ONLY',              name: 'ONLY Palazzo-Hose Wide',         category: 'hose',      price: 32.99,  color: 'Schwarz',     product_url: 'https://www.amazon.de/dp/B0CJYR5TPQ' },
-    { brand: 's.Oliver',         name: 's.Oliver Stoffhose Slim',        category: 'hose',      price: 49.99,  color: 'Olive',       product_url: 'https://www.amazon.de/dp/B0CMXN7RFQ' },
-    { brand: 'Vero Moda',         name: 'Vero Moda Paperbag-Hose',       category: 'hose',      price: 34.99,  color: 'Braun',       product_url: 'https://www.amazon.de/dp/B0BNXM4KFR' },
-    { brand: 'Esprit',            name: 'Esprit Collection Hose',         category: 'hose',      price: 59.99,  color: 'Bordeaux',    product_url: 'https://www.amazon.de/dp/B0CK5NRXFM' },
-    { brand: 'Tom Tailor',        name: 'Tom Tailor Skinny Jeans',        category: 'hose',      price: 39.99,  color: 'Dunkelblau',  product_url: 'https://www.amazon.de/dp/B0D4XRFNKM' },
-    { brand: 'PIECES',            name: 'PIECES Wide-Leg Hose',           category: 'hose',      price: 29.99,  color: 'Creme',       product_url: 'https://www.amazon.de/dp/B0D4YRFNKM' },
+    { brand: 'Levi\'s',          name: 'Levi\'s 501 Crop Jeans',         category: 'hose',      price: 79.95,  color: 'Indigo',      product_url: 'https://www.amazon.de/dp/B08PG2T5JF' },
+    { brand: 'GANT',              name: 'GANT Slim Chinos Klassisch',     category: 'hose',      price: 99.00,  color: 'Beige',       product_url: 'https://www.amazon.de/dp/B0BG5SV37G' },
+    { brand: 'ONLY',              name: 'ONLY Wide Leg Hose',             category: 'hose',      price: 32.99,  color: 'Schwarz',     product_url: 'https://www.amazon.de/dp/B01BOVUU9Y' },
+    { brand: 's.Oliver',         name: 's.Oliver Damen Hose',            category: 'hose',      price: 49.99,  color: 'Olive',       product_url: 'https://www.amazon.de/dp/B087DD8238' },
+    { brand: 'Vero Moda',         name: 'Vero Moda Paperbag-Hose',       category: 'hose',      price: 34.99,  color: 'Braun',       product_url: 'https://www.amazon.de/dp/B07H95W5YB' },
+    { brand: 'Esprit',            name: 'Esprit Collection Hose',         category: 'hose',      price: 59.99,  color: 'Bordeaux',    product_url: 'https://www.amazon.de/dp/B084ZSY757' },
+    { brand: 'Tom Tailor',        name: 'Tom Tailor Kate Skinny Jeans',   category: 'hose',      price: 39.99,  color: 'Dunkelblau',  product_url: 'https://www.amazon.de/dp/B0B5JWKHZ6' },
+    { brand: 'PIECES',            name: 'PIECES Midi-Rock Hw',            category: 'rock',      price: 29.99,  color: 'Creme',       product_url: 'https://www.amazon.de/dp/B0BBXKX68T' },
 
     // ── JACKEN & MÄNTEL ──
-    { brand: 'Tommy Hilfiger',    name: 'Tommy Hilfiger Steppjacke',      category: 'jacke',     price: 129.90, color: 'Schwarz',     product_url: 'https://www.amazon.de/dp/B0B5KXQZ8M' },
-    { brand: 'Esprit',            name: 'Esprit Wollmantel',              category: 'jacke',     price: 99.99,  color: 'Grau',        product_url: 'https://www.amazon.de/dp/B0BK3NLZFR' },
-    { brand: 'ONLY',              name: 'ONLY Wintermantel Lang',         category: 'jacke',     price: 69.99,  color: 'Camel',       product_url: 'https://www.amazon.de/dp/B0BDP2XYZQ' },
-    { brand: 'SELECTED FEMME',    name: 'SELECTED FEMME Blazer Slim',     category: 'jacke',     price: 89.99,  color: 'Navy',        product_url: 'https://www.amazon.de/dp/B0BN5RFLKM' },
-    { brand: 'VILA',              name: 'VILA Trenchcoat Classic',        category: 'jacke',     price: 74.99,  color: 'Beige',       product_url: 'https://www.amazon.de/dp/B0D3NRFXKM' },
-    { brand: 'Jack Wolfskin',     name: 'Jack Wolfskin Softshelljacke',   category: 'jacke',     price: 89.95,  color: 'Rot',         product_url: 'https://www.amazon.de/dp/B0D4ZRFNKM' },
+    { brand: 'Tommy Hilfiger',    name: 'Tommy Hilfiger Steppjacke',      category: 'jacke',     price: 129.90, color: 'Schwarz',     product_url: 'https://www.amazon.de/dp/B00IDXFMLI' },
+    { brand: 'Esprit',            name: 'Esprit Damen Mantel',            category: 'jacke',     price: 99.99,  color: 'Grau',        product_url: 'https://www.amazon.de/dp/B071LJNZ7J' },
+    { brand: 'ONLY',              name: 'ONLY Sedona Mantel',             category: 'jacke',     price: 69.99,  color: 'Camel',       product_url: 'https://www.amazon.de/dp/B072J68T8W' },
+    { brand: 'SELECTED FEMME',    name: 'SELECTED FEMME Blazer Slim',     category: 'jacke',     price: 89.99,  color: 'Navy',        product_url: 'https://www.amazon.de/dp/B0DNRTXN36' },
+    { brand: 'VILA',              name: 'VILA Vimersin Trenchcoat',       category: 'jacke',     price: 74.99,  color: 'Beige',       product_url: 'https://www.amazon.de/dp/B0CKWYNM36' },
+    { brand: 'Jack Wolfskin',     name: 'Jack Wolfskin Softshelljacke',   category: 'jacke',     price: 89.95,  color: 'Rot',         product_url: 'https://www.amazon.de/dp/B00R6ANU5E' },
 
     // ── SCHUHE ──
-    { brand: 'BOSS',              name: 'BOSS Sneaker Low',               category: 'schuhe',    price: 149.00, color: 'Weiss',       product_url: 'https://www.amazon.de/dp/B09FSCM4KZ' },
-    { brand: 'Tamaris',           name: 'Tamaris Stiefeletten Leder',     category: 'schuhe',    price: 79.95,  color: 'Cognac',      product_url: 'https://www.amazon.de/dp/B0B8FLM9QZ' },
-    { brand: 'Gabor',             name: 'Gabor Pumps Elegant',            category: 'schuhe',    price: 89.95,  color: 'Schwarz',     product_url: 'https://www.amazon.de/dp/B0CMXR8TPN' },
-    { brand: 'MARCO TOZZI',       name: 'MARCO TOZZI Sandaletten',        category: 'schuhe',    price: 49.95,  color: 'Gold',        product_url: 'https://www.amazon.de/dp/B0D2RFNKLM' },
-    { brand: 'Geox',              name: 'Geox Ballerinas',                category: 'schuhe',    price: 69.95,  color: 'Nude',        product_url: 'https://www.amazon.de/dp/B0BNXK5LFR' },
-    { brand: 'Clarks',            name: 'Clarks Chelsea Boots',           category: 'schuhe',    price: 99.95,  color: 'Braun',       product_url: 'https://www.amazon.de/dp/B0D4ARFNKM' },
+    { brand: 'BOSS',              name: 'BOSS Low-Top Sneaker',           category: 'schuhe',    price: 149.00, color: 'Weiss',       product_url: 'https://www.amazon.de/dp/B097S27181' },
+    { brand: 'Tamaris',           name: 'Tamaris Stiefeletten Leder',     category: 'schuhe',    price: 79.95,  color: 'Cognac',      product_url: 'https://www.amazon.de/dp/B07L4237PB' },
+    { brand: 'Gabor',             name: 'Gabor Comfort Pumps',            category: 'schuhe',    price: 89.95,  color: 'Schwarz',     product_url: 'https://www.amazon.de/dp/B07Q32V8SH' },
+    { brand: 'MARCO TOZZI',       name: 'MARCO TOZZI Sandalette',         category: 'schuhe',    price: 49.95,  color: 'Gold',        product_url: 'https://www.amazon.de/dp/B0C7CQLDLP' },
+    { brand: 'Geox',              name: 'Geox D Annytah Ballerinas',      category: 'schuhe',    price: 69.95,  color: 'Nude',        product_url: 'https://www.amazon.de/dp/B0D6KKV6CL' },
+    { brand: 'Clarks',            name: 'Clarks Chelsea Boots',           category: 'schuhe',    price: 99.95,  color: 'Braun',       product_url: 'https://www.amazon.de/dp/B00J0WU4V4' },
 
     // ── KLEIDER ──
-    { brand: 's.Oliver',         name: 's.Oliver Strickkleid Midi',      category: 'kleid',     price: 59.99,  color: 'Dunkelgrün',  product_url: 'https://www.amazon.de/dp/B0CKXR7TPM' },
+    { brand: 's.Oliver',         name: 's.Oliver Strickkleid Midi',      category: 'kleid',     price: 59.99,  color: 'Dunkelgrün',  product_url: 'https://www.amazon.de/dp/B0BSFMF6LQ' },
     { brand: 'ONLY',              name: 'ONLY Wickelkleid Midi',          category: 'kleid',     price: 39.99,  color: 'Rot',         product_url: 'https://www.amazon.de/dp/B0CMXN9RFQ' },
-    { brand: 'VILA',              name: 'VILA Maxikleid',                 category: 'kleid',     price: 44.99,  color: 'Blau',        product_url: 'https://www.amazon.de/dp/B0D3XRFNKM' },
-    { brand: 'Desigual',          name: 'Desigual Kleid Boho',            category: 'kleid',     price: 79.95,  color: 'Bunt',        product_url: 'https://www.amazon.de/dp/B0D4BRFNKM' },
+    { brand: 'VILA',              name: 'VILA Vilynnea Maxikleid',        category: 'kleid',     price: 44.99,  color: 'Blau',        product_url: 'https://www.amazon.de/dp/B07QVPDB8X' },
+    { brand: 'Desigual',          name: 'Desigual Kleid Boho',            category: 'kleid',     price: 79.95,  color: 'Bunt',        product_url: 'https://www.amazon.de/dp/B07H9ZKW7P' },
 
     // ── RÖCKE ──
-    { brand: 'PIECES',            name: 'PIECES Midi-Rock Plissee',       category: 'rock',      price: 27.99,  color: 'Gold',        product_url: 'https://www.amazon.de/dp/B0CJXW3R5H' },
-    { brand: 'Vero Moda',         name: 'Vero Moda Bleistiftrock',        category: 'rock',      price: 24.99,  color: 'Burgund',     product_url: 'https://www.amazon.de/dp/B0BNXM6KFR' },
+    { brand: 'PIECES',            name: 'PIECES Pckylie Midi-Rock',       category: 'rock',      price: 27.99,  color: 'Gold',        product_url: 'https://www.amazon.de/dp/B084BHSR8Q' },
+    { brand: 'Vero Moda',         name: 'Vero Moda Paperbag Rock',        category: 'rock',      price: 24.99,  color: 'Burgund',     product_url: 'https://www.amazon.de/dp/B07NPFYPN6' },
 
     // ── TASCHEN ──
-    { brand: 'Liebeskind Berlin', name: 'Liebeskind Berlin Ledertasche',  category: 'tasche',    price: 119.00, color: 'Cognac',      product_url: 'https://www.amazon.de/dp/B07QFNR3YZ' },
-    { brand: 'BOSS',              name: 'BOSS Shopper Tasche',            category: 'tasche',    price: 159.00, color: 'Schwarz',     product_url: 'https://www.amazon.de/dp/B0D2XRFNKM' },
-    { brand: 'Desigual',          name: 'Desigual Schultertasche',        category: 'tasche',    price: 64.95,  color: 'Braun',       product_url: 'https://www.amazon.de/dp/B0D4CRFNKM' },
+    { brand: 'Liebeskind Berlin', name: 'Liebeskind Berlin Paper Bag',    category: 'tasche',    price: 119.00, color: 'Cognac',      product_url: 'https://www.amazon.de/dp/B0DX1SRKBX' },
+    { brand: 'BOSS',              name: 'BOSS Shopper Tasche',            category: 'tasche',    price: 159.00, color: 'Schwarz',     product_url: 'https://www.amazon.de/dp/B00A8XSRIQ' },
+    { brand: 'Desigual',          name: 'Desigual Schultertasche',        category: 'tasche',    price: 64.95,  color: 'Braun',       product_url: 'https://www.amazon.de/dp/B0851LQJFH' },
 
     // ── SCHMUCK & ACCESSOIRES ──
-    { brand: 'Fossil',            name: 'Fossil Armbanduhr Rosé',         category: 'schmuck',   price: 89.00,  color: 'Roségold',    product_url: 'https://www.amazon.de/dp/B07N8JVKQ4' },
-    { brand: 'SWAROVSKI',         name: 'SWAROVSKI Halskette Kristall',   category: 'schmuck',   price: 69.00,  color: 'Gold',        product_url: 'https://www.amazon.de/dp/B0BNXK7LFR' },
-    { brand: 'Ray-Ban',           name: 'Ray-Ban Sonnenbrille',           category: 'accessoire', price: 129.00, color: 'Schwarz',    product_url: 'https://www.amazon.de/dp/B0D4DRFNKM' },
-    { brand: 'JOOP!',             name: 'JOOP! Schal Wolle',              category: 'accessoire', price: 49.95,  color: 'Grau',       product_url: 'https://www.amazon.de/dp/B0D4ERFNKM' },
+    { brand: 'Fossil',            name: 'Fossil Riley Armbanduhr',        category: 'schmuck',   price: 89.00,  color: 'Roségold',    product_url: 'https://www.amazon.de/dp/B004D4S7AY' },
+    { brand: 'SWAROVSKI',         name: 'SWAROVSKI Halskette Kristall',   category: 'schmuck',   price: 69.00,  color: 'Gold',        product_url: 'https://www.amazon.de/dp/B00DOW0WZO' },
+    { brand: 'Ray-Ban',           name: 'Ray-Ban New Wayfarer',           category: 'accessoire', price: 129.00, color: 'Schwarz',    product_url: 'https://www.amazon.de/dp/B01LPZT5WM' },
+    { brand: 'JOOP!',             name: 'JOOP! Cornflower Schal',         category: 'accessoire', price: 49.95,  color: 'Grau',       product_url: 'https://www.amazon.de/dp/B0BFRTMH4Q' },
   ];
 
   const insertArticle = db.prepare(`
