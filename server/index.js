@@ -298,6 +298,74 @@ async function startServer() {
     res.status(500).json({ error: 'Interner Serverfehler', details: err.message });
   });
 
+  // ─── Mitternacht-Scheduler: Tägliches Backup + Neue Outfits ───
+  // Berechnet die Millisekunden bis zur nächsten Mitternacht und plant dann
+  // ein tägliches Backup (Finanzamt §147 AO) + automatische Outfit-Zuweisung
+  function scheduleMidnightTasks() {
+    const now = new Date();
+    const nextMidnight = new Date(now);
+    nextMidnight.setHours(24, 0, 0, 0); // Nächste Mitternacht
+    const msUntilMidnight = nextMidnight.getTime() - now.getTime();
+
+    console.log(`🕛 Nächstes Mitternacht-Backup in ${Math.round(msUntilMidnight / 60000)} Minuten`);
+
+    setTimeout(() => {
+      // Mitternacht-Aufgaben ausführen
+      runMidnightTasks();
+
+      // Danach täglich wiederholen (alle 24 Stunden)
+      setInterval(runMidnightTasks, 24 * 60 * 60 * 1000);
+    }, msUntilMidnight);
+  }
+
+  function runMidnightTasks() {
+    console.log('\n🕛 ═══ MITTERNACHT-AUFGABEN STARTEN ═══');
+    const timestamp = new Date().toISOString();
+    console.log(`   Zeitpunkt: ${timestamp}`);
+
+    // 1. Tägliches Datenbank-Backup (Finanzamt-konform)
+    try {
+      backupDatabase(DB_PATH);
+      console.log('   💾 Tägliches Backup erstellt');
+    } catch (e) {
+      console.log('   ⚠️ Backup fehlgeschlagen:', e.message);
+    }
+
+    // 2. Neue Outfits für den neuen Tag zuweisen
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const db = require('./db').getDb();
+      const outfitCount = db.prepare('SELECT COUNT(*) as c FROM avatar_outfits WHERE outfit_date = ?').get(today).c;
+
+      if (outfitCount === 0) {
+        console.log('   👗 Neue Outfits für heute werden zugewiesen...');
+        const { autoAssignOutfits } = require('./services/outfit-rotation');
+        const result = autoAssignOutfits(today);
+        if (result.success) {
+          console.log(`   ✅ ${result.summary.totalArticles} Artikel auf ${result.summary.avatars} Avatare verteilt`);
+        }
+      } else {
+        console.log(`   👗 ${outfitCount} Outfits für heute bereits vorhanden`);
+      }
+    } catch (e) {
+      console.log('   ⚠️ Outfit-Zuweisung fehlgeschlagen:', e.message);
+    }
+
+    // 3. DSGVO: Alte Klick-Statistiken bereinigen (>90 Tage)
+    try {
+      const db = require('./db').getDb();
+      const cutoff = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+      const deleted = db.prepare('DELETE FROM click_stats WHERE timestamp < ?').run(cutoff);
+      if (deleted.changes > 0) {
+        console.log(`   🔒 DSGVO: ${deleted.changes} alte Klick-Statistiken gelöscht`);
+      }
+    } catch (e) { /* ignore */ }
+
+    console.log('🕛 ═══ MITTERNACHT-AUFGABEN ABGESCHLOSSEN ═══\n');
+  }
+
+  scheduleMidnightTasks();
+
   app.listen(PORT, () => {
     console.log(`
 ╔══════════════════════════════════════════════════╗
@@ -307,6 +375,11 @@ async function startServer() {
 ║  👔 Admin:     http://localhost:${PORT}/admin       ║
 ║  🎬 Catwalk:   http://localhost:${PORT}/catwalk     ║
 ║  📡 API:       http://localhost:${PORT}/api         ║
+║  ────────────────────────────────────────────    ║
+║  ⏰ Automatische Aufgaben:                      ║
+║     💾 Backup: täglich um Mitternacht            ║
+║     🔗 ASIN-Check: alle 60 Minuten              ║
+║     👗 Outfits: täglich um Mitternacht           ║
 ╚══════════════════════════════════════════════════╝
     `);
   });
