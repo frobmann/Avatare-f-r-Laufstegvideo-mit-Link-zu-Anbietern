@@ -472,14 +472,16 @@
       top: 0; left: 50%; transform: translateX(-50%);
       height: 100%; width: auto;
       object-fit: contain;
-      /* Kein Rahmen — Video verschmilzt mit der dunklen Bühne */
       border-radius: 0;
       filter: none;
-      /* Weiche Ränder: Video faded an Ober-/Unterkante in den Hintergrund */
-      -webkit-mask-image: linear-gradient(to bottom,
-        transparent 0%, black 3%, black 88%, transparent 100%);
-      mask-image: linear-gradient(to bottom,
-        transparent 0%, black 3%, black 88%, transparent 100%);
+      /* Starke Vignette: nur die Model-Figur ist sichtbar,
+         alle Ränder verschmelzen nahtlos mit dem dunklen Hintergrund.
+         Kein sichtbarer Rahmen, kein Kästchen. */
+      -webkit-mask-image: radial-gradient(ellipse 68% 88% at 50% 47%,
+        black 35%, rgba(0,0,0,0.5) 58%, transparent 82%);
+      mask-image: radial-gradient(ellipse 68% 88% at 50% 47%,
+        black 35%, rgba(0,0,0,0.5) 58%, transparent 82%);
+      transition: transform 0.5s ease;
     }
     /* Video-Avatare: groß & immersiv — wie eine echte Fashion Show */
     .avatar-wrapper.has-video .avatar-figure {
@@ -489,13 +491,17 @@
       max-height: 820px;
     }
     .avatar-wrapper.has-video .avatar-shadow {
-      width: 50%;
-      height: 20px;
-      background: radial-gradient(ellipse, rgba(0,0,0,0.5) 0%, transparent 70%);
+      width: 40%;
+      height: 16px;
+      background: radial-gradient(ellipse, rgba(0,0,0,0.4) 0%, transparent 70%);
     }
     /* Kein AI-Badge bei Videos — soll natürlich aussehen */
     .avatar-wrapper.has-video .ai-badge {
       display: none;
+    }
+    /* Rücklauf: Video spiegeln (Model läuft mit dem Rücken zu uns) */
+    .avatar-wrapper.returning .avatar-generated-video {
+      transform: translateX(-50%) scaleX(-1);
     }
     /* Keine CSS-Walk-Animationen bei Video (Video hat eigene Bewegung) */
     .avatar-wrapper.has-video.walking .avatar-generated-video,
@@ -1252,9 +1258,10 @@
         this.state = 'offstage';
         this.progress = 0;      // 0 = hinten, 1 = vorne
         this.stateTimer = 0;
-        this.xOffset = (index % 3 - 1) * 3; // Leichter seitlicher Versatz
         this.videoEl = element.querySelector('.avatar-generated-video');
         this.hasVideo = !!this.videoEl;
+        // Video-Avatare laufen immer mittig, SVG-Avatare leicht versetzt
+        this.xOffset = this.hasVideo ? 0 : (index % 3 - 1) * 3;
       }
 
       start() {
@@ -1262,7 +1269,7 @@
         this.progress = 0;
         this.stateTimer = 0;
         this.el.classList.add('walking');
-        this.el.classList.remove('posing', 'turning', 'stopped', 'show-name');
+        this.el.classList.remove('posing', 'turning', 'stopped', 'show-name', 'returning');
         // Video abspielen wenn vorhanden
         if (this.videoEl) {
           this.videoEl.currentTime = 0;
@@ -1307,8 +1314,8 @@
               this.state = 'returning';
               this.stateTimer = 0;
               this.el.classList.remove('turning', 'show-name');
-              this.el.classList.add('walking');
-              // Video wieder abspielen beim Zurücklaufen
+              this.el.classList.add('walking', 'returning');
+              // Video wieder abspielen beim Zurücklaufen (gespiegelt = Rücken zu uns)
               if (this.videoEl) this.videoEl.play().catch(() => {});
             }
             break;
@@ -1318,7 +1325,7 @@
             if (this.progress <= 0) {
               this.progress = 0;
               this.state = 'offstage';
-              this.el.classList.remove('walking');
+              this.el.classList.remove('walking', 'returning');
               this.el.style.opacity = '0';
               // Video stoppen
               if (this.videoEl) { this.videoEl.pause(); this.videoEl.currentTime = 0; }
@@ -1359,7 +1366,7 @@
 
       stop() {
         this.state = 'stopped';
-        this.el.classList.remove('walking', 'posing', 'turning');
+        this.el.classList.remove('walking', 'posing', 'turning', 'returning');
         this.el.classList.add('stopped', 'show-name');
         // Video pausieren
         if (this.videoEl) this.videoEl.pause();
