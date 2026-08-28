@@ -28,141 +28,277 @@
       height: 100vh;
       width: 100vw;
       cursor: default;
+      user-select: none;
     }
 
-    /* Catwalk Scene */
+    /* ═══════════════════════════════════════ */
+    /*  BÜHNE & LAUFSTEG                      */
+    /* ═══════════════════════════════════════ */
     #catwalk-scene {
       position: relative;
       width: 100%;
       height: 100vh;
-      perspective: 1200px;
       overflow: hidden;
     }
 
-    /* Background Gradient & Lights */
     .stage-background {
       position: absolute;
       inset: 0;
       background:
-        radial-gradient(ellipse at 50% 0%, rgba(201, 169, 110, 0.08) 0%, transparent 60%),
-        radial-gradient(ellipse at 20% 100%, rgba(80, 40, 120, 0.1) 0%, transparent 50%),
-        radial-gradient(ellipse at 80% 100%, rgba(40, 80, 120, 0.1) 0%, transparent 50%),
-        linear-gradient(180deg, #0a0a14 0%, #12122a 50%, #0a0a14 100%);
+        radial-gradient(ellipse at 50% 10%, rgba(201, 169, 110, 0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 30% 90%, rgba(80, 40, 120, 0.08) 0%, transparent 40%),
+        radial-gradient(ellipse at 70% 90%, rgba(40, 80, 120, 0.08) 0%, transparent 40%),
+        linear-gradient(180deg, #08081a 0%, #0e0e24 40%, #0a0a14 100%);
     }
 
-    /* Spotlight Effects */
-    .spotlight {
+    /* Laufsteg-Boden (Perspektive: schmal hinten, breit vorne) */
+    .runway-floor {
       position: absolute;
-      width: 300px;
-      height: 100%;
-      background: linear-gradient(180deg,
-        rgba(255, 255, 255, 0.03) 0%,
-        rgba(255, 255, 255, 0.01) 50%,
-        transparent 100%);
-      top: 0;
-      animation: spotlightSway 8s ease-in-out infinite;
-    }
-    .spotlight:nth-child(1) { left: 15%; animation-delay: 0s; }
-    .spotlight:nth-child(2) { left: 50%; animation-delay: -3s; }
-    .spotlight:nth-child(3) { left: 75%; animation-delay: -6s; }
-
-    @keyframes spotlightSway {
-      0%, 100% { transform: skewX(-5deg); opacity: 0.5; }
-      50% { transform: skewX(5deg); opacity: 1; }
-    }
-
-    /* Runway */
-    .runway {
-      position: absolute;
-      bottom: 0;
+      top: 15%;
       left: 50%;
       transform: translateX(-50%);
       width: 100%;
-      height: 40%;
+      height: 85%;
+      clip-path: polygon(38% 0%, 62% 0%, 92% 100%, 8% 100%);
       background:
         linear-gradient(180deg,
-          transparent 0%,
-          rgba(30, 30, 50, 0.5) 20%,
-          rgba(30, 30, 50, 0.8) 100%);
+          rgba(25, 25, 45, 0.6) 0%,
+          rgba(30, 30, 55, 0.7) 40%,
+          rgba(35, 35, 60, 0.8) 70%,
+          rgba(40, 40, 70, 0.9) 100%);
     }
 
-    .runway-floor {
+    /* Laufsteg-Glanzstreifen (Mitte) */
+    .runway-center-shine {
       position: absolute;
-      bottom: 0;
-      left: 10%;
-      width: 80%;
-      height: 60%;
-      background:
-        linear-gradient(180deg,
-          rgba(50, 50, 80, 0.3) 0%,
-          rgba(30, 30, 55, 0.6) 100%);
-      transform: perspective(600px) rotateX(45deg);
-      transform-origin: bottom center;
-      border-top: 1px solid rgba(201, 169, 110, 0.15);
-    }
-
-    .runway-center-line {
-      position: absolute;
-      bottom: 0;
+      top: 15%;
       left: 50%;
-      width: 2px;
-      height: 60%;
-      background: linear-gradient(180deg,
-        transparent 0%,
-        rgba(201, 169, 110, 0.1) 30%,
-        rgba(201, 169, 110, 0.2) 100%);
-      transform: perspective(600px) rotateX(45deg) translateX(-50%);
-      transform-origin: bottom center;
+      transform: translateX(-50%);
+      width: 100%;
+      height: 85%;
+      clip-path: polygon(48% 0%, 52% 0%, 55% 100%, 45% 100%);
+      background:
+        linear-gradient(180deg,
+          rgba(201, 169, 110, 0.02) 0%,
+          rgba(201, 169, 110, 0.04) 50%,
+          rgba(201, 169, 110, 0.06) 100%);
+      pointer-events: none;
     }
 
-    /* Title */
+    /* Laufsteg-Ränder (links + rechts, perspektivisch) */
+    .runway-edge {
+      position: absolute;
+      top: 15%;
+      height: 85%;
+      width: 2px;
+      pointer-events: none;
+    }
+    .runway-edge-left {
+      left: 38%;
+      background: linear-gradient(180deg, rgba(201,169,110,0.05) 0%, rgba(201,169,110,0.15) 100%);
+      transform-origin: top center;
+      /* Perspektivische Neigung: oben bei 38%, unten bei 8% */
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    }
+    .runway-edge-right {
+      right: 38%;
+      background: linear-gradient(180deg, rgba(201,169,110,0.05) 0%, rgba(201,169,110,0.15) 100%);
+    }
+
+    /* Perspektiv-Linien auf dem Boden */
+    .runway-lines {
+      position: absolute;
+      top: 15%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      height: 85%;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .runway-line {
+      position: absolute;
+      left: 50%;
+      width: 1px;
+      background: rgba(201, 169, 110, 0.04);
+    }
+
+    /* Spotlights von oben */
+    .spotlight {
+      position: absolute;
+      top: 0;
+      width: 300px;
+      height: 80%;
+      pointer-events: none;
+      animation: spotlightSway 8s ease-in-out infinite;
+    }
+    .spotlight:nth-child(1) {
+      left: 30%;
+      background: radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.02) 0%, transparent 70%);
+      animation-delay: 0s;
+    }
+    .spotlight:nth-child(2) {
+      left: 50%;
+      transform: translateX(-50%);
+      background: radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.03) 0%, transparent 60%);
+      animation-delay: -2.5s;
+    }
+    .spotlight:nth-child(3) {
+      right: 30%;
+      left: auto;
+      background: radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.02) 0%, transparent 70%);
+      animation-delay: -5s;
+    }
+
+    @keyframes spotlightSway {
+      0%, 100% { transform: skewX(-3deg); opacity: 0.6; }
+      50% { transform: skewX(3deg); opacity: 1; }
+    }
+
+    /* ═══════════════════════════════════════ */
+    /*  PUBLIKUM-SILHOUETTEN                  */
+    /* ═══════════════════════════════════════ */
+    .audience {
+      position: absolute;
+      bottom: 0;
+      height: 40%;
+      width: 15%;
+      z-index: 60;
+      pointer-events: none;
+    }
+    .audience-left { left: 0; }
+    .audience-right { right: 0; }
+    .audience svg { width: 100%; height: 100%; opacity: 0.4; }
+
+    /* ═══════════════════════════════════════ */
+    /*  KAMERA-BLITZLICHT                     */
+    /* ═══════════════════════════════════════ */
+    .camera-flash {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background: radial-gradient(circle, #fff 0%, rgba(255,255,255,0.5) 40%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 65;
+      opacity: 0;
+    }
+
+    @keyframes flashBurst {
+      0% { opacity: 0; transform: scale(0.5); }
+      8% { opacity: 1; transform: scale(4); }
+      20% { opacity: 0.8; transform: scale(2.5); }
+      40% { opacity: 0; transform: scale(0.5); }
+      100% { opacity: 0; }
+    }
+
+    .flash-ambient {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+      opacity: 0;
+      background: radial-gradient(ellipse at var(--fx, 50%) var(--fy, 80%), rgba(255,255,255,0.04) 0%, transparent 40%);
+      transition: opacity 0.05s;
+    }
+
+    /* Laufsteg-Rand-Lichter (am Boden, unten) */
+    .runway-edge-lights {
+      position: absolute;
+      bottom: 3%;
+      left: 8%;
+      width: 84%;
+      display: flex;
+      justify-content: space-around;
+      z-index: 4;
+      pointer-events: none;
+    }
+    .edge-light {
+      width: 4px;
+      height: 4px;
+      background: var(--accent);
+      border-radius: 50%;
+      opacity: 0.25;
+      box-shadow: 0 0 8px var(--accent-glow);
+      animation: edgePulse 3s ease-in-out infinite;
+    }
+    .edge-light:nth-child(odd) { animation-delay: -1.5s; }
+    @keyframes edgePulse {
+      0%, 100% { opacity: 0.15; }
+      50% { opacity: 0.4; }
+    }
+
+    /* ═══════════════════════════════════════ */
+    /*  TITEL & UI                            */
+    /* ═══════════════════════════════════════ */
     .catwalk-title {
       position: absolute;
-      top: 30px;
+      top: 24px;
       left: 50%;
       transform: translateX(-50%);
       font-family: 'Playfair Display', serif;
-      font-size: 2.5rem;
+      font-size: 2.2rem;
       font-weight: 700;
       letter-spacing: 0.2em;
       text-transform: uppercase;
       color: var(--accent);
       text-shadow: 0 0 40px var(--accent-glow);
-      z-index: 10;
+      z-index: 70;
+      white-space: nowrap;
     }
 
     .catwalk-subtitle {
       position: absolute;
-      top: 85px;
+      top: 74px;
       left: 50%;
       transform: translateX(-50%);
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       letter-spacing: 0.3em;
       text-transform: uppercase;
       color: var(--text-secondary);
-      z-index: 10;
+      z-index: 70;
+      white-space: nowrap;
     }
 
-    /* Avatar Container */
+    .date-display {
+      position: absolute;
+      top: 26px;
+      right: 24px;
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      z-index: 70;
+    }
+
+    .avatar-counter {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      letter-spacing: 0.08em;
+      z-index: 70;
+      opacity: 0.6;
+    }
+    .avatar-counter span { color: var(--accent); font-weight: 600; }
+
+    /* ═══════════════════════════════════════ */
+    /*  AVATAR AUF DEM LAUFSTEG              */
+    /* ═══════════════════════════════════════ */
     .avatar-track {
       position: absolute;
-      bottom: 6%;
-      left: 0;
-      width: 100%;
-      height: 75%;
+      inset: 0;
       pointer-events: none;
+      z-index: 10;
     }
 
     .avatar-wrapper {
       position: absolute;
-      bottom: 0;
       pointer-events: all;
       cursor: pointer;
-      transition: transform 0.3s ease;
-    }
-
-    .avatar-wrapper:hover {
-      transform: scale(1.05);
+      transform-origin: center bottom;
+      will-change: transform, top, opacity;
     }
 
     .avatar-figure {
@@ -175,82 +311,26 @@
       justify-content: flex-end;
     }
 
-    /* KI-generiertes Avatar-Bild */
-    .avatar-generated-img {
-      position: absolute;
-      top: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      height: 100%;
-      width: auto;
-      max-width: 160px;
-      object-fit: contain;
-      filter: drop-shadow(0 4px 20px rgba(0,0,0,0.5));
-    }
-
-    .avatar-generated-video {
-      position: absolute;
-      top: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      height: 100%;
-      width: auto;
-      max-width: 160px;
-      object-fit: contain;
-      filter: drop-shadow(0 4px 20px rgba(0,0,0,0.5));
-    }
-
-    /* KI-Badge */
-    .ai-badge {
-      position: absolute;
-      top: -8px;
-      right: -8px;
-      background: linear-gradient(135deg, #9b59b6, #6c3483);
-      color: white;
-      font-size: 0.55rem;
-      padding: 2px 6px;
-      border-radius: 8px;
-      letter-spacing: 0.05em;
-      font-weight: 600;
-      z-index: 5;
-    }
-
-    /* ── Fashion-Illustration SVG Silhouette ── */
-    .avatar-silhouette {
-      position: relative;
-      width: 100%;
-      height: 100%;
-    }
-
-    .avatar-silhouette svg {
-      width: 100%;
-      height: 100%;
-      filter: drop-shadow(0 2px 12px rgba(0,0,0,0.3))
-             drop-shadow(0 0 20px rgba(201, 169, 110, 0.08));
-    }
-
-    /* Sanftes Schwingen beim Gehen */
+    /* Walking-Animationen */
     .walking .avatar-silhouette {
-      animation: modelSway 1.8s ease-in-out infinite;
+      animation: modelSway 1.6s ease-in-out infinite;
     }
     @keyframes modelSway {
-      0%, 100% { transform: rotate(-0.5deg) translateY(0); }
-      25% { transform: rotate(0.3deg) translateY(-1px); }
-      50% { transform: rotate(0.5deg) translateY(0); }
-      75% { transform: rotate(-0.3deg) translateY(-1px); }
+      0%, 100% { transform: rotate(-0.4deg) translateY(0); }
+      25% { transform: rotate(0.25deg) translateY(-1px); }
+      50% { transform: rotate(0.4deg) translateY(0); }
+      75% { transform: rotate(-0.25deg) translateY(-1px); }
     }
 
-    /* Haar-Animation */
     .walking .avatar-hair-flow {
       animation: hairFlow 2s ease-in-out infinite;
     }
     @keyframes hairFlow {
-      0%, 100% { transform: skewX(0deg) translateX(0); }
-      30% { transform: skewX(1.5deg) translateX(0.5px); }
-      70% { transform: skewX(-1deg) translateX(-0.3px); }
+      0%, 100% { transform: skewX(0deg); }
+      30% { transform: skewX(1.5deg); }
+      70% { transform: skewX(-1deg); }
     }
 
-    /* Arm-Schwingen */
     .walking .avatar-arm-l {
       animation: armSwingL 0.8s ease-in-out infinite;
       transform-origin: 50% 0%;
@@ -268,7 +348,6 @@
       50% { transform: rotate(3deg); }
     }
 
-    /* Bein-Schwingen */
     .walking .avatar-leg-l {
       animation: legSwingL 0.8s ease-in-out infinite;
       transform-origin: 50% 0%;
@@ -286,7 +365,6 @@
       50% { transform: rotate(-3deg); }
     }
 
-    /* Hüft-Schwung */
     .walking .avatar-hips {
       animation: hipSway 0.8s ease-in-out infinite;
     }
@@ -295,95 +373,144 @@
       50% { transform: translateX(1px); }
     }
 
-    /* Avatar Shadow */
+    /* Pose-Animation (am vorderen Ende) */
+    .posing .avatar-silhouette {
+      animation: poseStance 3s ease-in-out;
+    }
+    @keyframes poseStance {
+      0% { transform: rotate(0); }
+      15% { transform: rotate(-2deg) translateX(-2px); }
+      30% { transform: rotate(0); }
+      50% { transform: rotate(1.5deg) translateX(1px); }
+      70% { transform: rotate(0); }
+      100% { transform: rotate(0); }
+    }
+
+    /* Umdreh-Animation */
+    .turning .avatar-figure {
+      animation: turnAround 0.6s ease-in-out;
+    }
+    @keyframes turnAround {
+      0% { transform: scaleX(1) perspective(400px) rotateY(0deg); }
+      50% { transform: scaleX(0.1) perspective(400px) rotateY(90deg); }
+      100% { transform: scaleX(1) perspective(400px) rotateY(0deg); }
+    }
+
+    /* Schatten unter dem Avatar */
     .avatar-shadow {
       position: absolute;
-      bottom: -10px;
+      bottom: -8px;
       left: 50%;
       transform: translateX(-50%);
-      width: 80px;
-      height: 14px;
-      background: radial-gradient(ellipse, rgba(0,0,0,0.35) 0%, transparent 70%);
+      width: 70px;
+      height: 12px;
+      background: radial-gradient(ellipse, rgba(0,0,0,0.3) 0%, transparent 70%);
     }
 
-    /* Walk Animation */
-    .avatar-walk {
-      animation: avatarWalk var(--walk-duration, 20s) linear infinite;
-    }
-
-    @keyframes avatarWalk {
-      0% { left: 110%; }
-      100% { left: -15%; }
-    }
-
-    /* Avatar Name Label */
+    /* Avatar-Name */
     .avatar-name {
       position: absolute;
-      bottom: -30px;
+      bottom: -28px;
       left: 50%;
       transform: translateX(-50%);
       font-family: 'Playfair Display', serif;
-      font-size: 0.75rem;
-      letter-spacing: 0.15em;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
       color: var(--accent);
       white-space: nowrap;
-      opacity: 1;
-      transition: opacity 0.3s ease;
+      opacity: 0;
+      transition: opacity 0.4s ease;
     }
 
-    /* Outfit-Info unter dem Avatar (immer sichtbar) */
+    /* Name erst anzeigen wenn Avatar vorne ist */
+    .avatar-wrapper.show-name .avatar-name {
+      opacity: 1;
+    }
+
+    /* Outfit-Info */
     .avatar-outfit-info {
       position: absolute;
-      bottom: -60px;
+      bottom: -52px;
       left: 50%;
       transform: translateX(-50%);
       text-align: center;
       white-space: nowrap;
-      opacity: 0.8;
-      transition: opacity 0.3s ease;
+      opacity: 0;
+      transition: opacity 0.4s ease;
     }
-
-    .avatar-wrapper:hover .avatar-outfit-info {
-      opacity: 1;
+    .avatar-wrapper.show-name .avatar-outfit-info {
+      opacity: 0.85;
     }
-
     .avatar-outfit-brands {
-      font-size: 0.6rem;
+      font-size: 0.58rem;
       color: var(--text-secondary);
-      letter-spacing: 0.05em;
+      letter-spacing: 0.04em;
     }
-
     .avatar-outfit-price {
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       font-weight: 600;
       color: var(--accent);
       margin-top: 2px;
     }
 
-    /* Product Info Card (erscheint bei Hover/Click) */
-    .product-card {
+    /* ═══════════════════════════════════════ */
+    /*  KI-GENERIERTE BILDER/VIDEOS          */
+    /* ═══════════════════════════════════════ */
+    .avatar-generated-img {
       position: absolute;
-      bottom: calc(100% + 20px);
-      left: 50%;
-      transform: translateX(-50%) scale(0.9);
-      width: 280px;
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
-      padding: 16px;
-      opacity: 0;
-      pointer-events: none;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      backdrop-filter: blur(20px);
-      z-index: 100;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      top: 0; left: 50%; transform: translateX(-50%);
+      height: 100%; width: auto; max-width: 160px;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 20px rgba(0,0,0,0.5));
+    }
+    .avatar-generated-video {
+      position: absolute;
+      top: 0; left: 50%; transform: translateX(-50%);
+      height: 100%; width: auto; max-width: 160px;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 20px rgba(0,0,0,0.5));
+    }
+    .ai-badge {
+      position: absolute; top: -8px; right: -8px;
+      background: linear-gradient(135deg, #9b59b6, #6c3483);
+      color: white; font-size: 0.55rem; padding: 2px 6px;
+      border-radius: 8px; letter-spacing: 0.05em; font-weight: 600; z-index: 5;
     }
 
-    .avatar-wrapper:hover .product-card,
-    .avatar-wrapper.active .product-card {
+    .avatar-silhouette {
+      position: relative; width: 100%; height: 100%;
+    }
+    .avatar-silhouette svg {
+      width: 100%; height: 100%;
+      filter: drop-shadow(0 2px 12px rgba(0,0,0,0.3))
+             drop-shadow(0 0 20px rgba(201,169,110,0.06));
+    }
+
+    /* ═══════════════════════════════════════ */
+    /*  PRODUKT-KARTE (bei Klick vorne)       */
+    /* ═══════════════════════════════════════ */
+    .product-card {
+      position: absolute;
+      bottom: calc(100% + 15px);
+      left: 50%;
+      transform: translateX(-50%) scale(0.85) translateY(10px);
+      width: 290px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 18px;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      backdrop-filter: blur(20px);
+      z-index: 200;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 30px rgba(201,169,110,0.04);
+    }
+
+    .avatar-wrapper.stopped .product-card {
       opacity: 1;
-      transform: translateX(-50%) scale(1);
+      transform: translateX(-50%) scale(1) translateY(0);
       pointer-events: all;
     }
 
@@ -393,202 +520,115 @@
       align-items: center;
       margin-bottom: 12px;
       padding-bottom: 10px;
-      border-bottom: 1px solid rgba(201, 169, 110, 0.1);
+      border-bottom: 1px solid rgba(201,169,110,0.1);
     }
-
     .product-card-brand {
       font-family: 'Playfair Display', serif;
-      font-size: 1rem;
-      font-weight: 700;
-      color: var(--accent);
+      font-size: 1rem; font-weight: 700; color: var(--accent);
     }
-
     .product-card-total {
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: var(--text-primary);
+      font-size: 1.1rem; font-weight: 600; color: var(--text-primary);
     }
-
     .product-card-items {
-      list-style: none;
-      max-height: 220px;
-      overflow-y: auto;
+      list-style: none; max-height: 220px; overflow-y: auto;
     }
-
-    .product-card-items::-webkit-scrollbar {
-      width: 4px;
-    }
-    .product-card-items::-webkit-scrollbar-thumb {
-      background: var(--card-border);
-      border-radius: 2px;
-    }
-
+    .product-card-items::-webkit-scrollbar { width: 4px; }
+    .product-card-items::-webkit-scrollbar-thumb { background: var(--card-border); border-radius: 2px; }
     .product-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px 0;
-      border-bottom: 1px solid rgba(255,255,255,0.03);
-      cursor: pointer;
-      transition: background 0.2s;
-      border-radius: 6px;
-      padding: 8px 6px;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 6px; border-bottom: 1px solid rgba(255,255,255,0.03);
+      cursor: pointer; transition: background 0.2s; border-radius: 6px;
     }
-
-    .product-item:hover {
-      background: rgba(201, 169, 110, 0.08);
-    }
-
-    .product-item-info {
-      flex: 1;
-    }
-
+    .product-item:hover { background: rgba(201,169,110,0.08); }
+    .product-item-info { flex: 1; }
     .product-item-category {
-      font-size: 0.65rem;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--text-secondary);
+      font-size: 0.65rem; text-transform: uppercase;
+      letter-spacing: 0.1em; color: var(--text-secondary);
     }
-
-    .product-item-name {
-      font-size: 0.85rem;
-      color: var(--text-primary);
-      margin-top: 2px;
-    }
-
-    .product-item-brand {
-      font-size: 0.7rem;
-      color: var(--accent);
-      opacity: 0.7;
-    }
-
+    .product-item-name { font-size: 0.85rem; color: var(--text-primary); margin-top: 2px; }
+    .product-item-brand { font-size: 0.7rem; color: var(--accent); opacity: 0.7; }
     .product-item-price {
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: var(--text-primary);
-      margin-left: 12px;
-      white-space: nowrap;
+      font-size: 0.9rem; font-weight: 600; color: var(--text-primary);
+      margin-left: 12px; white-space: nowrap;
     }
-
     .product-item-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      margin-left: 8px;
-      font-size: 0.7rem;
-      color: var(--accent);
-      opacity: 0;
-      transition: opacity 0.2s;
+      display: inline-flex; align-items: center; gap: 4px;
+      margin-left: 8px; font-size: 0.7rem; color: var(--accent);
+      opacity: 0; transition: opacity 0.2s;
     }
+    .product-item:hover .product-item-link { opacity: 1; }
 
-    .product-item:hover .product-item-link {
-      opacity: 1;
+    .free-shipping-badge {
+      display: flex; align-items: center; justify-content: center;
+      gap: 4px; margin-top: 8px; padding: 5px 0;
+      font-size: 0.68rem; color: #4ade80; letter-spacing: 0.05em; opacity: 0.8;
     }
-
-    /* Shop Now Button */
     .shop-all-btn {
-      display: block;
-      width: 100%;
-      margin-top: 12px;
-      padding: 10px;
+      display: block; width: 100%; margin-top: 8px; padding: 11px;
       background: linear-gradient(135deg, var(--accent), #a88a50);
-      color: #0a0a14;
-      border: none;
-      border-radius: 8px;
-      font-family: 'Inter', sans-serif;
-      font-size: 0.8rem;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: all 0.2s;
-      text-align: center;
-      text-decoration: none;
+      color: #0a0a14; border: none; border-radius: 8px;
+      font-family: 'Inter', sans-serif; font-size: 0.8rem;
+      font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+      cursor: pointer; transition: all 0.2s; text-align: center; text-decoration: none;
     }
-
     .shop-all-btn:hover {
       transform: translateY(-1px);
       box-shadow: 0 4px 20px var(--accent-glow);
     }
 
-    /* Loading State */
-    .loading-screen {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: var(--bg-dark);
-      z-index: 1000;
-      transition: opacity 0.8s ease;
-    }
-
-    .loading-screen.fade-out {
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .loading-text {
-      font-family: 'Playfair Display', serif;
-      font-size: 2rem;
+    /* Hinweis: "Klicke zum Ansehen" */
+    .click-hint {
+      position: absolute;
+      bottom: -70px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.6rem;
       color: var(--accent);
-      letter-spacing: 0.3em;
-      margin-bottom: 30px;
+      letter-spacing: 0.1em;
+      opacity: 0;
+      transition: opacity 0.4s;
+      white-space: nowrap;
+      animation: hintPulse 2s ease-in-out infinite;
+    }
+    .avatar-wrapper.show-name:not(.stopped) .click-hint {
+      opacity: 0.7;
+    }
+    @keyframes hintPulse {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 0.8; }
     }
 
-    .loading-bar {
-      width: 200px;
-      height: 2px;
-      background: rgba(201, 169, 110, 0.2);
-      border-radius: 1px;
-      overflow: hidden;
+    /* ═══════════════════════════════════════ */
+    /*  LOADING                               */
+    /* ═══════════════════════════════════════ */
+    .loading-screen {
+      position: fixed; inset: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background: var(--bg-dark); z-index: 1000; transition: opacity 0.8s ease;
     }
-
-    .loading-bar-fill {
-      width: 0%;
-      height: 100%;
-      background: var(--accent);
-      transition: width 0.5s ease;
+    .loading-screen.fade-out { opacity: 0; pointer-events: none; }
+    .loading-text {
+      font-family: 'Playfair Display', serif; font-size: 2rem;
+      color: var(--accent); letter-spacing: 0.3em; margin-bottom: 30px;
     }
+    .loading-bar { width: 200px; height: 2px; background: rgba(201,169,110,0.2); border-radius: 1px; overflow: hidden; }
+    .loading-bar-fill { width: 0%; height: 100%; background: var(--accent); transition: width 0.5s ease; }
 
     /* Empty State */
     .empty-state {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      text-align: center;
-      z-index: 10;
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      text-align: center; z-index: 10;
     }
+    .empty-state h2 { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--accent); margin-bottom: 10px; }
+    .empty-state p { color: var(--text-secondary); font-size: 0.9rem; }
+    .empty-state a { color: var(--accent); text-decoration: underline; }
 
-    .empty-state h2 {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.5rem;
-      color: var(--accent);
-      margin-bottom: 10px;
-    }
-
-    .empty-state p {
-      color: var(--text-secondary);
-      font-size: 0.9rem;
-    }
-
-    .empty-state a {
-      color: var(--accent);
-      text-decoration: underline;
-    }
-
-    /* Particle effects */
+    /* Partikel */
     .particle {
-      position: absolute;
-      width: 2px;
-      height: 2px;
-      background: rgba(201, 169, 110, 0.3);
-      border-radius: 50%;
+      position: absolute; width: 2px; height: 2px;
+      background: rgba(201,169,110,0.3); border-radius: 50%;
       animation: particleFloat linear infinite;
     }
-
     @keyframes particleFloat {
       0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
       10% { opacity: 1; }
@@ -596,103 +636,60 @@
       100% { transform: translateY(-20px) rotate(720deg); opacity: 0; }
     }
 
-    /* Date Display */
-    .date-display {
-      position: absolute;
-      top: 30px;
-      right: 30px;
-      font-size: 0.75rem;
-      color: var(--text-secondary);
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      z-index: 10;
-    }
-
-    /* Controls */
+    /* ═══════════════════════════════════════ */
+    /*  CONTROLS                              */
+    /* ═══════════════════════════════════════ */
     .controls {
-      position: absolute;
-      bottom: 20px;
-      right: 20px;
-      display: flex;
-      gap: 8px;
-      z-index: 10;
+      position: absolute; bottom: 16px; right: 16px;
+      display: flex; gap: 8px; z-index: 70;
     }
-
     .control-btn {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      color: var(--text-primary);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.9rem;
-      transition: all 0.2s;
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--card-bg); border: 1px solid var(--card-border);
+      color: var(--text-primary); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem; transition: all 0.2s;
     }
+    .control-btn:hover { background: rgba(201,169,110,0.15); border-color: var(--accent); }
+    .control-btn.active { background: rgba(201,169,110,0.2); border-color: var(--accent); box-shadow: 0 0 12px var(--accent-glow); }
 
-    /* Sprach-Dropdown */
-    .lang-wrapper {
-      position: relative;
-    }
-
+    .lang-wrapper { position: relative; }
     .lang-dropdown {
-      display: none;
-      position: absolute;
-      bottom: 44px;
-      right: 0;
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 10px;
-      padding: 6px 0;
-      min-width: 160px;
-      backdrop-filter: blur(20px);
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+      display: none; position: absolute; bottom: 44px; right: 0;
+      background: var(--card-bg); border: 1px solid var(--card-border);
+      border-radius: 10px; padding: 6px 0; min-width: 160px;
+      backdrop-filter: blur(20px); box-shadow: 0 10px 40px rgba(0,0,0,0.5);
     }
-
-    .lang-wrapper.open .lang-dropdown {
-      display: block;
-    }
-
+    .lang-wrapper.open .lang-dropdown { display: block; }
     .lang-option {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 14px;
-      cursor: pointer;
-      font-size: 0.8rem;
-      color: var(--text-primary);
-      transition: background 0.2s;
-      white-space: nowrap;
+      display: flex; align-items: center; gap: 8px; padding: 8px 14px;
+      cursor: pointer; font-size: 0.8rem; color: var(--text-primary);
+      transition: background 0.2s; white-space: nowrap;
     }
+    .lang-option:hover { background: rgba(201,169,110,0.1); }
+    .lang-option.active { color: var(--accent); font-weight: 600; }
+    .lang-option .lang-flag { font-size: 1.1rem; line-height: 1; }
 
-    .lang-option:hover {
-      background: rgba(201, 169, 110, 0.1);
-    }
-
-    .lang-option.active {
-      color: var(--accent);
-      font-weight: 600;
-    }
-
-    .lang-option .lang-flag {
-      font-size: 1.1rem;
-      line-height: 1;
-    }
-
-    .control-btn:hover {
-      background: rgba(201, 169, 110, 0.15);
-      border-color: var(--accent);
-    }
-
-    /* Responsive */
+    /* ═══════════════════════════════════════ */
+    /*  RESPONSIVE                            */
+    /* ═══════════════════════════════════════ */
     @media (max-width: 768px) {
-      .catwalk-title { font-size: 1.5rem; top: 15px; }
-      .catwalk-subtitle { font-size: 0.7rem; top: 55px; }
-      .avatar-figure { width: 100px; height: 320px; }
-      .product-card { width: 240px; padding: 12px; }
+      .catwalk-title { font-size: 1.3rem; top: 10px; letter-spacing: 0.12em; }
+      .catwalk-subtitle { font-size: 0.6rem; top: 40px; }
+      .avatar-figure { width: 100px; height: 340px; }
+      .product-card { width: 250px; padding: 14px; }
+      .audience { width: 10%; }
+      .date-display { font-size: 0.6rem; top: 10px; right: 10px; }
+      .controls { bottom: 10px; right: 10px; gap: 5px; }
+      .control-btn { width: 32px; height: 32px; font-size: 0.8rem; }
+      .avatar-counter { bottom: 10px; left: 10px; font-size: 0.6rem; }
+    }
+    @media (max-width: 480px) {
+      .catwalk-title { font-size: 1rem; }
+      .catwalk-subtitle { font-size: 0.5rem; top: 32px; }
+      .avatar-figure { width: 80px; height: 270px; }
+      .product-card { width: 230px; padding: 10px; }
+      .audience { display: none; }
     }
   </style>
 </head>
@@ -709,23 +706,67 @@
   <!-- Catwalk Scene -->
   <div id="catwalk-scene">
     <div class="stage-background"></div>
+
+    <!-- Laufsteg-Boden -->
+    <div class="runway-floor"></div>
+    <div class="runway-center-shine"></div>
+    <div class="runway-lines" id="runway-lines"></div>
+
+    <!-- Spotlights -->
     <div class="spotlight"></div>
     <div class="spotlight"></div>
     <div class="spotlight"></div>
 
-    <div class="runway">
-      <div class="runway-floor"></div>
-      <div class="runway-center-line"></div>
+    <!-- Blitz-Ambient -->
+    <div class="flash-ambient" id="flash-ambient"></div>
+
+    <!-- Publikum links -->
+    <div class="audience audience-left">
+      <svg viewBox="0 0 200 300" preserveAspectRatio="xMaxYMax meet" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="180" cy="230" rx="18" ry="20" fill="#0a0a14"/>
+        <rect x="160" y="248" width="40" height="52" rx="8" fill="#0a0a14"/>
+        <ellipse cx="140" cy="240" rx="16" ry="18" fill="#0e0e1a"/>
+        <rect x="122" y="256" width="36" height="44" rx="7" fill="#0e0e1a"/>
+        <ellipse cx="105" cy="245" rx="15" ry="17" fill="#0a0a14"/>
+        <rect x="88" y="260" width="34" height="40" rx="6" fill="#0a0a14"/>
+        <ellipse cx="170" cy="200" rx="14" ry="15" fill="#0e0e1a"/>
+        <rect x="154" y="213" width="32" height="30" rx="6" fill="#0e0e1a"/>
+        <ellipse cx="135" cy="205" rx="13" ry="14" fill="#0a0a14"/>
+        <rect x="120" y="217" width="30" height="28" rx="6" fill="#0a0a14"/>
+        <ellipse cx="160" cy="178" rx="11" ry="12" fill="#0a0a14"/>
+        <rect x="147" y="188" width="26" height="22" rx="5" fill="#0a0a14"/>
+      </svg>
     </div>
+
+    <!-- Publikum rechts -->
+    <div class="audience audience-right">
+      <svg viewBox="0 0 200 300" preserveAspectRatio="xMinYMax meet" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="20" cy="230" rx="18" ry="20" fill="#0a0a14"/>
+        <rect x="0" y="248" width="40" height="52" rx="8" fill="#0a0a14"/>
+        <ellipse cx="60" cy="240" rx="16" ry="18" fill="#0e0e1a"/>
+        <rect x="42" y="256" width="36" height="44" rx="7" fill="#0e0e1a"/>
+        <ellipse cx="95" cy="245" rx="15" ry="17" fill="#0a0a14"/>
+        <rect x="78" y="260" width="34" height="40" rx="6" fill="#0a0a14"/>
+        <ellipse cx="30" cy="200" rx="14" ry="15" fill="#0e0e1a"/>
+        <rect x="14" y="213" width="32" height="30" rx="6" fill="#0e0e1a"/>
+        <ellipse cx="65" cy="205" rx="13" ry="14" fill="#0a0a14"/>
+        <rect x="50" y="217" width="30" height="28" rx="6" fill="#0a0a14"/>
+        <ellipse cx="40" cy="178" rx="11" ry="12" fill="#0a0a14"/>
+        <rect x="27" y="188" width="26" height="22" rx="5" fill="#0a0a14"/>
+      </svg>
+    </div>
+
+    <!-- Rand-Lichter -->
+    <div class="runway-edge-lights" id="edge-lights"></div>
 
     <div class="catwalk-title" id="catwalk-title">Fashion Catwalk</div>
     <div class="catwalk-subtitle" id="catwalk-subtitle">Klicke auf die Models – Shoppe den Look</div>
-
     <div class="date-display" id="date-display"></div>
 
-    <div class="avatar-track" id="avatar-track">
-      <!-- Avatare werden hier dynamisch eingefügt -->
-    </div>
+    <!-- Avatar-Track (JS positioniert hier die laufenden Avatare) -->
+    <div class="avatar-track" id="avatar-track"></div>
+
+    <div class="avatar-counter" id="avatar-counter"></div>
 
     <div class="controls">
       <div class="lang-wrapper" id="lang-wrapper">
@@ -744,37 +785,57 @@
       </div>
       <button class="control-btn" id="btn-pause" title="Pause/Play">⏯</button>
       <button class="control-btn" id="btn-speed" title="Geschwindigkeit">⚡</button>
+      <button class="control-btn" id="btn-flash" title="Blitzlichter an/aus">📸</button>
       <button class="control-btn" id="btn-fullscreen" title="Vollbild">⛶</button>
     </div>
   </div>
 
   <script>
+    // ═══════════════════════════════════════════════════════
+    //  KONFIGURATION
+    // ═══════════════════════════════════════════════════════
     const API_BASE = window.location.origin + '/api';
+
+    const WALK_CONFIG = {
+      backY: 18,            // % vom oberen Rand (hinten auf dem Laufsteg)
+      frontY: 76,           // % vom oberen Rand (vorne = Pose-Position)
+      centerX: 50,          // % Mitte
+      backScale: 0.28,      // Größe hinten
+      frontScale: 1.0,      // Größe vorne
+      approachMs: 6000,     // Hinlauf-Dauer (ms)
+      poseMs: 3200,         // Pose-Dauer (ms)
+      turnMs: 600,          // Umdreh-Animation (ms)
+      returnMs: 5000,       // Rücklauf-Dauer (ms)
+      staggerMs: 4500,      // Abstand zwischen Models (ms)
+      backBrightness: 0.45, // Helligkeit hinten
+      frontBrightness: 1.0, // Helligkeit vorne
+    };
+
     let catwalkData = null;
     let isPaused = false;
     let speedMultiplier = 1;
     let currentLang = localStorage.getItem('catwalk-lang') || 'de';
+    let flashesEnabled = true;
+    let flashTimeout = null;
+    let activeWalkers = [];
+    let walkerQueue = [];
+    let spawnTimer = null;
+    let animFrameId = null;
+    let lastFrameTime = 0;
 
     // ═══════════════════════════════════════════════════════
-    // ÜBERSETZUNGEN – 9 EU-Sprachen mit Währungsumrechnung
+    //  ÜBERSETZUNGEN
     // ═══════════════════════════════════════════════════════
-
-    // Währung – alle Preise in EUR
-    const CURRENCY_RATES = {
-      EUR: { symbol: '€', rate: 1, locale: 'de-DE' },
-    };
+    const CURRENCY_RATES = { EUR: { symbol: '€', rate: 1, locale: 'de-DE' } };
 
     const I18N = {
       de: {
-        label: 'Deutsch', flag: '🇩🇪',
-        title: 'Fashion Catwalk',
+        label: 'Deutsch', flag: '🇩🇪', title: 'Fashion Catwalk',
         subtitle: 'Klicke auf die Models – Shoppe den Look',
-        emptyTitle: 'Noch keine Avatare',
-        emptyText: 'Erstelle Avatare im',
-        emptyLink: 'Admin Dashboard',
-        shopAll: 'Ganzen Look shoppen →',
-        shopLink: 'Shop →',
-        freeShipping: 'Kostenloser EU-Versand',
+        emptyTitle: 'Noch keine Avatare', emptyText: 'Erstelle Avatare im', emptyLink: 'Admin Dashboard',
+        shopAll: 'Ganzen Look shoppen →', shopLink: 'Shop →',
+        freeShipping: '✓ Kostenloser EU-Versand', models: 'Models auf dem Laufsteg',
+        clickHint: '▲ Klicken für den Look',
         categories: {
           'kopfbedeckung': 'Kopfbedeckung', 'oberteil': 'Oberteil', 'jacke': 'Jacke',
           'hose': 'Hose', 'rock': 'Rock', 'kleid': 'Kleid', 'schuhe': 'Schuhe',
@@ -783,15 +844,12 @@
         dateLocale: 'de-DE', currency: 'EUR',
       },
       en: {
-        label: 'English', flag: '🇬🇧',
-        title: 'Fashion Catwalk',
+        label: 'English', flag: '🇬🇧', title: 'Fashion Catwalk',
         subtitle: 'Click the models – Shop the look',
-        emptyTitle: 'No avatars yet',
-        emptyText: 'Create avatars in the',
-        emptyLink: 'Admin Dashboard',
-        shopAll: 'Shop the full look →',
-        shopLink: 'Shop →',
-        freeShipping: 'Free EU shipping',
+        emptyTitle: 'No avatars yet', emptyText: 'Create avatars in the', emptyLink: 'Admin Dashboard',
+        shopAll: 'Shop the full look →', shopLink: 'Shop →',
+        freeShipping: '✓ Free EU shipping', models: 'models on the runway',
+        clickHint: '▲ Click for the look',
         categories: {
           'kopfbedeckung': 'Headwear', 'oberteil': 'Top', 'jacke': 'Jacket',
           'hose': 'Trousers', 'rock': 'Skirt', 'kleid': 'Dress', 'schuhe': 'Shoes',
@@ -800,15 +858,12 @@
         dateLocale: 'en-GB', currency: 'EUR',
       },
       fr: {
-        label: 'Français', flag: '🇫🇷',
-        title: 'Fashion Catwalk',
+        label: 'Français', flag: '🇫🇷', title: 'Fashion Catwalk',
         subtitle: 'Cliquez sur les mannequins – Achetez le look',
-        emptyTitle: 'Pas encore d\'avatars',
-        emptyText: 'Créez des avatars dans le',
-        emptyLink: 'Tableau de bord',
-        shopAll: 'Acheter le look complet →',
-        shopLink: 'Acheter →',
-        freeShipping: 'Livraison UE gratuite',
+        emptyTitle: 'Pas encore d\'avatars', emptyText: 'Créez des avatars dans le', emptyLink: 'Tableau de bord',
+        shopAll: 'Acheter le look complet →', shopLink: 'Acheter →',
+        freeShipping: '✓ Livraison UE gratuite', models: 'mannequins sur le podium',
+        clickHint: '▲ Cliquez pour le look',
         categories: {
           'kopfbedeckung': 'Couvre-chef', 'oberteil': 'Haut', 'jacke': 'Veste',
           'hose': 'Pantalon', 'rock': 'Jupe', 'kleid': 'Robe', 'schuhe': 'Chaussures',
@@ -817,15 +872,12 @@
         dateLocale: 'fr-FR', currency: 'EUR',
       },
       es: {
-        label: 'Español', flag: '🇪🇸',
-        title: 'Fashion Catwalk',
+        label: 'Español', flag: '🇪🇸', title: 'Fashion Catwalk',
         subtitle: 'Haz clic en las modelos – Compra el look',
-        emptyTitle: 'Aún no hay avatares',
-        emptyText: 'Crea avatares en el',
-        emptyLink: 'Panel de administración',
-        shopAll: 'Comprar el look completo →',
-        shopLink: 'Comprar →',
-        freeShipping: 'Envío UE gratuito',
+        emptyTitle: 'Aún no hay avatares', emptyText: 'Crea avatares en el', emptyLink: 'Panel de administración',
+        shopAll: 'Comprar el look completo →', shopLink: 'Comprar →',
+        freeShipping: '✓ Envío UE gratuito', models: 'modelos en la pasarela',
+        clickHint: '▲ Clic para el look',
         categories: {
           'kopfbedeckung': 'Sombrero', 'oberteil': 'Top', 'jacke': 'Chaqueta',
           'hose': 'Pantalón', 'rock': 'Falda', 'kleid': 'Vestido', 'schuhe': 'Zapatos',
@@ -834,15 +886,12 @@
         dateLocale: 'es-ES', currency: 'EUR',
       },
       it: {
-        label: 'Italiano', flag: '🇮🇹',
-        title: 'Fashion Catwalk',
+        label: 'Italiano', flag: '🇮🇹', title: 'Fashion Catwalk',
         subtitle: 'Clicca sulle modelle – Acquista il look',
-        emptyTitle: 'Nessun avatar ancora',
-        emptyText: 'Crea gli avatar nel',
-        emptyLink: 'Pannello di controllo',
-        shopAll: 'Acquista il look completo →',
-        shopLink: 'Acquista →',
-        freeShipping: 'Spedizione UE gratuita',
+        emptyTitle: 'Nessun avatar ancora', emptyText: 'Crea gli avatar nel', emptyLink: 'Pannello di controllo',
+        shopAll: 'Acquista il look completo →', shopLink: 'Acquista →',
+        freeShipping: '✓ Spedizione UE gratuita', models: 'modelle in passerella',
+        clickHint: '▲ Clicca per il look',
         categories: {
           'kopfbedeckung': 'Copricapo', 'oberteil': 'Top', 'jacke': 'Giacca',
           'hose': 'Pantaloni', 'rock': 'Gonna', 'kleid': 'Vestito', 'schuhe': 'Scarpe',
@@ -851,15 +900,12 @@
         dateLocale: 'it-IT', currency: 'EUR',
       },
       nl: {
-        label: 'Nederlands', flag: '🇳🇱',
-        title: 'Fashion Catwalk',
+        label: 'Nederlands', flag: '🇳🇱', title: 'Fashion Catwalk',
         subtitle: 'Klik op de modellen – Shop de look',
-        emptyTitle: 'Nog geen avatars',
-        emptyText: 'Maak avatars aan in het',
-        emptyLink: 'Beheerpaneel',
-        shopAll: 'Shop de hele look →',
-        shopLink: 'Shop →',
-        freeShipping: 'Gratis EU-verzending',
+        emptyTitle: 'Nog geen avatars', emptyText: 'Maak avatars aan in het', emptyLink: 'Beheerpaneel',
+        shopAll: 'Shop de hele look →', shopLink: 'Shop →',
+        freeShipping: '✓ Gratis EU-verzending', models: 'modellen op de catwalk',
+        clickHint: '▲ Klik voor de look',
         categories: {
           'kopfbedeckung': 'Hoofddeksel', 'oberteil': 'Top', 'jacke': 'Jas',
           'hose': 'Broek', 'rock': 'Rok', 'kleid': 'Jurk', 'schuhe': 'Schoenen',
@@ -868,15 +914,12 @@
         dateLocale: 'nl-NL', currency: 'EUR',
       },
       pl: {
-        label: 'Polski', flag: '🇵🇱',
-        title: 'Fashion Catwalk',
+        label: 'Polski', flag: '🇵🇱', title: 'Fashion Catwalk',
         subtitle: 'Kliknij modelki – Kup ten look',
-        emptyTitle: 'Brak avatarów',
-        emptyText: 'Stwórz avatary w',
-        emptyLink: 'Panelu administracyjnym',
-        shopAll: 'Kup cały look →',
-        shopLink: 'Kup →',
-        freeShipping: 'Darmowa wysyłka w UE',
+        emptyTitle: 'Brak avatarów', emptyText: 'Stwórz avatary w', emptyLink: 'Panelu administracyjnym',
+        shopAll: 'Kup cały look →', shopLink: 'Kup →',
+        freeShipping: '✓ Darmowa wysyłka w UE', models: 'modelek na wybiegu',
+        clickHint: '▲ Kliknij aby zobaczyć',
         categories: {
           'kopfbedeckung': 'Nakrycie głowy', 'oberteil': 'Góra', 'jacke': 'Kurtka',
           'hose': 'Spodnie', 'rock': 'Spódnica', 'kleid': 'Sukienka', 'schuhe': 'Buty',
@@ -885,15 +928,12 @@
         dateLocale: 'pl-PL', currency: 'EUR',
       },
       pt: {
-        label: 'Português', flag: '🇵🇹',
-        title: 'Fashion Catwalk',
+        label: 'Português', flag: '🇵🇹', title: 'Fashion Catwalk',
         subtitle: 'Clique nas modelos – Compre o look',
-        emptyTitle: 'Ainda sem avatares',
-        emptyText: 'Crie avatares no',
-        emptyLink: 'Painel de administração',
-        shopAll: 'Comprar o look completo →',
-        shopLink: 'Comprar →',
-        freeShipping: 'Envio UE grátis',
+        emptyTitle: 'Ainda sem avatares', emptyText: 'Crie avatares no', emptyLink: 'Painel de administração',
+        shopAll: 'Comprar o look completo →', shopLink: 'Comprar →',
+        freeShipping: '✓ Envio UE grátis', models: 'modelos na passerela',
+        clickHint: '▲ Clique para o look',
         categories: {
           'kopfbedeckung': 'Chapéu', 'oberteil': 'Blusa', 'jacke': 'Casaco',
           'hose': 'Calças', 'rock': 'Saia', 'kleid': 'Vestido', 'schuhe': 'Sapatos',
@@ -902,15 +942,12 @@
         dateLocale: 'pt-PT', currency: 'EUR',
       },
       sv: {
-        label: 'Svenska', flag: '🇸🇪',
-        title: 'Fashion Catwalk',
+        label: 'Svenska', flag: '🇸🇪', title: 'Fashion Catwalk',
         subtitle: 'Klicka på modellerna – Shoppa looken',
-        emptyTitle: 'Inga avatarer ännu',
-        emptyText: 'Skapa avatarer i',
-        emptyLink: 'Adminpanelen',
-        shopAll: 'Shoppa hela looken →',
-        shopLink: 'Köp →',
-        freeShipping: 'Fri frakt inom EU',
+        emptyTitle: 'Inga avatarer ännu', emptyText: 'Skapa avatarer i', emptyLink: 'Adminpanelen',
+        shopAll: 'Shoppa hela looken →', shopLink: 'Köp →',
+        freeShipping: '✓ Fri frakt inom EU', models: 'modeller på catwalken',
+        clickHint: '▲ Klicka för outfiten',
         categories: {
           'kopfbedeckung': 'Huvudbonad', 'oberteil': 'Överdel', 'jacke': 'Jacka',
           'hose': 'Byxor', 'rock': 'Kjol', 'kleid': 'Klänning', 'schuhe': 'Skor',
@@ -920,66 +957,17 @@
       },
     };
 
-    function t(key) { return I18N[currentLang][key] || I18N['de'][key] || key; }
-    function tCat(category) { return (I18N[currentLang].categories || {})[category] || category; }
+    function t(key) { return I18N[currentLang]?.[key] || I18N.de[key] || key; }
+    function tCat(cat) { return I18N[currentLang]?.categories?.[cat] || cat; }
 
-    // Preis in die Landeswährung umrechnen
     function formatPrice(eurPrice) {
-      const currencyCode = I18N[currentLang].currency || 'EUR';
-      const curr = CURRENCY_RATES[currencyCode] || CURRENCY_RATES.EUR;
-      const converted = eurPrice * curr.rate;
-      // Lokales Zahlenformat
-      const formatted = converted.toLocaleString(I18N[currentLang].dateLocale, {
+      const curr = CURRENCY_RATES.EUR;
+      const formatted = (eurPrice * curr.rate).toLocaleString(I18N[currentLang]?.dateLocale || 'de-DE', {
         minimumFractionDigits: 2, maximumFractionDigits: 2,
       });
       return `${curr.symbol} ${formatted}`;
     }
 
-    // Farbpaletten für Avatare (Hautton, Haare, Default-Kleidung)
-    const AVATAR_PALETTES = [
-      { skin: '#e8c9a0', skinDark: '#d4a574', hair: '#2c1810', top: '#c9a96e', bottom: '#3a4a6b', shoes: '#2a2a3a', hairStyle: 'long' },
-      { skin: '#d4a574', skinDark: '#c08c5a', hair: '#1a0a0a', top: '#8b4557', bottom: '#4a4a5a', shoes: '#3a3a3a', hairStyle: 'curly' },
-      { skin: '#f0d5b8', skinDark: '#dfc09d', hair: '#d4a77a', top: '#4a7c6f', bottom: '#f5f0e8', shoes: '#c9a96e', hairStyle: 'bob' },
-      { skin: '#c68642', skinDark: '#a56b32', hair: '#1a1a2e', top: '#2c3e6b', bottom: '#6b6b7a', shoes: '#8b4557', hairStyle: 'updo' },
-      { skin: '#e8c9a0', skinDark: '#d4a574', hair: '#8b6914', top: '#f5f0e8', bottom: '#c9a96e', shoes: '#5a3a1a', hairStyle: 'wavy' },
-      { skin: '#8d5524', skinDark: '#6b3a12', hair: '#0a0505', top: '#e74c3c', bottom: '#3a3a4a', shoes: '#c9a96e', hairStyle: 'afro' },
-      { skin: '#f0d5b8', skinDark: '#dfc09d', hair: '#6b4423', top: '#9b59b6', bottom: '#4a4a5a', shoes: '#3a3a3a', hairStyle: 'ponytail' },
-      { skin: '#d4a574', skinDark: '#c08c5a', hair: '#2c3e50', top: '#f39c12', bottom: '#3a4a6b', shoes: '#5a3a1a', hairStyle: 'straight' },
-    ];
-
-    // ── SVG Frisuren (als SVG-Path-Daten, viewBox 0 0 120 300) ──
-    function getHairSVG(style, hairColor) {
-      const darkHair = adjustColor(hairColor, -20);
-      const styles = {
-        long: `<path class="avatar-hair-flow" d="M42,18 C42,6 52,0 60,0 C68,0 78,6 78,18 L78,25 C78,30 80,36 82,48 L82,62 C82,67 80,69 76,67 L76,26 C76,12 44,12 44,26 L44,67 C40,69 38,67 38,62 L38,48 C40,36 42,30 42,25 Z" fill="${hairColor}" />
-              <path d="M45,14 C45,8 52,3 60,3 C68,3 75,8 75,14" fill="${darkHair}" opacity="0.5"/>`,
-        curly: `<path class="avatar-hair-flow" d="M40,18 C40,4 50,-2 60,-2 C70,-2 80,4 80,18 L80,26 C83,28 84,34 82,38 C85,40 84,46 81,48 L81,56 C79,58 76,55 76,52 L76,26 C76,12 44,12 44,26 L44,52 C44,55 41,58 39,56 L39,48 C36,46 35,40 38,38 C36,34 37,28 40,26 Z" fill="${hairColor}" />
-              <circle cx="40" cy="32" r="4.5" fill="${hairColor}" opacity="0.6"/>
-              <circle cx="80" cy="32" r="4.5" fill="${hairColor}" opacity="0.6"/>
-              <circle cx="38" cy="44" r="3.5" fill="${hairColor}" opacity="0.5"/>
-              <circle cx="82" cy="44" r="3.5" fill="${hairColor}" opacity="0.5"/>`,
-        bob: `<path class="avatar-hair-flow" d="M42,18 C42,6 50,0 60,0 C70,0 78,6 78,18 L78,25 L80,38 C80,46 76,49 70,49 L50,49 C44,49 40,46 40,38 L42,25 Z" fill="${hairColor}" />
-              <path d="M45,16 C45,8 52,3 60,3 C68,3 75,8 75,16" fill="${darkHair}" opacity="0.5"/>`,
-        updo: `<path class="avatar-hair-flow" d="M44,20 C44,8 52,2 60,2 C68,2 76,8 76,20 L76,25 L44,25 Z" fill="${hairColor}" />
-              <ellipse cx="60" cy="2" rx="11" ry="9" fill="${hairColor}" />
-              <path d="M49,2 C49,-3 71,-3 71,2" fill="${darkHair}" opacity="0.5"/>
-              <circle cx="60" cy="-4" r="3" fill="${hairColor}" opacity="0.4"/>`,
-        wavy: `<path class="avatar-hair-flow" d="M42,18 C42,6 50,-1 60,-1 C70,-1 78,6 78,18 L78,25 C78,30 80,38 82,50 C83,56 80,62 76,60 C74,55 76,45 75,35 L75,25 C75,12 45,12 45,25 L45,35 C44,45 46,55 44,60 C40,62 37,56 38,50 C40,38 42,30 42,25 Z" fill="${hairColor}" />
-              <path d="M80,44 C82,48 80,54 78,52 C76,48 78,42 80,44 Z" fill="${hairColor}" opacity="0.5"/>
-              <path d="M40,44 C38,48 40,54 42,52 C44,48 42,42 40,44 Z" fill="${hairColor}" opacity="0.5"/>`,
-        afro: `<path class="avatar-hair-flow" d="M32,24 C30,6 44,-6 60,-6 C76,-6 90,6 88,24 C90,30 88,40 84,46 C82,50 78,48 78,44 L78,24 C78,12 42,12 42,24 L42,44 C42,48 38,50 36,46 C32,40 30,30 32,24 Z" fill="${hairColor}" />
-              <circle cx="34" cy="26" r="5.5" fill="${hairColor}" opacity="0.5"/>
-              <circle cx="86" cy="26" r="5.5" fill="${hairColor}" opacity="0.5"/>
-              <circle cx="60" cy="-6" r="4.5" fill="${hairColor}" opacity="0.4"/>`,
-        ponytail: `<path class="avatar-hair-flow" d="M44,20 C44,8 52,1 60,1 C68,1 76,8 76,20 L76,25 L44,25 Z" fill="${hairColor}" />
-              <path d="M68,12 C72,10 78,12 80,18 C82,26 80,40 76,52 C74,56 70,54 72,48 C74,38 76,26 74,18 C72,14 70,12 68,12 Z" fill="${hairColor}" opacity="0.85"/>`,
-        straight: `<path class="avatar-hair-flow" d="M42,18 C42,6 50,0 60,0 C70,0 78,6 78,18 L78,25 L78,55 C78,59 76,61 74,59 L74,25 C74,14 46,14 46,25 L46,59 C44,61 42,59 42,55 L42,25 Z" fill="${hairColor}" />
-              <path d="M46,16 C46,8 52,3 60,3 C68,3 74,8 74,16" fill="${darkHair}" opacity="0.5"/>`,
-      };
-      return styles[style] || styles.long;
-    }
-
-    // Datum formatieren (sprachabhängig)
     function formatDate(dateStr) {
       const d = new Date(dateStr + 'T00:00:00');
       return d.toLocaleDateString(t('dateLocale'), {
@@ -987,304 +975,201 @@
       });
     }
 
-    // Particles erzeugen
-    function createParticles() {
-      const scene = document.getElementById('catwalk-scene');
-      for (let i = 0; i < 20; i++) {
-        const particle = document.createElement('div');
-        particle.className = 'particle';
-        particle.style.left = Math.random() * 100 + '%';
-        particle.style.animationDuration = (8 + Math.random() * 12) + 's';
-        particle.style.animationDelay = Math.random() * 10 + 's';
-        particle.style.width = (1 + Math.random() * 2) + 'px';
-        particle.style.height = particle.style.width;
-        scene.appendChild(particle);
-      }
+    // ═══════════════════════════════════════════════════════
+    //  FARB-HILFSFUNKTIONEN
+    // ═══════════════════════════════════════════════════════
+    const COLOR_MAP = {
+      'weiss': '#f5f5f5', 'weiß': '#f5f5f5', 'white': '#f5f5f5',
+      'schwarz': '#2a2a3a', 'black': '#2a2a3a',
+      'grau': '#808080', 'grey': '#808080', 'gray': '#808080',
+      'rot': '#c0392b', 'red': '#c0392b',
+      'blau': '#2c3e6b', 'blue': '#2c3e6b', 'dunkelblau': '#2a3a5e', 'navy': '#2a3a5e',
+      'grün': '#2d6a4f', 'green': '#2d6a4f', 'dunkelgrün': '#1b4332',
+      'olive': '#606c38', 'oliv': '#606c38',
+      'beige': '#d4b896', 'sand': '#d2b48c', 'creme': '#f5f0e1',
+      'braun': '#6b4423', 'brown': '#6b4423', 'cognac': '#9a6324', 'camel': '#c19a6b',
+      'gold': '#c9a96e', 'roségold': '#b76e79', 'rosé': '#b76e79',
+      'ivory': '#fffff0', 'indigo': '#3f4fa3',
+      'burgund': '#6b1c2a', 'bordeaux': '#6b1c2a', 'champagner': '#f7e7ce',
+      'nude': '#e8c4a2', 'smaragd': '#2d6a4f', 'natur': '#d4c5a9',
+      'bunt': '#c9a96e', 'gold/perle': '#c9a96e',
+    };
+
+    function resolveColor(n) { return !n ? null : n.startsWith('#') ? n : COLOR_MAP[n.toLowerCase()] || null; }
+    function getOutfitColor(outfit, cat) { const i = outfit.find(o => o.category === cat); return i?.color ? resolveColor(i.color) : null; }
+
+    function adjustColor(hex, amt) {
+      if (!hex?.startsWith('#')) return hex;
+      const n = parseInt(hex.replace('#',''), 16);
+      const r = Math.min(255, Math.max(0, (n >> 16) + amt));
+      const g = Math.min(255, Math.max(0, ((n >> 8) & 0xFF) + amt));
+      const b = Math.min(255, Math.max(0, (n & 0xFF) + amt));
+      return '#' + (0x1000000 + (r << 16) + (g << 8) + b).toString(16).slice(1);
     }
 
-    // Avatar-HTML generieren
+    function ensureVisible(hex) {
+      if (!hex?.startsWith('#')) return hex;
+      const n = parseInt(hex.replace('#',''), 16);
+      const br = ((n>>16&0xFF)*299 + (n>>8&0xFF)*587 + (n&0xFF)*114) / 1000;
+      return br < 50 ? adjustColor(hex, 55) : br < 80 ? adjustColor(hex, 30) : hex;
+    }
+
+    function ensureSkinContrast(cHex, sHex) {
+      if (!cHex?.startsWith('#') || !sHex?.startsWith('#')) return cHex;
+      const c = parseInt(cHex.replace('#',''),16), s = parseInt(sHex.replace('#',''),16);
+      const cr=(c>>16)&0xFF, cg=(c>>8)&0xFF, cb=c&0xFF;
+      const sr=(s>>16)&0xFF, sg=(s>>8)&0xFF, sb=s&0xFF;
+      const dist = Math.abs(cr-sr)+Math.abs(cg-sg)+Math.abs(cb-sb);
+      if (dist >= 190) return cHex;
+      const cL = (cr*299+cg*587+cb*114)/1000, sL = (sr*299+sg*587+sb*114)/1000;
+      const amt = dist < 100 ? 65 : 50;
+      if (cL >= sL) return cL < 220 ? adjustColor(cHex, amt) : adjustColor(cHex, -(amt+25));
+      return cL > 50 ? adjustColor(cHex, -amt) : adjustColor(cHex, amt+25);
+    }
+
+    // ═══════════════════════════════════════════════════════
+    //  AVATAR-PALETTEN & SVG
+    // ═══════════════════════════════════════════════════════
+    const AVATAR_PALETTES = [
+      { skin:'#e8c9a0', skinDark:'#d4a574', hair:'#2c1810', top:'#c9a96e', bottom:'#3a4a6b', shoes:'#2a2a3a', hairStyle:'long' },
+      { skin:'#d4a574', skinDark:'#c08c5a', hair:'#1a0a0a', top:'#8b4557', bottom:'#4a4a5a', shoes:'#3a3a3a', hairStyle:'curly' },
+      { skin:'#f0d5b8', skinDark:'#dfc09d', hair:'#d4a77a', top:'#4a7c6f', bottom:'#f5f0e8', shoes:'#c9a96e', hairStyle:'bob' },
+      { skin:'#c68642', skinDark:'#a56b32', hair:'#1a1a2e', top:'#2c3e6b', bottom:'#6b6b7a', shoes:'#8b4557', hairStyle:'updo' },
+      { skin:'#e8c9a0', skinDark:'#d4a574', hair:'#8b6914', top:'#f5f0e8', bottom:'#c9a96e', shoes:'#5a3a1a', hairStyle:'wavy' },
+      { skin:'#8d5524', skinDark:'#6b3a12', hair:'#0a0505', top:'#e74c3c', bottom:'#3a3a4a', shoes:'#c9a96e', hairStyle:'afro' },
+      { skin:'#f0d5b8', skinDark:'#dfc09d', hair:'#6b4423', top:'#9b59b6', bottom:'#4a4a5a', shoes:'#3a3a3a', hairStyle:'ponytail' },
+      { skin:'#d4a574', skinDark:'#c08c5a', hair:'#2c3e50', top:'#f39c12', bottom:'#3a4a6b', shoes:'#5a3a1a', hairStyle:'straight' },
+    ];
+
+    function getHairSVG(style, hc) {
+      const dk = adjustColor(hc, -20);
+      const S = {
+        long: `<path class="avatar-hair-flow" d="M42,18 C42,6 52,0 60,0 C68,0 78,6 78,18 L78,25 C78,30 80,36 82,48 L82,62 C82,67 80,69 76,67 L76,26 C76,12 44,12 44,26 L44,67 C40,69 38,67 38,62 L38,48 C40,36 42,30 42,25 Z" fill="${hc}"/><path d="M45,14 C45,8 52,3 60,3 C68,3 75,8 75,14" fill="${dk}" opacity="0.5"/>`,
+        curly: `<path class="avatar-hair-flow" d="M40,18 C40,4 50,-2 60,-2 C70,-2 80,4 80,18 L80,26 C83,28 84,34 82,38 C85,40 84,46 81,48 L81,56 C79,58 76,55 76,52 L76,26 C76,12 44,12 44,26 L44,52 C44,55 41,58 39,56 L39,48 C36,46 35,40 38,38 C36,34 37,28 40,26 Z" fill="${hc}"/><circle cx="40" cy="32" r="4.5" fill="${hc}" opacity="0.6"/><circle cx="80" cy="32" r="4.5" fill="${hc}" opacity="0.6"/><circle cx="38" cy="44" r="3.5" fill="${hc}" opacity="0.5"/><circle cx="82" cy="44" r="3.5" fill="${hc}" opacity="0.5"/>`,
+        bob: `<path class="avatar-hair-flow" d="M42,18 C42,6 50,0 60,0 C70,0 78,6 78,18 L78,25 L80,38 C80,46 76,49 70,49 L50,49 C44,49 40,46 40,38 L42,25 Z" fill="${hc}"/><path d="M45,16 C45,8 52,3 60,3 C68,3 75,8 75,16" fill="${dk}" opacity="0.5"/>`,
+        updo: `<path class="avatar-hair-flow" d="M44,20 C44,8 52,2 60,2 C68,2 76,8 76,20 L76,25 L44,25 Z" fill="${hc}"/><ellipse cx="60" cy="2" rx="11" ry="9" fill="${hc}"/><path d="M49,2 C49,-3 71,-3 71,2" fill="${dk}" opacity="0.5"/><circle cx="60" cy="-4" r="3" fill="${hc}" opacity="0.4"/>`,
+        wavy: `<path class="avatar-hair-flow" d="M42,18 C42,6 50,-1 60,-1 C70,-1 78,6 78,18 L78,25 C78,30 80,38 82,50 C83,56 80,62 76,60 C74,55 76,45 75,35 L75,25 C75,12 45,12 45,25 L45,35 C44,45 46,55 44,60 C40,62 37,56 38,50 C40,38 42,30 42,25 Z" fill="${hc}"/><path d="M80,44 C82,48 80,54 78,52 C76,48 78,42 80,44 Z" fill="${hc}" opacity="0.5"/><path d="M40,44 C38,48 40,54 42,52 C44,48 42,42 40,44 Z" fill="${hc}" opacity="0.5"/>`,
+        afro: `<path class="avatar-hair-flow" d="M32,24 C30,6 44,-6 60,-6 C76,-6 90,6 88,24 C90,30 88,40 84,46 C82,50 78,48 78,44 L78,24 C78,12 42,12 42,24 L42,44 C42,48 38,50 36,46 C32,40 30,30 32,24 Z" fill="${hc}"/><circle cx="34" cy="26" r="5.5" fill="${hc}" opacity="0.5"/><circle cx="86" cy="26" r="5.5" fill="${hc}" opacity="0.5"/><circle cx="60" cy="-6" r="4.5" fill="${hc}" opacity="0.4"/>`,
+        ponytail: `<path class="avatar-hair-flow" d="M44,20 C44,8 52,1 60,1 C68,1 76,8 76,20 L76,25 L44,25 Z" fill="${hc}"/><path d="M68,12 C72,10 78,12 80,18 C82,26 80,40 76,52 C74,56 70,54 72,48 C74,38 76,26 74,18 C72,14 70,12 68,12 Z" fill="${hc}" opacity="0.85"/>`,
+        straight: `<path class="avatar-hair-flow" d="M42,18 C42,6 50,0 60,0 C70,0 78,6 78,18 L78,25 L78,55 C78,59 76,61 74,59 L74,25 C74,14 46,14 46,25 L46,59 C44,61 42,59 42,55 L42,25 Z" fill="${hc}"/><path d="M46,16 C46,8 52,3 60,3 C68,3 74,8 74,16" fill="${dk}" opacity="0.5"/>`,
+      };
+      return S[style] || S.long;
+    }
+
+    // ═══════════════════════════════════════════════════════
+    //  AVATAR-ELEMENT ERSTELLEN
+    // ═══════════════════════════════════════════════════════
     function createAvatarElement(avatar, index) {
-      const palette = AVATAR_PALETTES[index % AVATAR_PALETTES.length];
-      const walkDuration = (18 + Math.random() * 8) / speedMultiplier;
-      const startDelay = index * (walkDuration / (catwalkData.avatars.length || 1)) * 0.6;
+      const p = AVATAR_PALETTES[index % AVATAR_PALETTES.length];
 
       const wrapper = document.createElement('div');
-      wrapper.className = 'avatar-wrapper avatar-walk walking';
-      wrapper.style.setProperty('--walk-duration', walkDuration + 's');
-      wrapper.style.animationDelay = `-${startDelay}s`;
+      wrapper.className = 'avatar-wrapper';
       wrapper.dataset.avatarId = avatar.id;
 
-      // Outfit items für Farben verwenden wenn vorhanden
       const hasDress = avatar.outfit.some(o => o.category === 'kleid');
-      const skinRef = palette.skin;
-      const rawTopColor = hasDress
-        ? (getOutfitColor(avatar.outfit, 'kleid') || getOutfitColor(avatar.outfit, 'oberteil') || palette.top)
-        : (getOutfitColor(avatar.outfit, 'oberteil') || palette.top);
-      const topColor = ensureSkinContrast(rawTopColor, skinRef);
-      const rawBottomColor = ensureVisible(getOutfitColor(avatar.outfit, 'hose') || getOutfitColor(avatar.outfit, 'rock') || palette.bottom);
-      const bottomColor = ensureSkinContrast(rawBottomColor, skinRef);
-      const shoeColor = ensureVisible(getOutfitColor(avatar.outfit, 'schuhe') || palette.shoes);
-      const rawJacketColor = getOutfitColor(avatar.outfit, 'jacke');
-      const jacketColor = rawJacketColor ? ensureSkinContrast(rawJacketColor, skinRef) : null;
+      const skinRef = p.skin;
+      const topColor = ensureSkinContrast(
+        hasDress ? (getOutfitColor(avatar.outfit,'kleid') || getOutfitColor(avatar.outfit,'oberteil') || p.top)
+                 : (getOutfitColor(avatar.outfit,'oberteil') || p.top), skinRef);
+      const bottomColor = ensureSkinContrast(ensureVisible(
+        getOutfitColor(avatar.outfit,'hose') || getOutfitColor(avatar.outfit,'rock') || p.bottom), skinRef);
+      const shoeColor = ensureVisible(getOutfitColor(avatar.outfit,'schuhe') || p.shoes);
+      const rawJacket = getOutfitColor(avatar.outfit,'jacke');
+      const jacketColor = rawJacket ? ensureSkinContrast(rawJacket, skinRef) : null;
 
-      // Entscheide: KI-generiertes Bild oder SVG-Silhouette
       let avatarBody;
       if (avatar.generated_video) {
-        avatarBody = `
-          <video class="avatar-generated-video" autoplay loop muted playsinline>
-            <source src="${avatar.generated_video}" type="video/mp4">
-          </video>
-          <span class="ai-badge">AI</span>
-        `;
+        avatarBody = `<video class="avatar-generated-video" autoplay loop muted playsinline><source src="${avatar.generated_video}" type="video/mp4"></video><span class="ai-badge">AI</span>`;
       } else if (avatar.generated_image) {
-        avatarBody = `
-          <img class="avatar-generated-img" src="${avatar.generated_image}"
-               alt="${avatar.name}" loading="lazy" />
-          <span class="ai-badge">AI</span>
-        `;
+        avatarBody = `<img class="avatar-generated-img" src="${avatar.generated_image}" alt="${avatar.name}" loading="lazy"/><span class="ai-badge">AI</span>`;
       } else {
-        // ── Elegante SVG Fashion-Silhouette (Croquis-Proportionen) ──
-        // Fashion-Croquis: 9-Kopf-Proportionen, schmale Taille, SEHR lange Beine
-        const skin = palette.skin;
-        const skinD = palette.skinDark;
-        const hairColor = palette.hair;
-        const hairStyle = palette.hairStyle;
-        const topDark = adjustColor(topColor, -25);
-        const bottomDark = adjustColor(bottomColor, -20);
-        // Arme: Jacke → Jackenfarbe, sonst Haut (bare arms = eleganter)
-        const armColor = jacketColor || skin;
-        const armDark = jacketColor ? adjustColor(jacketColor, -20) : skinD;
-        // Für dunkle Farben: leichten Rand hinzufügen damit sie auf dem Hintergrund sichtbar sind
-        const bottomEdge = adjustColor(bottomColor, 30);
-        const shoeDark = adjustColor(shoeColor, -30);
-        // Kurzärmel-Bereich (nur wenn keine Jacke)
-        const hasJacket = !!jacketColor;
-        const sleeveColor = hasJacket ? jacketColor : topColor;
-        const sleeveDark = hasJacket ? adjustColor(jacketColor, -20) : topDark;
+        const skin = p.skin, skinD = p.skinDark, hc = p.hair, hs = p.hairStyle;
+        const tD = adjustColor(topColor,-25), bD = adjustColor(bottomColor,-20);
+        const bE = adjustColor(bottomColor,30), sD = adjustColor(shoeColor,-30);
+        const hasJ = !!jacketColor;
+        const aD = hasJ ? adjustColor(jacketColor,-20) : skinD;
 
-        // Kleidung: Kleid oder Oberteil+Hose
         let clothingSVG;
         if (hasDress) {
           clothingSVG = `
-            <!-- Kleid-Oberteil (figurbetont mit Taillierung) -->
-            <path d="M38,75 C37,71 38,67 40,63
-                     C42,58 50,54 60,54 C70,54 78,58 80,63
-                     C82,67 83,71 82,75
-                     L80,85 C78,92 76,96 74,100
-                     C72,104 68,106 60,106
-                     C52,106 48,104 46,100
-                     C44,96 42,92 40,85 Z"
-                  fill="${topColor}" stroke="${topDark}" stroke-width="0.5" />
-            <!-- Kleid-Rock (A-Linie, ab Taille weiter) -->
-            <path d="M46,100 C48,104 52,106 60,106
-                     C68,106 72,104 74,100
-                     C78,112 82,132 86,162
-                     C90,195 93,228 95,255
-                     C95,260 91,262 87,260
-                     L73,254 L60,258 L47,254
-                     L33,260 C29,262 25,260 25,255
-                     C27,228 30,195 34,162
-                     C38,132 42,112 46,100 Z"
-                  fill="${topColor}" stroke="${topDark}" stroke-width="0.5" />
-            <!-- Dekolleté -->
-            <path d="M50,56 C54,59 66,59 70,56" fill="none" stroke="${topDark}" stroke-width="0.5" opacity="0.3"/>
-            <path d="M53,56 L60,67 L67,56" fill="${skin}" opacity="0.5" />
-            <!-- Taillennaht -->
-            <path d="M46,100 C52,104 68,104 74,100" fill="none" stroke="${topDark}" stroke-width="0.8" opacity="0.25"/>
-            <!-- Rockfalten -->
-            <path d="M52,112 L38,258" fill="none" stroke="${topDark}" stroke-width="0.5" opacity="0.1"/>
-            <path d="M68,112 L82,258" fill="none" stroke="${topDark}" stroke-width="0.5" opacity="0.1"/>
-            <path d="M60,106 L60,258" fill="none" stroke="${topDark}" stroke-width="0.3" opacity="0.06"/>
-            <!-- Dezenter Saum -->
-            <path d="M33,258 C46,254 74,254 87,258" fill="none" stroke="${topDark}" stroke-width="0.6" opacity="0.2"/>
-          `;
+            <path d="M38,75 C37,71 38,67 40,63 C42,58 50,54 60,54 C70,54 78,58 80,63 C82,67 83,71 82,75 L80,85 C78,92 76,96 74,100 C72,104 68,106 60,106 C52,106 48,104 46,100 C44,96 42,92 40,85 Z" fill="${topColor}" stroke="${tD}" stroke-width="0.5"/>
+            <path d="M46,100 C48,104 52,106 60,106 C68,106 72,104 74,100 C78,112 82,132 86,162 C90,195 93,228 95,255 C95,260 91,262 87,260 L73,254 L60,258 L47,254 L33,260 C29,262 25,260 25,255 C27,228 30,195 34,162 C38,132 42,112 46,100 Z" fill="${topColor}" stroke="${tD}" stroke-width="0.5"/>
+            <path d="M53,56 L60,67 L67,56" fill="${skin}" opacity="0.5"/>
+            <path d="M46,100 C52,104 68,104 74,100" fill="none" stroke="${tD}" stroke-width="0.8" opacity="0.25"/>
+            <path d="M52,112 L38,258" fill="none" stroke="${tD}" stroke-width="0.5" opacity="0.1"/>
+            <path d="M68,112 L82,258" fill="none" stroke="${tD}" stroke-width="0.5" opacity="0.1"/>
+            <path d="M33,258 C46,254 74,254 87,258" fill="none" stroke="${tD}" stroke-width="0.6" opacity="0.2"/>`;
         } else {
           clothingSVG = `
-            <!-- Oberteil (figurbetont mit Taillierung) -->
-            <path d="M38,75 C37,71 38,67 40,63
-                     C42,58 50,54 60,54 C70,54 78,58 80,63
-                     C82,67 83,71 82,75
-                     L80,85 C78,92 76,98 74,104
-                     C72,108 68,110 60,110
-                     C52,110 48,108 46,104
-                     C44,98 42,92 40,85 Z"
-                  fill="${topColor}" stroke="${topDark}" stroke-width="0.8" />
-            <!-- Dekolleté -->
-            <path d="M50,56 C54,59 66,59 70,56" fill="none" stroke="${topDark}" stroke-width="0.5" opacity="0.3"/>
-            <path d="M53,56 L60,66 L67,56" fill="${skin}" opacity="0.4" />
-            <!-- Taillierung -->
-            <path d="M46,104 C52,108 68,108 74,104" fill="none" stroke="${topDark}" stroke-width="0.5" opacity="0.2"/>
-
-            <!-- Hose (Slim Fit, proportionale Beinbreite) -->
+            <path d="M38,75 C37,71 38,67 40,63 C42,58 50,54 60,54 C70,54 78,58 80,63 C82,67 83,71 82,75 L80,85 C78,92 76,98 74,104 C72,108 68,110 60,110 C52,110 48,108 46,104 C44,98 42,92 40,85 Z" fill="${topColor}" stroke="${tD}" stroke-width="0.8"/>
+            <path d="M53,56 L60,66 L67,56" fill="${skin}" opacity="0.4"/>
+            <path d="M46,104 C52,108 68,108 74,104" fill="none" stroke="${tD}" stroke-width="0.5" opacity="0.2"/>
             <g class="avatar-hips">
-              <path class="avatar-leg-l" d="M38,108 C39,110 44,113 54,113
-                       L53,120 L51,170 L49,220 L48,255
-                       C46,260 39,260 38,255
-                       L38,220 L37,170 L36,120 L36,112 Z"
-                    fill="${bottomColor}" stroke="${bottomEdge}" stroke-width="0.4" />
-              <path class="avatar-leg-r" d="M82,108 C81,110 76,113 66,113
-                       L67,120 L69,170 L71,220 L72,255
-                       C74,260 81,260 82,255
-                       L82,220 L83,170 L84,120 L84,112 Z"
-                    fill="${bottomColor}" stroke="${bottomEdge}" stroke-width="0.4" />
-              <!-- Hosennähte -->
-              <path d="M50,120 L48,170 L48,255" fill="none" stroke="${bottomEdge}" stroke-width="0.3" opacity="0.12"/>
-              <path d="M70,120 L72,170 L72,255" fill="none" stroke="${bottomEdge}" stroke-width="0.3" opacity="0.12"/>
-              <!-- Schrittnaht -->
-              <path d="M54,113 L57,135" fill="none" stroke="${bottomDark}" stroke-width="0.4" opacity="0.1"/>
-              <path d="M66,113 L63,135" fill="none" stroke="${bottomDark}" stroke-width="0.4" opacity="0.1"/>
-            </g>
-          `;
+              <path class="avatar-leg-l" d="M38,108 C39,110 44,113 54,113 L53,120 L51,170 L49,220 L48,255 C46,260 39,260 38,255 L38,220 L37,170 L36,120 L36,112 Z" fill="${bottomColor}" stroke="${bE}" stroke-width="0.4"/>
+              <path class="avatar-leg-r" d="M82,108 C81,110 76,113 66,113 L67,120 L69,170 L71,220 L72,255 C74,260 81,260 82,255 L82,220 L83,170 L84,120 L84,112 Z" fill="${bottomColor}" stroke="${bE}" stroke-width="0.4"/>
+              <path d="M50,120 L48,170 L48,255" fill="none" stroke="${bE}" stroke-width="0.3" opacity="0.12"/>
+              <path d="M70,120 L72,170 L72,255" fill="none" stroke="${bE}" stroke-width="0.3" opacity="0.12"/>
+            </g>`;
         }
-
-        const shoeY = hasDress ? 258 : 255;
-
-        avatarBody = `
-          <div class="avatar-silhouette">
-            <svg viewBox="0 -15 120 300" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <linearGradient id="skin-${index}" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stop-color="${skin}"/>
-                  <stop offset="100%" stop-color="${skinD}"/>
-                </linearGradient>
-                <linearGradient id="top-grad-${index}" x1="0" y1="0" x2="0.3" y2="1">
-                  <stop offset="0%" stop-color="${topColor}"/>
-                  <stop offset="100%" stop-color="${topDark}"/>
-                </linearGradient>
-                <radialGradient id="blush-${index}" cx="50%" cy="50%" r="50%">
-                  <stop offset="0%" stop-color="#d48090" stop-opacity="0.15"/>
-                  <stop offset="100%" stop-color="#d48090" stop-opacity="0"/>
-                </radialGradient>
-              </defs>
-
-              <!-- Haare (hinter dem Kopf) -->
-              ${getHairSVG(hairStyle, hairColor)}
-
-              <!-- Kopf (etwas kleiner, eleganter) -->
-              <ellipse cx="60" cy="25" rx="12" ry="14" fill="url(#skin-${index})" />
-              <!-- Augenbrauen -->
-              <path d="M51,20 Q54,18 56,19" fill="none" stroke="#5a3a2a" stroke-width="0.6" opacity="0.35"/>
-              <path d="M64,19 Q66,18 69,20" fill="none" stroke="#5a3a2a" stroke-width="0.6" opacity="0.35"/>
-              <!-- Augen -->
-              <ellipse cx="54" cy="23" rx="2" ry="1.3" fill="#3a2a1a" opacity="0.65"/>
-              <ellipse cx="66" cy="23" rx="2" ry="1.3" fill="#3a2a1a" opacity="0.65"/>
-              <!-- Augenlicht -->
-              <circle cx="54.8" cy="22.5" r="0.5" fill="white" opacity="0.6"/>
-              <circle cx="66.8" cy="22.5" r="0.5" fill="white" opacity="0.6"/>
-              <!-- Wimpern -->
-              <path d="M51.5,22 L50,21" stroke="#3a2a1a" stroke-width="0.5" opacity="0.4"/>
-              <path d="M68.5,22 L70,21" stroke="#3a2a1a" stroke-width="0.5" opacity="0.4"/>
-              <!-- Nase -->
-              <path d="M59,26 Q60,28 61,26" fill="none" stroke="${skinD}" stroke-width="0.5" opacity="0.3"/>
-              <!-- Lippen -->
-              <path d="M56,31 Q60,34 64,31" fill="#c47070" opacity="0.45"/>
-              <path d="M57,31 Q60,32.5 63,31" fill="#d48080" opacity="0.3"/>
-              <!-- Wangen-Rouge -->
-              <circle cx="49" cy="27" r="4" fill="url(#blush-${index})"/>
-              <circle cx="71" cy="27" r="4" fill="url(#blush-${index})"/>
-
-              <!-- Hals (schlank) -->
-              <path d="M56,38 L56,52 Q56,54 58,54 L62,54 Q64,54 64,52 L64,38"
-                    fill="url(#skin-${index})" />
-
-              <!-- Schultern (zart, feminin) -->
-              <path d="M38,66 C42,56 52,52 60,52 C68,52 78,56 82,66"
-                    fill="url(#skin-${index})" />
-
-              ${clothingSVG}
-
-              <!-- Arme (breit, natürliche Proportionen) -->
-              ${hasJacket ? `
-              <!-- Jacken-Ärmel (volle Länge, breite Arme) -->
-              <g class="avatar-arm-l">
-                <path d="M36,66 C30,74 25,86 23,98
-                         C21,108 20,118 20,125
-                         L29,125 C29,118 29,110 31,100
-                         C33,88 35,78 38,70 Z"
-                      fill="${jacketColor}" stroke="${armDark}" stroke-width="0.3"/>
-                <ellipse cx="24.5" cy="127" rx="4.5" ry="3.5" fill="url(#skin-${index})" />
-              </g>
-              <g class="avatar-arm-r">
-                <path d="M84,66 C90,74 95,86 97,98
-                         C99,108 100,118 100,125
-                         L91,125 C91,118 91,110 89,100
-                         C87,88 85,78 82,70 Z"
-                      fill="${jacketColor}" stroke="${armDark}" stroke-width="0.3"/>
-                <ellipse cx="95.5" cy="127" rx="4.5" ry="3.5" fill="url(#skin-${index})" />
-              </g>
-              ` : `
-              <!-- Bare Arms (Kurzärmel + Haut, breite natürliche Arme) -->
-              <g class="avatar-arm-l">
-                <path d="M36,66 C33,70 30,76 28,82
-                         L35,82 C36,78 37,73 38,70 Z"
-                      fill="${topColor}" stroke="${topDark}" stroke-width="0.3"/>
-                <path d="M28,82 C25,92 23,104 22,114
-                         C21,120 20.5,123 21,126
-                         L30,126 C29.5,123 29,120 29.5,114
-                         C30.5,104 32,94 35,82 Z"
-                      fill="url(#skin-${index})" />
-                <ellipse cx="25.5" cy="128" rx="4.5" ry="3.5" fill="url(#skin-${index})" />
-              </g>
-              <g class="avatar-arm-r">
-                <path d="M84,66 C87,70 90,76 92,82
-                         L85,82 C84,78 83,73 82,70 Z"
-                      fill="${topColor}" stroke="${topDark}" stroke-width="0.3"/>
-                <path d="M92,82 C95,92 97,104 98,114
-                         C99,120 99.5,123 99,126
-                         L90,126 C90.5,123 91,120 90.5,114
-                         C89.5,104 88,94 85,82 Z"
-                      fill="url(#skin-${index})" />
-                <ellipse cx="94.5" cy="128" rx="4.5" ry="3.5" fill="url(#skin-${index})" />
-              </g>
-              `}
-
-              <!-- Schuhe (elegante Pumps, passend zur Beinbreite) -->
-              <path d="M38,${shoeY} L32,${shoeY+5} C30,${shoeY+7} 34,${shoeY+9} 50,${shoeY+7} L52,${shoeY+2}" fill="${shoeColor}" />
-              <path d="M82,${shoeY} L88,${shoeY+5} C90,${shoeY+7} 86,${shoeY+9} 70,${shoeY+7} L68,${shoeY+2}" fill="${shoeColor}" />
-              <!-- Stiletto-Absätze -->
-              <path d="M33,${shoeY+7} L32,${shoeY+14} L35,${shoeY+14} L35,${shoeY+7}" fill="${shoeDark}" />
-              <path d="M87,${shoeY+7} L88,${shoeY+14} L85,${shoeY+14} L85,${shoeY+7}" fill="${shoeDark}" />
-
-              <!-- Dezenter Lichtreflex auf Kleidung -->
-              <path d="M52,62 L53,105" stroke="rgba(255,255,255,0.05)" stroke-width="6" stroke-linecap="round"/>
-            </svg>
-          </div>
+        const shY = hasDress ? 258 : 255;
+        const armsSVG = hasJ ? `
+          <g class="avatar-arm-l"><path d="M36,66 C30,74 25,86 23,98 C21,108 20,118 20,125 L29,125 C29,118 29,110 31,100 C33,88 35,78 38,70 Z" fill="${jacketColor}" stroke="${aD}" stroke-width="0.3"/><ellipse cx="24.5" cy="127" rx="4.5" ry="3.5" fill="url(#skin-${index})"/></g>
+          <g class="avatar-arm-r"><path d="M84,66 C90,74 95,86 97,98 C99,108 100,118 100,125 L91,125 C91,118 91,110 89,100 C87,88 85,78 82,70 Z" fill="${jacketColor}" stroke="${aD}" stroke-width="0.3"/><ellipse cx="95.5" cy="127" rx="4.5" ry="3.5" fill="url(#skin-${index})"/></g>
+        ` : `
+          <g class="avatar-arm-l"><path d="M36,66 C33,70 30,76 28,82 L35,82 C36,78 37,73 38,70 Z" fill="${topColor}" stroke="${tD}" stroke-width="0.3"/><path d="M28,82 C25,92 23,104 22,114 C21,120 20.5,123 21,126 L30,126 C29.5,123 29,120 29.5,114 C30.5,104 32,94 35,82 Z" fill="url(#skin-${index})"/><ellipse cx="25.5" cy="128" rx="4.5" ry="3.5" fill="url(#skin-${index})"/></g>
+          <g class="avatar-arm-r"><path d="M84,66 C87,70 90,76 92,82 L85,82 C84,78 83,73 82,70 Z" fill="${topColor}" stroke="${tD}" stroke-width="0.3"/><path d="M92,82 C95,92 97,104 98,114 C99,120 99.5,123 99,126 L90,126 C90.5,123 91,120 90.5,114 C89.5,104 88,94 85,82 Z" fill="url(#skin-${index})"/><ellipse cx="94.5" cy="128" rx="4.5" ry="3.5" fill="url(#skin-${index})"/></g>
         `;
+
+        avatarBody = `<div class="avatar-silhouette"><svg viewBox="0 -15 120 300" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="skin-${index}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${skin}"/><stop offset="100%" stop-color="${skinD}"/></linearGradient>
+            <radialGradient id="blush-${index}" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#d48090" stop-opacity="0.15"/><stop offset="100%" stop-color="#d48090" stop-opacity="0"/></radialGradient>
+          </defs>
+          ${getHairSVG(hs, hc)}
+          <ellipse cx="60" cy="25" rx="12" ry="14" fill="url(#skin-${index})"/>
+          <path d="M51,20 Q54,18 56,19" fill="none" stroke="#5a3a2a" stroke-width="0.6" opacity="0.35"/>
+          <path d="M64,19 Q66,18 69,20" fill="none" stroke="#5a3a2a" stroke-width="0.6" opacity="0.35"/>
+          <ellipse cx="54" cy="23" rx="2" ry="1.3" fill="#3a2a1a" opacity="0.65"/>
+          <ellipse cx="66" cy="23" rx="2" ry="1.3" fill="#3a2a1a" opacity="0.65"/>
+          <circle cx="54.8" cy="22.5" r="0.5" fill="white" opacity="0.6"/>
+          <circle cx="66.8" cy="22.5" r="0.5" fill="white" opacity="0.6"/>
+          <path d="M59,26 Q60,28 61,26" fill="none" stroke="${skinD}" stroke-width="0.5" opacity="0.3"/>
+          <path d="M56,31 Q60,34 64,31" fill="#c47070" opacity="0.45"/>
+          <path d="M57,31 Q60,32.5 63,31" fill="#d48080" opacity="0.3"/>
+          <circle cx="49" cy="27" r="4" fill="url(#blush-${index})"/><circle cx="71" cy="27" r="4" fill="url(#blush-${index})"/>
+          <path d="M56,38 L56,52 Q56,54 58,54 L62,54 Q64,54 64,52 L64,38" fill="url(#skin-${index})"/>
+          <path d="M38,66 C42,56 52,52 60,52 C68,52 78,56 82,66" fill="url(#skin-${index})"/>
+          ${clothingSVG}
+          ${armsSVG}
+          <path d="M38,${shY} L32,${shY+5} C30,${shY+7} 34,${shY+9} 50,${shY+7} L52,${shY+2}" fill="${shoeColor}"/>
+          <path d="M82,${shY} L88,${shY+5} C90,${shY+7} 86,${shY+9} 70,${shY+7} L68,${shY+2}" fill="${shoeColor}"/>
+          <path d="M33,${shY+7} L32,${shY+14} L35,${shY+14} L35,${shY+7}" fill="${sD}"/>
+          <path d="M87,${shY+7} L88,${shY+14} L85,${shY+14} L85,${shY+7}" fill="${sD}"/>
+          <path d="M52,62 L53,105" stroke="rgba(255,255,255,0.05)" stroke-width="6" stroke-linecap="round"/>
+        </svg></div>`;
       }
 
-      // Outfit-Info für die Anzeige unter dem Avatar
-      const outfitBrands = [...new Set(avatar.outfit.map(o => o.brand_name))];
-      const outfitInfoHtml = avatar.outfit.length > 0
-        ? `<div class="avatar-outfit-info">
-             <div class="avatar-outfit-brands">${outfitBrands.join(' · ')}</div>
-             <div class="avatar-outfit-price">${formatPrice(avatar.total_price)}</div>
-           </div>`
-        : '';
+      const brands = [...new Set(avatar.outfit.map(o => o.brand_name))];
+      const outfitInfo = avatar.outfit.length > 0
+        ? `<div class="avatar-outfit-info"><div class="avatar-outfit-brands">${brands.join(' · ')}</div><div class="avatar-outfit-price">${formatPrice(avatar.total_price)}</div></div>` : '';
 
       wrapper.innerHTML = `
         <div class="avatar-figure">
           ${avatarBody}
           <div class="avatar-shadow"></div>
           <div class="avatar-name">${avatar.name}</div>
-          ${outfitInfoHtml}
+          ${outfitInfo}
+          <div class="click-hint">${t('clickHint')}</div>
         </div>
         ${createProductCard(avatar)}
       `;
 
-      // Click handler
+      // Klick-Handler
       wrapper.addEventListener('click', (e) => {
         e.stopPropagation();
-        // Toggle active state
-        document.querySelectorAll('.avatar-wrapper.active').forEach(el => {
-          if (el !== wrapper) el.classList.remove('active');
-        });
-        wrapper.classList.toggle('active');
-
-        // Track hover stat
-        trackStat(avatar.id, null, 'click');
+        handleAvatarClick(wrapper);
       });
 
-      // Hover stat
       wrapper.addEventListener('mouseenter', () => {
         trackStat(avatar.id, null, 'hover');
       });
@@ -1292,153 +1177,297 @@
       return wrapper;
     }
 
-    // Deutsche Farbnamen → CSS Hex-Codes
-    const COLOR_MAP = {
-      'weiss': '#f5f5f5', 'weiß': '#f5f5f5', 'white': '#f5f5f5',
-      'schwarz': '#2a2a3a', 'black': '#2a2a3a',
-      'grau': '#808080', 'grey': '#808080', 'gray': '#808080',
-      'rot': '#c0392b', 'red': '#c0392b',
-      'blau': '#2c3e6b', 'blue': '#2c3e6b',
-      'dunkelblau': '#2a3a5e', 'navy': '#2a3a5e',
-      'grün': '#2d6a4f', 'green': '#2d6a4f', 'dunkelgrün': '#1b4332',
-      'olive': '#606c38', 'oliv': '#606c38',
-      'beige': '#d4b896', 'sand': '#d2b48c', 'creme': '#f5f0e1',
-      'braun': '#6b4423', 'brown': '#6b4423', 'cognac': '#9a6324',
-      'camel': '#c19a6b',
-      'gold': '#c9a96e', 'roségold': '#b76e79', 'rosé': '#b76e79',
-      'ivory': '#fffff0',
-      'indigo': '#3f4fa3',
-      'burgund': '#6b1c2a', 'bordeaux': '#6b1c2a',
-      'champagner': '#f7e7ce',
-      'nude': '#e8c4a2',
-      'smaragd': '#2d6a4f',
-      'natur': '#d4c5a9',
-      'bunt': '#c9a96e',
-      'gold/perle': '#c9a96e',
-    };
-
-    // Farbe in CSS-kompatiblen Hex-Wert umwandeln
-    function resolveColor(colorName) {
-      if (!colorName) return null;
-      if (colorName.startsWith('#')) return colorName;
-      return COLOR_MAP[colorName.toLowerCase()] || null;
-    }
-
-    // Outfit-Farbe für Kategorie ermitteln
-    function getOutfitColor(outfit, category) {
-      const item = outfit.find(o => o.category === category);
-      return item && item.color ? resolveColor(item.color) : null;
-    }
-
-    // Farbe anpassen (heller/dunkler)
-    function adjustColor(hex, amount) {
-      if (!hex || !hex.startsWith('#')) return hex;
-      const num = parseInt(hex.replace('#', ''), 16);
-      const r = Math.min(255, Math.max(0, (num >> 16) + amount));
-      const g = Math.min(255, Math.max(0, ((num >> 8) & 0x00FF) + amount));
-      const b = Math.min(255, Math.max(0, (num & 0x0000FF) + amount));
-      return '#' + (0x1000000 + (r << 16) + (g << 8) + b).toString(16).slice(1);
-    }
-
-    // Dunkle Farben aufhellen, damit sie auf dem Bühnenhintergrund sichtbar bleiben
-    function ensureVisible(hex) {
-      if (!hex || !hex.startsWith('#')) return hex;
-      const num = parseInt(hex.replace('#', ''), 16);
-      const r = (num >> 16) & 0xFF;
-      const g = (num >> 8) & 0xFF;
-      const b = num & 0xFF;
-      const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-      // Wenn die Farbe zu dunkel ist (< 50), aufhellen
-      if (brightness < 50) return adjustColor(hex, 55);
-      if (brightness < 80) return adjustColor(hex, 30);
-      return hex;
-    }
-
-    // Kleidungsfarbe anpassen wenn sie zu nah an der Hautfarbe ist
-    function ensureSkinContrast(clothingHex, skinHex) {
-      if (!clothingHex || !skinHex || !clothingHex.startsWith('#') || !skinHex.startsWith('#')) return clothingHex;
-      const c = parseInt(clothingHex.replace('#', ''), 16);
-      const s = parseInt(skinHex.replace('#', ''), 16);
-      const cr = (c >> 16) & 0xFF, cg = (c >> 8) & 0xFF, cb = c & 0xFF;
-      const sr = (s >> 16) & 0xFF, sg = (s >> 8) & 0xFF, sb = s & 0xFF;
-      const dist = Math.abs(cr - sr) + Math.abs(cg - sg) + Math.abs(cb - sb);
-      if (dist >= 190) return clothingHex; // Genug Kontrast
-
-      // Helligkeit berechnen um Richtung zu bestimmen
-      const cLum = (cr * 299 + cg * 587 + cb * 114) / 1000;
-      const sLum = (sr * 299 + sg * 587 + sb * 114) / 1000;
-      const amount = dist < 100 ? 65 : 50;
-
-      if (cLum >= sLum) {
-        // Kleidung heller als Haut → noch heller machen (weg von Haut)
-        // Aber wenn schon sehr hell, stattdessen stark abdunkeln
-        if (cLum < 220) return adjustColor(clothingHex, amount);
-        return adjustColor(clothingHex, -(amount + 25));
-      } else {
-        // Kleidung dunkler als Haut → noch dunkler (weg von Haut)
-        // Aber wenn schon sehr dunkel, stattdessen aufhellen
-        if (cLum > 50) return adjustColor(clothingHex, -amount);
-        return adjustColor(clothingHex, amount + 25);
-      }
-    }
-
-    // Produkt-Karte erstellen
     function createProductCard(avatar) {
-      if (!avatar.outfit || avatar.outfit.length === 0) {
-        return '';
-      }
-
-      // Brands sammeln
+      if (!avatar.outfit?.length) return '';
       const brands = [...new Set(avatar.outfit.map(o => o.brand_name))];
       const brandLabel = brands.length > 1 ? brands.join(' × ') : brands[0];
-
-      let itemsHtml = avatar.outfit.map(item => `
-        <li class="product-item" data-url="${item.product_url}" data-avatar="${avatar.id}" data-article="${item.article_id}">
+      const items = avatar.outfit.map(i => `
+        <li class="product-item" data-url="${i.product_url}" data-avatar="${avatar.id}" data-article="${i.article_id}">
           <div class="product-item-info">
-            <div class="product-item-category">${tCat(item.category)}</div>
-            <div class="product-item-name">${item.article_name}</div>
-            <div class="product-item-brand">${item.brand_name}</div>
+            <div class="product-item-category">${tCat(i.category)}</div>
+            <div class="product-item-name">${i.article_name}</div>
+            <div class="product-item-brand">${i.brand_name}</div>
           </div>
-          <span class="product-item-price">${formatPrice(item.price)}</span>
+          <span class="product-item-price">${formatPrice(i.price)}</span>
           <span class="product-item-link">${t('shopLink')}</span>
-        </li>
-      `).join('');
+        </li>`).join('');
 
-      return `
-        <div class="product-card">
-          <div class="product-card-header">
-            <span class="product-card-brand">${brandLabel}</span>
-            <span class="product-card-total">${formatPrice(avatar.total_price)}</span>
-          </div>
-          <ul class="product-card-items">${itemsHtml}</ul>
-          <a class="shop-all-btn" href="#" onclick="shopAll(event, '${avatar.id}')">
-            ${t('shopAll')}
-          </a>
+      return `<div class="product-card">
+        <div class="product-card-header">
+          <span class="product-card-brand">${brandLabel}</span>
+          <span class="product-card-total">${formatPrice(avatar.total_price)}</span>
         </div>
-      `;
+        <ul class="product-card-items">${items}</ul>
+        <div class="free-shipping-badge">${t('freeShipping')}</div>
+        <a class="shop-all-btn" href="#" onclick="shopAll(event,'${avatar.id}')">${t('shopAll')}</a>
+      </div>`;
     }
 
-    // Zum Shop weiterleiten
+    // ═══════════════════════════════════════════════════════
+    //  LAUFSTEG-ANIMATION (Hin- und Rücklauf)
+    // ═══════════════════════════════════════════════════════
+
+    // Zustände: 'approaching', 'posing', 'turning', 'returning', 'offstage', 'stopped'
+    class WalkingAvatar {
+      constructor(avatarData, element, index) {
+        this.data = avatarData;
+        this.el = element;
+        this.index = index;
+        this.state = 'offstage';
+        this.progress = 0;      // 0 = hinten, 1 = vorne
+        this.stateTimer = 0;
+        this.xOffset = (index % 3 - 1) * 3; // Leichter seitlicher Versatz
+      }
+
+      start() {
+        this.state = 'approaching';
+        this.progress = 0;
+        this.stateTimer = 0;
+        this.el.classList.add('walking');
+        this.el.classList.remove('posing', 'turning', 'stopped', 'show-name');
+        this.updateVisual();
+      }
+
+      update(dt) {
+        if (isPaused || this.state === 'offstage' || this.state === 'stopped') return;
+
+        const spd = speedMultiplier;
+        const cfg = WALK_CONFIG;
+
+        switch (this.state) {
+          case 'approaching':
+            this.progress += (dt / cfg.approachMs) * spd;
+            if (this.progress >= 1) {
+              this.progress = 1;
+              this.state = 'posing';
+              this.stateTimer = 0;
+              this.el.classList.remove('walking');
+              this.el.classList.add('posing', 'show-name');
+            }
+            break;
+
+          case 'posing':
+            this.stateTimer += dt * spd;
+            if (this.stateTimer >= cfg.poseMs) {
+              this.state = 'turning';
+              this.stateTimer = 0;
+              this.el.classList.remove('posing');
+              this.el.classList.add('turning');
+            }
+            break;
+
+          case 'turning':
+            this.stateTimer += dt * spd;
+            if (this.stateTimer >= cfg.turnMs) {
+              this.state = 'returning';
+              this.stateTimer = 0;
+              this.el.classList.remove('turning', 'show-name');
+              this.el.classList.add('walking');
+            }
+            break;
+
+          case 'returning':
+            this.progress -= (dt / cfg.returnMs) * spd;
+            if (this.progress <= 0) {
+              this.progress = 0;
+              this.state = 'offstage';
+              this.el.classList.remove('walking');
+              this.el.style.opacity = '0';
+              // Zurück in die Warteschlange
+              walkerQueue.push(this);
+            }
+            break;
+        }
+
+        this.updateVisual();
+      }
+
+      updateVisual() {
+        const cfg = WALK_CONFIG;
+        const p = this.progress;
+
+        // Easing: langsamer ankommen (ease-out), schneller weggehen
+        const easedP = this.state === 'returning' ? p : easeOutCubic(p);
+
+        const y = lerp(cfg.backY, cfg.frontY, easedP);
+        const scale = lerp(cfg.backScale, cfg.frontScale, easedP);
+        const brightness = lerp(cfg.backBrightness, cfg.frontBrightness, easedP);
+
+        // X-Position: Mitte + leichter Versatz (wird hinten kleiner)
+        const x = cfg.centerX + this.xOffset * easedP;
+
+        this.el.style.top = y + '%';
+        this.el.style.left = x + '%';
+        this.el.style.transform = `translate(-50%, -100%) scale(${scale.toFixed(3)})`;
+        this.el.style.filter = `brightness(${brightness.toFixed(2)})`;
+        this.el.style.zIndex = Math.floor(p * 50) + 5;
+
+        // Sanftes Einblenden beim Start
+        if (this.state !== 'offstage') {
+          this.el.style.opacity = p < 0.08 ? (p / 0.08).toFixed(2) : '1';
+        }
+      }
+
+      stop() {
+        this.state = 'stopped';
+        this.el.classList.remove('walking', 'posing', 'turning');
+        this.el.classList.add('stopped', 'show-name');
+        trackStat(this.data.id, null, 'click');
+      }
+
+      resume() {
+        this.el.classList.remove('stopped');
+        this.state = 'turning';
+        this.stateTimer = 0;
+        this.el.classList.add('turning');
+      }
+    }
+
+    function lerp(a, b, t) { return a + (b - a) * Math.max(0, Math.min(1, t)); }
+    function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+
+    function handleAvatarClick(wrapperEl) {
+      const walker = activeWalkers.find(w => w.el === wrapperEl);
+      if (!walker) return;
+
+      if (walker.state === 'stopped') {
+        // Zweiter Klick → weiterlaufen
+        walker.resume();
+      } else if (walker.state === 'posing' || (walker.state === 'approaching' && walker.progress > 0.7)) {
+        // Am vorderen Ende → anhalten und Produkte zeigen
+        walker.progress = 1;
+        walker.updateVisual();
+        walker.stop();
+      }
+    }
+
+    // Haupt-Animations-Loop
+    function animationLoop(timestamp) {
+      if (!lastFrameTime) lastFrameTime = timestamp;
+      const dt = Math.min(timestamp - lastFrameTime, 100); // Max 100ms delta (kein Sprung bei Tab-Wechsel)
+      lastFrameTime = timestamp;
+
+      activeWalkers.forEach(w => w.update(dt));
+
+      animFrameId = requestAnimationFrame(animationLoop);
+    }
+
+    // Avatar-Spawn-System
+    function spawnNextAvatar() {
+      if (walkerQueue.length === 0) return;
+
+      const walker = walkerQueue.shift();
+      walker.start();
+
+      // Nächsten Avatar nach Stagger-Delay spawnen
+      const delay = WALK_CONFIG.staggerMs / speedMultiplier;
+      spawnTimer = setTimeout(spawnNextAvatar, delay);
+    }
+
+    // ═══════════════════════════════════════════════════════
+    //  KAMERA-BLITZLICHTER
+    // ═══════════════════════════════════════════════════════
+    function triggerCameraFlash() {
+      if (!flashesEnabled || isPaused) return;
+      const scene = document.getElementById('catwalk-scene');
+      const ambient = document.getElementById('flash-ambient');
+
+      const side = Math.random() > 0.5 ? 'left' : 'right';
+      const x = side === 'left' ? (3 + Math.random() * 13) : (84 + Math.random() * 13);
+      const y = 55 + Math.random() * 30;
+
+      const flash = document.createElement('div');
+      flash.className = 'camera-flash';
+      flash.style.left = x + '%';
+      flash.style.top = y + '%';
+      flash.style.animation = 'flashBurst 0.5s ease-out forwards';
+      scene.appendChild(flash);
+
+      ambient.style.setProperty('--fx', x + '%');
+      ambient.style.setProperty('--fy', y + '%');
+      ambient.style.opacity = '1';
+      setTimeout(() => { ambient.style.opacity = '0'; }, 80);
+      setTimeout(() => flash.remove(), 600);
+    }
+
+    function startFlashes() {
+      function schedule() {
+        flashTimeout = setTimeout(() => {
+          triggerCameraFlash();
+          if (Math.random() > 0.7) setTimeout(triggerCameraFlash, 150);
+          schedule();
+        }, 2000 + Math.random() * 4000);
+      }
+      schedule();
+    }
+
+    function stopFlashes() {
+      if (flashTimeout) { clearTimeout(flashTimeout); flashTimeout = null; }
+    }
+
+    // ═══════════════════════════════════════════════════════
+    //  VISUELLE ELEMENTE
+    // ═══════════════════════════════════════════════════════
+    function createParticles() {
+      const scene = document.getElementById('catwalk-scene');
+      for (let i = 0; i < 18; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        p.style.left = Math.random() * 100 + '%';
+        p.style.animationDuration = (8 + Math.random() * 12) + 's';
+        p.style.animationDelay = Math.random() * 10 + 's';
+        const s = (1 + Math.random() * 2) + 'px';
+        p.style.width = s; p.style.height = s;
+        scene.appendChild(p);
+      }
+    }
+
+    function createEdgeLights() {
+      const c = document.getElementById('edge-lights');
+      for (let i = 0; i < 20; i++) {
+        const l = document.createElement('div');
+        l.className = 'edge-light';
+        l.style.animationDelay = (Math.random() * 3) + 's';
+        c.appendChild(l);
+      }
+    }
+
+    function createRunwayLines() {
+      const c = document.getElementById('runway-lines');
+      // Horizontale Perspektiv-Linien
+      for (let i = 0; i < 12; i++) {
+        const pct = (i / 12) * 100;
+        const line = document.createElement('div');
+        line.className = 'runway-line';
+        line.style.top = pct + '%';
+        // Breite wird breiter nach unten
+        const w = 20 + (pct / 100) * 60;
+        line.style.width = w + '%';
+        line.style.height = '1px';
+        line.style.left = (50 - w/2) + '%';
+        line.style.background = `rgba(201, 169, 110, ${0.02 + (pct/100) * 0.04})`;
+        c.appendChild(line);
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════
+    //  SHOP & STATISTIK
+    // ═══════════════════════════════════════════════════════
     function redirectToShop(url, avatarId, articleId) {
       trackStat(avatarId, articleId, 'redirect');
       window.open(url, '_blank', 'noopener');
     }
 
-    // Ganzen Look shoppen – öffnet alle Artikel
     function shopAll(event, avatarId) {
       event.preventDefault();
       event.stopPropagation();
-      const avatar = catwalkData.avatars.find(a => a.id === avatarId);
+      const avatar = catwalkData?.avatars.find(a => a.id === avatarId);
       if (!avatar) return;
-
       avatar.outfit.forEach((item, i) => {
-        setTimeout(() => {
-          redirectToShop(item.product_url, avatarId, item.article_id);
-        }, i * 300);
+        setTimeout(() => redirectToShop(item.product_url, avatarId, item.article_id), i * 300);
       });
     }
 
-    // Statistik tracken
     async function trackStat(avatarId, articleId, action) {
       try {
         await fetch(API_BASE + '/catwalk/stats', {
@@ -1449,77 +1478,87 @@
       } catch (e) { /* silent */ }
     }
 
-    // Catwalk-Daten laden
+    // ═══════════════════════════════════════════════════════
+    //  CATWALK LADEN & RENDERN
+    // ═══════════════════════════════════════════════════════
     async function loadCatwalkData() {
       try {
         const res = await fetch(API_BASE + '/catwalk/show');
         catwalkData = await res.json();
         return catwalkData;
       } catch (err) {
-        console.error('Fehler beim Laden:', err);
+        console.error('Fehler:', err);
         return null;
       }
     }
 
-    // Catwalk rendern
     function renderCatwalk() {
       const track = document.getElementById('avatar-track');
       track.innerHTML = '';
 
+      // Alte Animationen stoppen
+      activeWalkers = [];
+      walkerQueue = [];
+      if (spawnTimer) { clearTimeout(spawnTimer); spawnTimer = null; }
+      if (animFrameId) { cancelAnimationFrame(animFrameId); animFrameId = null; }
+      lastFrameTime = 0;
+
       if (!catwalkData || catwalkData.avatars.length === 0) {
-        track.innerHTML = `
-          <div class="empty-state">
-            <h2>${t('emptyTitle')}</h2>
-            <p>${t('emptyText')} <a href="/admin">${t('emptyLink')}</a></p>
-          </div>
-        `;
+        track.innerHTML = `<div class="empty-state"><h2>${t('emptyTitle')}</h2><p>${t('emptyText')} <a href="/admin">${t('emptyLink')}</a></p></div>`;
+        document.getElementById('avatar-counter').textContent = '';
         return;
       }
 
-      // Config + Sprache anwenden
-      document.getElementById('catwalk-title').textContent = (catwalkData.config && catwalkData.config.title) || t('title');
+      // UI aktualisieren
+      document.getElementById('catwalk-title').textContent = catwalkData.config?.title || t('title');
       document.getElementById('catwalk-subtitle').textContent = t('subtitle');
-      if (catwalkData.config && catwalkData.config.background_color) {
+      document.getElementById('date-display').textContent = formatDate(catwalkData.date);
+      document.getElementById('avatar-counter').innerHTML = `<span>${catwalkData.avatars.length}</span> ${t('models')}`;
+
+      if (catwalkData.config?.background_color) {
         document.documentElement.style.setProperty('--bg-dark', catwalkData.config.background_color);
       }
 
-      // Datum anzeigen
-      document.getElementById('date-display').textContent = formatDate(catwalkData.date);
-
-      // Avatare erstellen
+      // Avatare erstellen und in die Warteschlange stellen
       catwalkData.avatars.forEach((avatar, index) => {
         const el = createAvatarElement(avatar, index);
+        el.style.opacity = '0';
         track.appendChild(el);
-      });
 
-      // Klick-Handler für Produkt-Items
-      document.querySelectorAll('.product-item[data-url]').forEach(item => {
-        item.addEventListener('click', (e) => {
-          e.stopPropagation();
-          redirectToShop(item.dataset.url, item.dataset.avatar, item.dataset.article);
+        const walker = new WalkingAvatar(avatar, el, index);
+        activeWalkers.push(walker);
+        walkerQueue.push(walker);
+
+        // Klick-Handler für Produkt-Items
+        el.querySelectorAll('.product-item[data-url]').forEach(item => {
+          item.addEventListener('click', (e) => {
+            e.stopPropagation();
+            redirectToShop(item.dataset.url, item.dataset.avatar, item.dataset.article);
+          });
         });
       });
+
+      // Animations-Loop starten
+      animFrameId = requestAnimationFrame(animationLoop);
+
+      // Erstes Model sofort starten, dann gestaggert
+      spawnNextAvatar();
     }
 
-    // Sprach-Dropdown
+    // ═══════════════════════════════════════════════════════
+    //  CONTROLS
+    // ═══════════════════════════════════════════════════════
     function updateLangUI() {
-      // Aktive Sprache markieren
-      document.querySelectorAll('.lang-option').forEach(opt => {
-        opt.classList.toggle('active', opt.dataset.lang === currentLang);
-      });
-      // Button zeigt Flagge der aktuellen Sprache
-      document.getElementById('btn-lang').textContent = I18N[currentLang].flag;
-      document.getElementById('btn-lang').title = 'Language / Sprache';
+      document.querySelectorAll('.lang-option').forEach(o => o.classList.toggle('active', o.dataset.lang === currentLang));
+      document.getElementById('btn-lang').textContent = I18N[currentLang]?.flag || '🌐';
     }
     updateLangUI();
 
-    // Dropdown öffnen/schließen
     document.getElementById('btn-lang').addEventListener('click', (e) => {
       e.stopPropagation();
       document.getElementById('lang-wrapper').classList.toggle('open');
     });
 
-    // Sprache wählen
     document.querySelectorAll('.lang-option').forEach(opt => {
       opt.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -1531,64 +1570,57 @@
       });
     });
 
-    // Dropdown schließen bei Klick außerhalb
     document.addEventListener('click', () => {
       document.getElementById('lang-wrapper').classList.remove('open');
+      // Gestoppte Avatare weiterlaufen lassen bei Klick auf die Bühne
+      activeWalkers.filter(w => w.state === 'stopped').forEach(w => w.resume());
     });
 
-    // Controls
     document.getElementById('btn-pause').addEventListener('click', () => {
       isPaused = !isPaused;
-      document.querySelectorAll('.avatar-walk').forEach(el => {
-        el.style.animationPlayState = isPaused ? 'paused' : 'running';
-      });
+      document.getElementById('btn-pause').classList.toggle('active', isPaused);
     });
 
     document.getElementById('btn-speed').addEventListener('click', () => {
       const speeds = [0.5, 1, 1.5, 2];
-      const currentIdx = speeds.indexOf(speedMultiplier);
-      speedMultiplier = speeds[(currentIdx + 1) % speeds.length];
-      document.querySelectorAll('.avatar-walk').forEach(el => {
-        const currentDuration = parseFloat(el.style.getPropertyValue('--walk-duration'));
-        el.style.setProperty('--walk-duration', (currentDuration / speedMultiplier) + 's');
-      });
+      const idx = speeds.indexOf(speedMultiplier);
+      speedMultiplier = speeds[(idx + 1) % speeds.length];
+      document.getElementById('btn-speed').textContent = speedMultiplier === 1 ? '⚡' : `${speedMultiplier}×`;
     });
+
+    document.getElementById('btn-flash').addEventListener('click', () => {
+      flashesEnabled = !flashesEnabled;
+      document.getElementById('btn-flash').classList.toggle('active', flashesEnabled);
+      flashesEnabled ? startFlashes() : stopFlashes();
+    });
+    document.getElementById('btn-flash').classList.add('active');
 
     document.getElementById('btn-fullscreen').addEventListener('click', () => {
-      if (document.fullscreenElement) {
-        document.exitFullscreen();
-      } else {
-        document.getElementById('catwalk-scene').requestFullscreen();
-      }
+      document.fullscreenElement ? document.exitFullscreen() : document.getElementById('catwalk-scene').requestFullscreen();
     });
 
-    // Klick auf Szene schließt aktive Karten
-    document.getElementById('catwalk-scene').addEventListener('click', () => {
-      document.querySelectorAll('.avatar-wrapper.active').forEach(el => {
-        el.classList.remove('active');
-      });
-    });
-
-    // Initialisierung
+    // ═══════════════════════════════════════════════════════
+    //  INIT
+    // ═══════════════════════════════════════════════════════
     async function init() {
-      const loadingBar = document.getElementById('loading-bar-fill');
-      loadingBar.style.width = '30%';
+      const bar = document.getElementById('loading-bar-fill');
+      bar.style.width = '30%';
 
       createParticles();
-      loadingBar.style.width = '50%';
+      createEdgeLights();
+      createRunwayLines();
+      bar.style.width = '50%';
 
       await loadCatwalkData();
-      loadingBar.style.width = '80%';
+      bar.style.width = '80%';
 
       renderCatwalk();
-      loadingBar.style.width = '100%';
+      startFlashes();
+      bar.style.width = '100%';
 
-      // Loading ausblenden
       setTimeout(() => {
         document.getElementById('loading').classList.add('fade-out');
-        setTimeout(() => {
-          document.getElementById('loading').remove();
-        }, 800);
+        setTimeout(() => document.getElementById('loading').remove(), 800);
       }, 500);
 
       // Auto-Refresh alle 5 Minuten
@@ -1601,10 +1633,10 @@
     init();
   </script>
 
-  <!-- Rechtliche Links (Pflicht in Deutschland) -->
-  <div style="position:fixed;bottom:8px;left:50%;transform:translateX(-50%);z-index:100;
-    display:flex;gap:16px;font-size:0.7rem;opacity:0.4;transition:opacity 0.3s;"
-    onmouseenter="this.style.opacity='0.9'" onmouseleave="this.style.opacity='0.4'">
+  <!-- Rechtliche Links -->
+  <div style="position:fixed;bottom:6px;left:50%;transform:translateX(-50%);z-index:100;
+    display:flex;gap:16px;font-size:0.65rem;opacity:0.35;transition:opacity 0.3s;"
+    onmouseenter="this.style.opacity='0.9'" onmouseleave="this.style.opacity='0.35'">
     <a href="/impressum" style="color:#8a8a9a;text-decoration:none;" target="_blank">Impressum</a>
     <span style="color:#555;">|</span>
     <a href="/datenschutz" style="color:#8a8a9a;text-decoration:none;" target="_blank">Datenschutz</a>
