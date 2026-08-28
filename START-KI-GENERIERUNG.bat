@@ -50,7 +50,7 @@ echo.
 echo ⏳ Bitte warte, das dauert einige Minuten...
 echo.
 
-curl -s -X POST http://localhost:3000/api/generate/styled/batch/all
+curl -s -X POST "http://localhost:3000/api/generate/styled/batch/all?force=1"
 echo.
 echo.
 

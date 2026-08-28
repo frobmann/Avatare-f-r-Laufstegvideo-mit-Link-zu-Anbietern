@@ -156,7 +156,8 @@ router.post('/styled/:avatarId', async (req, res) => {
 
 router.post('/styled/batch/all', async (req, res) => {
   try {
-    const result = await generateAllStyledAvatars();
+    const force = req.query.force === '1' || req.body.force === true;
+    const result = await generateAllStyledAvatars({ force });
     res.json(result);
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });

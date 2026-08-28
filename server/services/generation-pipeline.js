@@ -728,8 +728,9 @@ function getCostSummary(days = 30) {
  *
  * Kosten: ~$0.04–0.06 pro Avatar (Bild + BG-Removal)
  */
-async function generateStyledAvatar(avatarId) {
+async function generateStyledAvatar(avatarId, options = {}) {
   const db = getDb();
+  const { force = false } = options;
 
   const avatar = db.prepare('SELECT * FROM avatars WHERE id = ?').get(avatarId);
   if (!avatar) throw new Error('Avatar nicht gefunden');
@@ -755,25 +756,31 @@ async function generateStyledAvatar(avatarId) {
 
   const cacheKey = `styled_${avatarId}_${today}`;
 
-  // Cache prüfen
-  const cached = checkCache(cacheKey);
-  if (cached) {
-    console.log(`   ⏭ Cached: ${cached.output_path}`);
-    return {
-      success: true,
-      cached: true,
-      outputUrl: '/' + cached.output_path.replace(/^public\//, ''),
-      generationId: cached.id,
-      cost: 0,
-    };
+  // Cache prüfen (überspringen wenn force=true)
+  if (!force) {
+    const cached = checkCache(cacheKey);
+    if (cached) {
+      console.log(`   ⏭ Cached: ${cached.output_path}`);
+      return {
+        success: true,
+        cached: true,
+        outputUrl: '/' + cached.output_path.replace(/^public\//, ''),
+        generationId: cached.id,
+        cost: 0,
+      };
+    }
+  } else {
+    // Alte Cache-Einträge als veraltet markieren
+    db.prepare(`UPDATE generations SET status = 'failed' WHERE cache_key = ? AND status = 'completed'`).run(cacheKey);
+    console.log(`   🔄 Force-Modus: Cache übersprungen`);
   }
 
   const genId = createGenerationRecord(avatarId, 'img2img', cacheKey);
   updateGeneration(genId, { status: 'processing' });
 
   try {
-    // Schritt 1: Avatar mit Outfit generieren
-    console.log(`   📸 Schritt 1/2: Avatar-Bild generieren...`);
+    // Avatar mit Outfit auf dunklem Catwalk-Hintergrund generieren
+    console.log(`   📸 Avatar-Bild mit Outfit generieren...`);
     const imgResult = await enqueueGeneration(async () => {
       return provider.generateAvatarImage({ prompt });
     });
@@ -785,24 +792,8 @@ async function generateStyledAvatar(avatarId) {
     const rawImageUrl = Array.isArray(imgResult.output) ? imgResult.output[0] : imgResult.output;
     let totalCost = imgResult.cost || 0.04;
 
-    // Schritt 2: Hintergrund entfernen
-    console.log(`   ✂️ Schritt 2/2: Hintergrund entfernen...`);
+    // Dunkler Hintergrund wird direkt im Prompt generiert (kein BG-Removal nötig)
     let finalImageUrl = rawImageUrl;
-    try {
-      const bgResult = await enqueueGeneration(async () => {
-        return provider.removeBackground({ imageUrl: rawImageUrl });
-      });
-
-      if (bgResult.success) {
-        finalImageUrl = Array.isArray(bgResult.output) ? bgResult.output[0] : bgResult.output;
-        totalCost += bgResult.cost || 0.004;
-        console.log(`   ✅ Hintergrund entfernt`);
-      } else {
-        console.log(`   ⚠️ BG-Removal fehlgeschlagen, nutze Original: ${bgResult.error}`);
-      }
-    } catch (bgErr) {
-      console.log(`   ⚠️ BG-Removal Fehler: ${bgErr.message}, nutze Original`);
-    }
 
     // Bild herunterladen und speichern
     const timestamp = Date.now();
@@ -869,17 +860,18 @@ async function generateStyledAvatar(avatarId) {
  * Styled Avatare für ALLE aktiven Avatare generieren.
  * Jeder Avatar wird im Fashion-Outfit generiert + Hintergrund entfernt.
  */
-async function generateAllStyledAvatars() {
+async function generateAllStyledAvatars(options = {}) {
   const db = getDb();
   const avatars = db.prepare('SELECT * FROM avatars WHERE is_active = 1 ORDER BY position_order').all();
   const results = [];
 
   console.log(`\n${'═'.repeat(50)}`);
   console.log(`🎨 STYLED AVATARE: ${avatars.length} Avatare generieren`);
+  if (options.force) console.log(`🔄 Force-Modus: Alle werden NEU generiert`);
   console.log(`${'═'.repeat(50)}\n`);
 
   for (const avatar of avatars) {
-    const result = await generateStyledAvatar(avatar.id);
+    const result = await generateStyledAvatar(avatar.id, options);
     results.push({ avatarId: avatar.id, name: avatar.name, ...result });
 
     // 10 Sekunden Pause zwischen Avataren (Rate-Limit)

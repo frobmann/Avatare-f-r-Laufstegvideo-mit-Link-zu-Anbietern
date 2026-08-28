@@ -608,18 +608,20 @@ function buildOutfitPrompt(avatar, outfitArticles) {
       `${avatarLook.age} years old, fashion model, 170-178cm tall, slim figure, ` +
       `${clothingDesc}, ` +
       `walking confidently on a dark fashion runway catwalk, ` +
-      `dramatic fashion show lighting, spotlight from above, ` +
+      `solid pitch black dark background, dramatic fashion show spotlight from above, ` +
+      `dark moody atmosphere, no studio background, dark runway floor, ` +
       `sharp focus, high resolution, photorealistic, full body visible head to toe, ` +
-      `center frame, 8k quality, Vogue editorial fashion photography`;
+      `center frame, 8k quality, Vogue editorial fashion show photography`;
   }
 
   const gender = isMale ? 'man' : 'woman';
   return `Full body professional fashion photograph of a young ${gender}, 25 years old, ` +
     `fashion model, ${clothingDesc}, ` +
     `walking confidently on a dark fashion runway catwalk, ` +
-    `dramatic fashion show lighting, spotlight from above, ` +
+    `solid pitch black dark background, dramatic fashion show spotlight from above, ` +
+    `dark moody atmosphere, no studio background, dark runway floor, ` +
     `sharp focus, high resolution, photorealistic, full body visible head to toe, ` +
-    `center frame, 8k quality, Vogue editorial fashion photography`;
+    `center frame, 8k quality, Vogue editorial fashion show photography`;
 }
 
 module.exports = {
