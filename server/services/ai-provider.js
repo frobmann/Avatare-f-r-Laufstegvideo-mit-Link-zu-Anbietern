@@ -317,8 +317,12 @@ class ReplicateProvider {
    * Walking-Video generieren
    *
    * Unterstützt mehrere Video-Modelle:
-   * - Minimax Video-01: Beste Qualität (~$0.10–0.20, 5-6 Sek)
+   * - Kling v2.1:       Beste Laufbewegung, 5-10 Sek, 720p+ (~$0.05–0.15)
+   * - Wan 2.1 I2V:      Schnell & günstig, gute Qualität (~$0.03–0.08)
+   * - Minimax Video-01:  Gute Qualität, 5-6 Sek (~$0.10–0.20)
    * - Stable Video Diffusion: Günstigster (~$0.03–0.05, 3 Sek)
+   *
+   * Empfehlung für Catwalk: Kling v2.1 (beste Gehbewegung)
    *
    * Input: Bild des fertig eingekleideten Avatars
    * Output: Laufanimation auf dem Catwalk
@@ -329,32 +333,45 @@ class ReplicateProvider {
     const model = CONFIG.replicate.videoModel;
     let input;
 
-    if (model.includes('minimax')) {
-      // ── Minimax Video-01 ──
+    if (model.includes('kling')) {
+      // ── Kling v2.1 (EMPFOHLEN: beste Gehbewegung) ──
+      // Modell: kwaivgi/kling-v2.1
+      // Produziert 5-10 Sek Videos in 720p/1080p
+      // Sehr realistische menschliche Bewegungen
+      console.log('   🎬 Video-Modell: Kling v2.1 (beste Gehbewegung)');
+      input = {
+        prompt: prompt || 'Fashion model walking confidently toward the camera on a dark catwalk runway, ' +
+          'elegant model walk with one foot crossing in front of the other, ' +
+          'natural hip sway, arms swinging gracefully at sides, ' +
+          'dramatic spotlight from above, dark background, ' +
+          'professional fashion show, full body shot, cinematic quality, 4K',
+        start_image: imageUrl,
+        duration: 5,
+        aspect_ratio: '9:16',
+        negative_prompt: 'blurry, distorted, low quality, static, frozen, no movement, stiff',
+        cfg_scale: 0.5,
+      };
+    } else if (model.includes('wan')) {
+      // ── Wan 2.1 I2V (schnell & günstig) ──
+      // Modell: wavespeedai/wan-2.1-i2v-480p oder -720p
+      console.log('   🎬 Video-Modell: Wan 2.1 I2V');
+      input = {
+        prompt: prompt || 'Fashion model walking confidently on a dark catwalk runway toward the camera, ' +
+          'elegant walking motion, natural body movement, full body shot, cinematic quality',
+        image: imageUrl,
+      };
+    } else if (model.includes('minimax') || model.includes('hailuo')) {
+      // ── Minimax Video-01 / Hailuo ──
+      console.log('   🎬 Video-Modell: Minimax Video-01');
       input = {
         prompt: prompt || 'Fashion model walking confidently on a catwalk runway, ' +
           'professional fashion show, elegant walking motion, studio lighting, ' +
           'smooth camera following, full body shot, cinematic quality',
         first_frame_image: imageUrl,
       };
-    } else if (model.includes('kling')) {
-      // ── Kling Video ──
-      input = {
-        prompt: prompt || 'Fashion model walking on catwalk, professional fashion show, ' +
-          'elegant confident walk, studio lighting, full body',
-        image: imageUrl,
-        duration: 5,
-      };
-    } else if (model.includes('wan')) {
-      // ── Wan 2.1 ──
-      input = {
-        prompt: prompt || 'Fashion model walking on catwalk runway, professional fashion show',
-        image: imageUrl,
-        num_frames: 81,
-        fps: 16,
-      };
     } else {
       // ── Stable Video Diffusion (Fallback/günstigster) ──
+      console.log('   🎬 Video-Modell: Stable Video Diffusion (Fallback)');
       input = {
         input_image: imageUrl,
         motion_bucket_id: motionStrength || 40,
