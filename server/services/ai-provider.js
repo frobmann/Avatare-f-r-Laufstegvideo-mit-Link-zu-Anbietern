@@ -203,17 +203,25 @@ function buildAvatarPrompt(avatar) {
 }
 
 /**
- * Erstellt einen Prompt für die Catwalk-Walking-Animation
+ * Erstellt einen Prompt für die Catwalk-Walking-Animation.
+ * Das Video soll das Model auf dem Laufsteg zeigen, wie es
+ * selbstbewusst auf die Kamera zuläuft, eine Pose macht
+ * und sich dann umdreht.
  */
 function buildWalkPrompt(avatar) {
   const maleNames = ['liam', 'noah', 'felix', 'max', 'leon', 'tim', 'david', 'paul', 'ben', 'tom'];
   const isMale = maleNames.includes((avatar.name || '').toLowerCase());
   const gender = isMale ? 'male' : 'female';
 
-  return `Professional fashion show, ${gender} model walking confidently on a catwalk runway, ` +
-    `elegant walking motion, one foot in front of the other, straight posture, ` +
-    `professional studio lighting, fashion show atmosphere, ` +
-    `smooth camera, full body shot, cinematic quality`;
+  return `Professional high-fashion runway show, ${gender} fashion model walking confidently ` +
+    `toward the camera on a dark catwalk runway, ` +
+    `elegant model walk with one foot crossing in front of the other, ` +
+    `straight posture, hips swaying naturally, arms relaxed at sides, ` +
+    `dramatic spotlight from above illuminating the model, ` +
+    `dark audience silhouettes on both sides, camera flashes from the crowd, ` +
+    `front-facing camera angle, full body shot from head to shoes, ` +
+    `dark moody atmosphere, professional fashion show lighting, ` +
+    `Vogue fashion week quality, cinematic, smooth steady camera, 4K quality`;
 }
 
 // ═══════════════════════════════════════════════════

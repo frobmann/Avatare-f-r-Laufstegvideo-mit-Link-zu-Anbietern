@@ -460,16 +460,31 @@
     .avatar-generated-img {
       position: absolute;
       top: 0; left: 50%; transform: translateX(-50%);
-      height: 100%; width: auto; max-width: 160px;
+      height: 100%; width: auto; max-width: 200px;
       object-fit: contain;
       filter: drop-shadow(0 4px 20px rgba(0,0,0,0.5));
     }
     .avatar-generated-video {
       position: absolute;
       top: 0; left: 50%; transform: translateX(-50%);
-      height: 100%; width: auto; max-width: 160px;
+      height: 100%; width: auto; max-width: 260px;
       object-fit: contain;
       filter: drop-shadow(0 4px 20px rgba(0,0,0,0.5));
+      border-radius: 4px;
+    }
+    /* Video-Avatare: mehr Platz für das Video */
+    .avatar-wrapper.has-video .avatar-figure {
+      width: 260px;
+      height: 500px;
+    }
+    .avatar-wrapper.has-video .avatar-shadow {
+      width: 120px;
+    }
+    /* Keine CSS-Walk-Animationen bei Video (Video hat eigene Bewegung) */
+    .avatar-wrapper.has-video.walking .avatar-generated-video,
+    .avatar-wrapper.has-video.posing .avatar-generated-video,
+    .avatar-wrapper.has-video.turning .avatar-generated-video {
+      animation: none;
     }
     .ai-badge {
       position: absolute; top: -8px; right: -8px;
@@ -677,6 +692,8 @@
       .catwalk-title { font-size: 1.3rem; top: 10px; letter-spacing: 0.12em; }
       .catwalk-subtitle { font-size: 0.6rem; top: 40px; }
       .avatar-figure { width: 100px; height: 340px; }
+      .avatar-wrapper.has-video .avatar-figure { width: 180px; height: 340px; }
+      .avatar-generated-video { max-width: 180px; }
       .product-card { width: 250px; padding: 14px; }
       .audience { width: 10%; }
       .date-display { font-size: 0.6rem; top: 10px; right: 10px; }
@@ -688,6 +705,8 @@
       .catwalk-title { font-size: 1rem; }
       .catwalk-subtitle { font-size: 0.5rem; top: 32px; }
       .avatar-figure { width: 80px; height: 270px; }
+      .avatar-wrapper.has-video .avatar-figure { width: 140px; height: 270px; }
+      .avatar-generated-video { max-width: 140px; }
       .product-card { width: 230px; padding: 10px; }
       .audience { display: none; }
     }
@@ -1078,8 +1097,10 @@
       const jacketColor = rawJacket ? ensureSkinContrast(rawJacket, skinRef) : null;
 
       let avatarBody;
-      if (avatar.generated_video) {
-        avatarBody = `<video class="avatar-generated-video" autoplay loop muted playsinline><source src="${avatar.generated_video}" type="video/mp4"></video><span class="ai-badge">AI</span>`;
+      const hasVideo = !!avatar.generated_video;
+      if (hasVideo) {
+        wrapper.classList.add('has-video');
+        avatarBody = `<video class="avatar-generated-video" muted playsinline preload="auto"><source src="${avatar.generated_video}" type="video/mp4"></video><span class="ai-badge">🎬 AI Video</span>`;
       } else if (avatar.generated_image) {
         avatarBody = `<img class="avatar-generated-img" src="${avatar.generated_image}" alt="${avatar.name}" loading="lazy"/><span class="ai-badge">AI</span>`;
       } else {
@@ -1217,6 +1238,8 @@
         this.progress = 0;      // 0 = hinten, 1 = vorne
         this.stateTimer = 0;
         this.xOffset = (index % 3 - 1) * 3; // Leichter seitlicher Versatz
+        this.videoEl = element.querySelector('.avatar-generated-video');
+        this.hasVideo = !!this.videoEl;
       }
 
       start() {
@@ -1225,6 +1248,11 @@
         this.stateTimer = 0;
         this.el.classList.add('walking');
         this.el.classList.remove('posing', 'turning', 'stopped', 'show-name');
+        // Video abspielen wenn vorhanden
+        if (this.videoEl) {
+          this.videoEl.currentTime = 0;
+          this.videoEl.play().catch(() => {});
+        }
         this.updateVisual();
       }
 
@@ -1243,6 +1271,8 @@
               this.stateTimer = 0;
               this.el.classList.remove('walking');
               this.el.classList.add('posing', 'show-name');
+              // Video pausieren bei Pose
+              if (this.videoEl) this.videoEl.pause();
             }
             break;
 
@@ -1263,6 +1293,8 @@
               this.stateTimer = 0;
               this.el.classList.remove('turning', 'show-name');
               this.el.classList.add('walking');
+              // Video wieder abspielen beim Zurücklaufen
+              if (this.videoEl) this.videoEl.play().catch(() => {});
             }
             break;
 
@@ -1273,6 +1305,8 @@
               this.state = 'offstage';
               this.el.classList.remove('walking');
               this.el.style.opacity = '0';
+              // Video stoppen
+              if (this.videoEl) { this.videoEl.pause(); this.videoEl.currentTime = 0; }
               // Zurück in die Warteschlange
               walkerQueue.push(this);
             }
@@ -1312,6 +1346,8 @@
         this.state = 'stopped';
         this.el.classList.remove('walking', 'posing', 'turning');
         this.el.classList.add('stopped', 'show-name');
+        // Video pausieren
+        if (this.videoEl) this.videoEl.pause();
         trackStat(this.data.id, null, 'click');
       }
 
@@ -1320,6 +1356,8 @@
         this.state = 'turning';
         this.stateTimer = 0;
         this.el.classList.add('turning');
+        // Video wieder abspielen
+        if (this.videoEl) this.videoEl.play().catch(() => {});
       }
     }
 

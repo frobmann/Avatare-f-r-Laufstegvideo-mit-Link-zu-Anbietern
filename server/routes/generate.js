@@ -119,6 +119,43 @@ router.post('/video/:avatarId', async (req, res) => {
   }
 });
 
+// ── Walking-Videos für alle Avatare (Batch) ──
+
+router.post('/videos/batch', async (req, res) => {
+  try {
+    const db = getDb();
+    const date = req.body.date || new Date().toISOString().split('T')[0];
+    const avatars = db.prepare('SELECT * FROM avatars WHERE is_active = 1').all();
+    const results = [];
+
+    console.log(`\n🎬 BATCH: Walking-Videos für ${avatars.length} Avatare generieren...\n`);
+
+    for (const avatar of avatars) {
+      try {
+        console.log(`\n🎬 Video für "${avatar.name}"...`);
+        const result = await generateWalkAnimation(avatar.id, date);
+        results.push({ avatarId: avatar.id, name: avatar.name, ...result });
+
+        // 10 Sekunden Pause zwischen Videos (Rate-Limit)
+        if (avatars.indexOf(avatar) < avatars.length - 1) {
+          console.log('   ⏳ Warte 10 Sekunden (Rate-Limit)...');
+          await new Promise(resolve => setTimeout(resolve, 10000));
+        }
+      } catch (err) {
+        console.log(`   ❌ Fehler bei ${avatar.name}: ${err.message}`);
+        results.push({ avatarId: avatar.id, name: avatar.name, success: false, error: err.message });
+      }
+    }
+
+    const totalCost = results.reduce((sum, r) => sum + (r.cost || 0), 0);
+    console.log(`\n✅ Video-Batch fertig! Gesamtkosten: $${totalCost.toFixed(4)}\n`);
+
+    res.json({ results, totalCost, date });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // ── Komplett-Pipeline (Bild → Try-On → Video) ──
 
 router.post('/pipeline/:avatarId', async (req, res) => {
