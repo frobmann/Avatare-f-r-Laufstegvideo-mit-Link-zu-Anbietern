@@ -201,18 +201,19 @@ async function startServer() {
     console.log('⚠️ DSGVO-Bereinigung übersprungen:', e.message);
   }
 
-  // ─── ASIN-Checker: 4x täglich automatische Prüfung aller Amazon-URLs ───
+  // ─── ASIN-Checker: Alle 60 Minuten automatische Prüfung aller Amazon-URLs ───
+  // Bei echten 404s: Automatisch Ersatz-ASIN suchen, einsetzen und verifizieren
   try {
     const { checkAllAsins, getLastCheckResult, getCheckHistory } = require('./services/asin-checker');
 
-    // Erster Check nach 60s, dann alle 6 Stunden (4x täglich)
-    const SIX_HOURS = 6 * 60 * 60 * 1000;
-    console.log('🔗 ASIN-Checker: Automatische Prüfung 4x täglich aktiviert');
+    const ONE_HOUR = 60 * 60 * 1000; // 60 Minuten
+    console.log('🔗 ASIN-Checker: Automatische Prüfung alle 60 Minuten aktiviert');
+    console.log('   → Kaputte ASINs werden automatisch durch neue ersetzt und verifiziert');
 
     setTimeout(async () => {
       try {
         console.log('🔗 ASIN-Check startet (erster Lauf)...');
-        await checkAllAsins();
+        await checkAllAsins({ autoReplace: true });
       } catch (e) {
         console.log('⚠️ ASIN-Check fehlgeschlagen:', e.message);
       }
@@ -220,17 +221,18 @@ async function startServer() {
 
     setInterval(async () => {
       try {
-        console.log('🔗 ASIN-Check startet (automatisch, 4x täglich)...');
-        await checkAllAsins();
+        console.log('🔗 ASIN-Check startet (automatisch, stündlich)...');
+        await checkAllAsins({ autoReplace: true });
       } catch (e) {
         console.log('⚠️ ASIN-Check fehlgeschlagen:', e.message);
       }
-    }, SIX_HOURS);
+    }, ONE_HOUR);
 
     // API-Endpunkte für ASIN-Check
     app.get('/api/asin-check/run', async (req, res) => {
       try {
-        const result = await checkAllAsins();
+        const autoReplace = req.query.replace !== '0'; // Standard: autoReplace=true
+        const result = await checkAllAsins({ autoReplace });
         res.json(result);
       } catch (e) {
         res.status(500).json({ error: e.message });
@@ -241,6 +243,7 @@ async function startServer() {
       const result = getLastCheckResult();
       if (result) {
         result.broken_details = JSON.parse(result.broken_details || '[]');
+        try { result.replaced_details = JSON.parse(result.replaced_details || '[]'); } catch { result.replaced_details = []; }
         res.json(result);
       } else {
         res.json({ message: 'Noch kein ASIN-Check durchgeführt' });
@@ -252,6 +255,7 @@ async function startServer() {
       res.json(history.map(h => ({
         ...h,
         broken_details: JSON.parse(h.broken_details || '[]'),
+        replaced_details: (() => { try { return JSON.parse(h.replaced_details || '[]'); } catch { return []; } })(),
       })));
     });
   } catch (e) {
