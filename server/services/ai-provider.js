@@ -414,6 +414,24 @@ class ReplicateProvider {
   }
 
   /**
+   * Hintergrund entfernen (transparent machen)
+   * Verwendet lucataco/remove-bg (~$0.004 pro Bild)
+   */
+  async removeBackground({ imageUrl }) {
+    if (!this.token) throw new Error('REPLICATE_API_TOKEN nicht gesetzt');
+
+    const prediction = await httpRequest(`${this.baseUrl}/models/lucataco/remove-bg/predictions`, {
+      method: 'POST',
+      headers: this.headers,
+      body: JSON.stringify({
+        input: { image: imageUrl },
+      }),
+    });
+
+    return this._waitForPrediction(prediction.id);
+  }
+
+  /**
    * Kategorie-Mapping für IDM-VTON
    */
   _mapCategory(category) {
@@ -545,10 +563,70 @@ function createProvider(providerName) {
   }
 }
 
+/**
+ * Erstellt einen Prompt für Avatar MIT Fashion-Outfit (kein weißes T-Shirt).
+ * Der Avatar wird direkt in stilvoller Kleidung generiert.
+ */
+function buildOutfitPrompt(avatar, outfitArticles) {
+  const maleNames = ['liam', 'noah', 'felix', 'max', 'leon', 'tim', 'david', 'paul', 'ben', 'tom'];
+  const isMale = maleNames.includes((avatar.name || '').toLowerCase());
+
+  const uniqueLooks = {
+    'sol':     { age: 23, look: 'korean woman, smooth light skin, long straight silky black hair, dark brown almond-shaped eyes, soft natural makeup, gentle warm smile' },
+    'elena':   { age: 27, look: 'eastern european woman, fair skin, sleek straight blonde hair in a low bun, blue-grey eyes, sharp elegant features, confident expression' },
+    'mira':    { age: 24, look: 'south asian woman, medium brown skin, long black hair in a high ponytail, dark brown eyes, athletic build, bright energetic smile' },
+    'lauren':  { age: 26, look: 'scandinavian woman, pale porcelain skin, short platinum bob haircut, light green eyes, minimal makeup, serene composed expression' },
+    'claire':  { age: 28, look: 'french woman, light olive skin, shoulder-length chestnut brown hair with soft waves, hazel eyes, classic beauty, subtle knowing smile' },
+    'amy':     { age: 22, look: 'mixed race woman, light caramel skin, long curly auburn hair, green-brown eyes, freckles across nose, playful warm expression' },
+  };
+
+  // Outfit-Beschreibung aus den zugewiesenen Artikeln
+  const outfitDescriptions = {
+    'Jeans Style': 'wearing stylish dark blue skinny jeans, a casual fitted crop top, white sneakers, relaxed streetwear look',
+    'Business Style': 'wearing an elegant fitted blazer, tailored dress pants, classic heels, professional business attire',
+    'Sportlich-elegant': 'wearing a sporty-chic outfit with fitted jogger pants, designer sneakers, a modern zip jacket, athleisure style',
+    'Quiet Luxury / Minimalismus': 'wearing a minimalist cashmere sweater, tailored wide-leg trousers, elegant loafers, quiet luxury understated elegance',
+    'Klassisch-zeitlos': 'wearing an elegant knee-length wrap dress, classic pumps, timeless style',
+    'Romantisch-verspielt / Boho': 'wearing a flowing bohemian maxi dress with floral patterns, strappy sandals, boho-chic style',
+  };
+
+  // Wenn konkrete Artikel vorhanden, deren Beschreibung nutzen
+  let clothingDesc = outfitDescriptions[avatar.description] || 'wearing fashionable modern clothing, stylish outfit';
+  if (outfitArticles && outfitArticles.length > 0) {
+    const items = outfitArticles.map(a => {
+      const color = a.color ? `${a.color} ` : '';
+      return `${color}${a.name}`;
+    }).join(', ');
+    clothingDesc = `wearing ${items}`;
+  }
+
+  const nameKey = (avatar.name || '').toLowerCase();
+  const avatarLook = uniqueLooks[nameKey];
+
+  if (avatarLook) {
+    return `Full body professional fashion photograph of a ${avatarLook.look}, ` +
+      `${avatarLook.age} years old, fashion model, 170-178cm tall, slim figure, ` +
+      `${clothingDesc}, ` +
+      `walking confidently on a dark fashion runway catwalk, ` +
+      `dramatic fashion show lighting, spotlight from above, ` +
+      `sharp focus, high resolution, photorealistic, full body visible head to toe, ` +
+      `center frame, 8k quality, Vogue editorial fashion photography`;
+  }
+
+  const gender = isMale ? 'man' : 'woman';
+  return `Full body professional fashion photograph of a young ${gender}, 25 years old, ` +
+    `fashion model, ${clothingDesc}, ` +
+    `walking confidently on a dark fashion runway catwalk, ` +
+    `dramatic fashion show lighting, spotlight from above, ` +
+    `sharp focus, high resolution, photorealistic, full body visible head to toe, ` +
+    `center frame, 8k quality, Vogue editorial fashion photography`;
+}
+
 module.exports = {
   createProvider,
   downloadImage,
   buildAvatarPrompt,
+  buildOutfitPrompt,
   buildWalkPrompt,
   CONFIG,
   QUALITY_PRESETS,

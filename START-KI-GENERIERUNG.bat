@@ -7,8 +7,8 @@ echo.
 echo ╔══════════════════════════════════════════════════╗
 echo ║  🎭 Avatar Catwalk – KI-Generierung             ║
 echo ║  ────────────────────────────────────────────    ║
-echo ║  Dieses Script startet den Server und           ║
-echo ║  generiert alle Avatar-Bilder automatisch.      ║
+echo ║  Generiert Fashion-Avatare mit Outfit            ║
+echo ║  und entfernt den Hintergrund automatisch.       ║
 echo ╚══════════════════════════════════════════════════╝
 echo.
 
@@ -40,18 +40,26 @@ echo.
 
 :generate
 echo ════════════════════════════════════════════════════
-echo 📸 SCHRITT 1: Avatar-Basisbilder generieren
-echo    (6 Avatare x ~30 Sekunden = ca. 3 Minuten)
+echo 🎨 STYLED AVATARE GENERIEREN
+echo    Jeder Avatar bekommt ein Fashion-Outfit
+echo    und der Hintergrund wird entfernt.
+echo    (6 Avatare x ~1 Minute = ca. 6-8 Minuten)
+echo    Kosten: ca. $0.25 fuer alle 6 Avatare
 echo ════════════════════════════════════════════════════
 echo.
+echo ⏳ Bitte warte, das dauert einige Minuten...
+echo.
 
-curl -s -X POST http://localhost:3000/api/generate/avatars/batch
+curl -s -X POST http://localhost:3000/api/generate/styled/batch/all
 echo.
 echo.
 
 echo ════════════════════════════════════════════════════
 echo ✅ Fertig! Oeffne jetzt im Browser:
 echo    http://localhost:3000/catwalk
+echo.
+echo    Die Avatare tragen jetzt Fashion-Outfits
+echo    und stehen ohne Hintergrund auf dem Catwalk!
 echo ════════════════════════════════════════════════════
 echo.
 echo Druecke eine beliebige Taste zum Beenden...

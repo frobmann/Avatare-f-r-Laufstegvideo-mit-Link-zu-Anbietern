@@ -8,6 +8,8 @@ const {
   generateWalkAnimation,
   generateFullPipeline,
   generateAllOutfits,
+  generateStyledAvatar,
+  generateAllStyledAvatars,
   getGenerationHistory,
   getCostSummary,
 } = require('../services/generation-pipeline');
@@ -135,6 +137,26 @@ router.post('/batch', async (req, res) => {
   try {
     const date = req.body.date || new Date().toISOString().split('T')[0];
     const result = await generateAllOutfits(date);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ── Styled Avatare: Outfit + Hintergrund entfernen ──
+
+router.post('/styled/:avatarId', async (req, res) => {
+  try {
+    const result = await generateStyledAvatar(req.params.avatarId);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.post('/styled/batch/all', async (req, res) => {
+  try {
+    const result = await generateAllStyledAvatars();
     res.json(result);
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });

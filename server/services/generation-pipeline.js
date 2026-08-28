@@ -19,7 +19,7 @@
 const path = require('path');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
-const { createProvider, downloadImage, buildAvatarPrompt, buildWalkPrompt, CONFIG } = require('./ai-provider');
+const { createProvider, downloadImage, buildAvatarPrompt, buildOutfitPrompt, buildWalkPrompt, CONFIG } = require('./ai-provider');
 const { getDb } = require('../db');
 
 const GENERATED_DIR = path.join(__dirname, '..', '..', 'public', 'generated');
@@ -714,6 +714,189 @@ function getCostSummary(days = 30) {
   return { ...summary, byType, byDay, periodDays: days };
 }
 
+// ═══════════════════════════════════════════════════
+// STYLED AVATAR: Outfit-Bild + Hintergrund-Entfernung
+// ═══════════════════════════════════════════════════
+
+/**
+ * Generiert einen Avatar direkt im Fashion-Outfit (kein weißes T-Shirt)
+ * und entfernt anschließend den Hintergrund (transparent).
+ *
+ * Ablauf:
+ *   1. Avatar-Bild mit Outfit-Prompt generieren (Flux 1.1 Pro)
+ *   2. Hintergrund entfernen (lucataco/remove-bg)
+ *
+ * Kosten: ~$0.04–0.06 pro Avatar (Bild + BG-Removal)
+ */
+async function generateStyledAvatar(avatarId) {
+  const db = getDb();
+
+  const avatar = db.prepare('SELECT * FROM avatars WHERE id = ?').get(avatarId);
+  if (!avatar) throw new Error('Avatar nicht gefunden');
+
+  // Outfit-Artikel für heute laden
+  const today = new Date().toISOString().split('T')[0];
+  const outfitArticles = db.prepare(`
+    SELECT a.name, a.category, a.color, a.price, p.brand_name
+    FROM avatar_outfits ao
+    JOIN articles a ON ao.article_id = a.id
+    JOIN providers p ON a.provider_id = p.id
+    WHERE ao.avatar_id = ? AND ao.outfit_date = ?
+    ORDER BY ao.layer_order ASC
+  `).all(avatarId, today);
+
+  const provider = createProvider();
+  const prompt = buildOutfitPrompt(avatar, outfitArticles);
+
+  console.log(`\n🎨 Generiere Styled Avatar "${avatar.name}"...`);
+  console.log(`   Stil: ${avatar.description}`);
+  console.log(`   Outfit-Artikel: ${outfitArticles.length}`);
+  console.log(`   Prompt: ${prompt.slice(0, 120)}...`);
+
+  const cacheKey = `styled_${avatarId}_${today}`;
+
+  // Cache prüfen
+  const cached = checkCache(cacheKey);
+  if (cached) {
+    console.log(`   ⏭ Cached: ${cached.output_path}`);
+    return {
+      success: true,
+      cached: true,
+      outputUrl: '/' + cached.output_path.replace(/^public\//, ''),
+      generationId: cached.id,
+      cost: 0,
+    };
+  }
+
+  const genId = createGenerationRecord(avatarId, 'img2img', cacheKey);
+  updateGeneration(genId, { status: 'processing' });
+
+  try {
+    // Schritt 1: Avatar mit Outfit generieren
+    console.log(`   📸 Schritt 1/2: Avatar-Bild generieren...`);
+    const imgResult = await enqueueGeneration(async () => {
+      return provider.generateAvatarImage({ prompt });
+    });
+
+    if (!imgResult.success) {
+      throw new Error(imgResult.error || 'Bild-Generierung fehlgeschlagen');
+    }
+
+    const rawImageUrl = Array.isArray(imgResult.output) ? imgResult.output[0] : imgResult.output;
+    let totalCost = imgResult.cost || 0.04;
+
+    // Schritt 2: Hintergrund entfernen
+    console.log(`   ✂️ Schritt 2/2: Hintergrund entfernen...`);
+    let finalImageUrl = rawImageUrl;
+    try {
+      const bgResult = await enqueueGeneration(async () => {
+        return provider.removeBackground({ imageUrl: rawImageUrl });
+      });
+
+      if (bgResult.success) {
+        finalImageUrl = Array.isArray(bgResult.output) ? bgResult.output[0] : bgResult.output;
+        totalCost += bgResult.cost || 0.004;
+        console.log(`   ✅ Hintergrund entfernt`);
+      } else {
+        console.log(`   ⚠️ BG-Removal fehlgeschlagen, nutze Original: ${bgResult.error}`);
+      }
+    } catch (bgErr) {
+      console.log(`   ⚠️ BG-Removal Fehler: ${bgErr.message}, nutze Original`);
+    }
+
+    // Bild herunterladen und speichern
+    const timestamp = Date.now();
+    const filename = `styled_${avatarId}_${timestamp}.png`;
+    const localPath = path.join(GENERATED_DIR, filename);
+    const relativePath = `public/generated/${filename}`;
+
+    await downloadImage(finalImageUrl, localPath);
+
+    // Alte styled-Bilder dieses Avatars löschen
+    try {
+      const oldFiles = fs.readdirSync(GENERATED_DIR)
+        .filter(f => f.startsWith(`styled_${avatarId}`) && f.endsWith('.png'));
+      for (const oldFile of oldFiles) {
+        if (oldFile !== filename) {
+          fs.unlinkSync(path.join(GENERATED_DIR, oldFile));
+        }
+      }
+    } catch (e) { /* ignore cleanup errors */ }
+
+    // Avatar-Tabelle aktualisieren
+    const publicUrl = `/generated/${filename}`;
+    db.prepare('UPDATE avatars SET image_url = ?, updated_at = datetime(\'now\') WHERE id = ?')
+      .run(publicUrl, avatarId);
+
+    // Generation als "tryon" speichern, damit catwalk.html es als generated_image erkennt
+    updateGeneration(genId, {
+      status: 'completed',
+      output_path: relativePath,
+      cost: totalCost,
+      metadata: JSON.stringify({
+        type: 'styled_avatar',
+        model: CONFIG.replicate.avatarModel,
+        style: avatar.description,
+        articles: outfitArticles.length,
+        bgRemoved: finalImageUrl !== rawImageUrl,
+      }),
+    });
+
+    console.log(`   ✅ Styled Avatar gespeichert: ${publicUrl}`);
+    console.log(`   💰 Kosten: $${totalCost.toFixed(4)}`);
+
+    return {
+      success: true,
+      outputUrl: publicUrl,
+      generationId: genId,
+      cost: totalCost,
+      avatarName: avatar.name,
+      style: avatar.description,
+      articlesUsed: outfitArticles.length,
+    };
+
+  } catch (err) {
+    updateGeneration(genId, {
+      status: 'failed',
+      error_message: err.message,
+    });
+    console.log(`   ❌ Fehler: ${err.message}`);
+    return { success: false, error: err.message, generationId: genId };
+  }
+}
+
+/**
+ * Styled Avatare für ALLE aktiven Avatare generieren.
+ * Jeder Avatar wird im Fashion-Outfit generiert + Hintergrund entfernt.
+ */
+async function generateAllStyledAvatars() {
+  const db = getDb();
+  const avatars = db.prepare('SELECT * FROM avatars WHERE is_active = 1 ORDER BY position_order').all();
+  const results = [];
+
+  console.log(`\n${'═'.repeat(50)}`);
+  console.log(`🎨 STYLED AVATARE: ${avatars.length} Avatare generieren`);
+  console.log(`${'═'.repeat(50)}\n`);
+
+  for (const avatar of avatars) {
+    const result = await generateStyledAvatar(avatar.id);
+    results.push({ avatarId: avatar.id, name: avatar.name, ...result });
+
+    // 10 Sekunden Pause zwischen Avataren (Rate-Limit)
+    if (avatars.indexOf(avatar) < avatars.length - 1) {
+      console.log('   ⏳ Warte 10 Sekunden (Rate-Limit)...');
+      await new Promise(resolve => setTimeout(resolve, 10000));
+    }
+  }
+
+  const totalCost = results.reduce((sum, r) => sum + (r.cost || 0), 0);
+  console.log(`\n${'═'.repeat(50)}`);
+  console.log(`✅ Alle Styled Avatare fertig! Gesamtkosten: $${totalCost.toFixed(4)}`);
+  console.log(`${'═'.repeat(50)}\n`);
+
+  return { results, totalCost };
+}
+
 module.exports = {
   generateAvatarBaseImage,
   generateAllAvatarImages,
@@ -721,6 +904,8 @@ module.exports = {
   generateWalkAnimation,
   generateFullPipeline,
   generateAllOutfits,
+  generateStyledAvatar,
+  generateAllStyledAvatars,
   getGenerationHistory,
   getCostSummary,
 };

@@ -29,14 +29,14 @@ router.get('/show', (req, res) => {
 
     const totalPrice = outfit.reduce((sum, item) => sum + item.price, 0);
 
-    // Generiertes Bild suchen (Priorität: Try-On > Avatar-Basisbild)
+    // Generiertes Bild suchen (Priorität: Try-On/Styled > Avatar-Basisbild)
     let generated_image = null;
     let generated_video = null;
     try {
-      // 1. Try-On Bild (Avatar mit Outfit)
+      // 1. Try-On oder Styled-Avatar Bild (Avatar mit Outfit)
       const genImg = db.prepare(`
         SELECT output_path FROM generations
-        WHERE avatar_id = ? AND type = 'tryon' AND status = 'completed'
+        WHERE avatar_id = ? AND type IN ('tryon', 'img2img') AND status = 'completed'
         AND output_path != ''
         ORDER BY created_at DESC LIMIT 1
       `).get(avatar.id);
