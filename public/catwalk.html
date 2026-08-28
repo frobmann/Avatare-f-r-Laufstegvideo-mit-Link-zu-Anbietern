@@ -474,13 +474,13 @@
       object-fit: contain;
       border-radius: 0;
       filter: none;
-      /* Starke Vignette: nur die Model-Figur ist sichtbar,
-         alle Ränder verschmelzen nahtlos mit dem dunklen Hintergrund.
-         Kein sichtbarer Rahmen, kein Kästchen. */
-      -webkit-mask-image: radial-gradient(ellipse 68% 88% at 50% 47%,
-        black 35%, rgba(0,0,0,0.5) 58%, transparent 82%);
-      mask-image: radial-gradient(ellipse 68% 88% at 50% 47%,
-        black 35%, rgba(0,0,0,0.5) 58%, transparent 82%);
+      /* ★ DER TRICK: mix-blend-mode: lighten
+         → Dunkle Pixel (Video-Hintergrund) werden UNSICHTBAR
+         → Helle Pixel (das beleuchtete Model) bleiben sichtbar
+         → Kein Rahmen, kein Kästchen — Model läuft FREI auf der Bühne!
+         Funktioniert weil das Video dunklen Runway-Hintergrund hat
+         und unsere Seite auch dunkel ist. */
+      mix-blend-mode: lighten;
       transition: transform 0.5s ease;
     }
     /* Video-Avatare: groß & immersiv — wie eine echte Fashion Show */
@@ -839,14 +839,16 @@
     const WALK_CONFIG = {
       backY: 15,            // % vom oberen Rand (hinten auf dem Laufsteg)
       frontY: 78,           // % vom oberen Rand (vorne = Pose-Position)
-      centerX: 50,          // % Mitte
+      centerX: 50,          // % Mitte (für Pose-Position)
+      approachX: 55,        // % Hinlauf-Bahn (RECHTE Seite)
+      returnX: 45,          // % Rücklauf-Bahn (LINKE Seite)
       backScale: 0.22,      // Größe hinten (kleiner = mehr Tiefe)
       frontScale: 1.0,      // Größe vorne
       approachMs: 7500,     // Hinlauf-Dauer (ms) — langsamer für Drama
       poseMs: 4000,         // Pose-Dauer (ms) — länger posieren
       turnMs: 600,          // Umdreh-Animation (ms)
       returnMs: 6000,       // Rücklauf-Dauer (ms)
-      staggerMs: 7000,      // Abstand zwischen Models (ms) — mehr Bühnenzeit
+      staggerMs: 5500,      // Abstand zwischen Models (ms) — kürzer da 2 Bahnen
       backBrightness: 0.35, // Helligkeit hinten (dunkler = mehr Tiefe)
       frontBrightness: 1.0, // Helligkeit vorne
     };
@@ -1349,14 +1351,35 @@
         const scale = lerp(cfg.backScale, cfg.frontScale, easedP);
         const brightness = lerp(cfg.backBrightness, cfg.frontBrightness, easedP);
 
-        // X-Position: Mitte + leichter Versatz (wird hinten kleiner)
-        const x = cfg.centerX + this.xOffset * easedP;
+        // ★ ZWEI BAHNEN wie echte Fashion Show:
+        //   Hinlauf:  RECHTE Seite (approachX → centerX)
+        //   Pose:     MITTE (centerX)
+        //   Rücklauf: LINKE Seite (centerX → returnX)
+        //   So kommen sich die Models nicht in die Quere!
+        let x;
+        if (this.state === 'returning') {
+          // Rücklauf: von Mitte nach links hinten
+          x = lerp(cfg.returnX, cfg.centerX, easedP);
+        } else if (this.state === 'posing' || this.state === 'turning' || this.state === 'stopped') {
+          // Vorne in der Mitte posieren
+          x = cfg.centerX;
+        } else {
+          // Hinlauf: von rechts hinten zur Mitte
+          x = lerp(cfg.approachX, cfg.centerX, easedP);
+        }
 
         this.el.style.top = y + '%';
         this.el.style.left = x + '%';
         this.el.style.transform = `translate(-50%, -100%) scale(${scale.toFixed(3)})`;
-        this.el.style.filter = `brightness(${brightness.toFixed(2)})`;
         this.el.style.zIndex = Math.floor(p * 50) + 5;
+
+        // Video-Avatare: KEIN Filter auf Wrapper (damit mix-blend-mode funktioniert)
+        // SVG-Avatare: Helligkeit für Tiefenwirkung
+        if (this.hasVideo) {
+          this.el.style.filter = 'none';
+        } else {
+          this.el.style.filter = `brightness(${brightness.toFixed(2)})`;
+        }
 
         // Sanftes Einblenden beim Start
         if (this.state !== 'offstage') {
