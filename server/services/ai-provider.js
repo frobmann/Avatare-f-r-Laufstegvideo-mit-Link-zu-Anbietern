@@ -177,29 +177,30 @@ function buildAvatarPrompt(avatar) {
   const avatarLook = uniqueLooks[nameKey];
   const styleNote = styleAdditions[avatar.description] || '';
 
+  // ★ Einheitliche Pose und Kamera für alle Models (wie Sol)
+  const basePose = `standing in a natural front-facing pose, straight upright posture, ` +
+    `shoulders back, arms relaxed at sides, weight evenly distributed, ` +
+    `camera positioned at waist height, model centered in frame, ` +
+    `full body from head to feet with 10 percent margin above and below, ` +
+    `wearing a simple fitted white t-shirt and plain dark fitted jeans, simple white sneakers, ` +
+    `clean pure white studio background, professional fashion photography lighting, ` +
+    `sharp focus, high resolution, photorealistic, no accessories, full body visible head to toe, ` +
+    `center frame, 9:16 portrait aspect ratio, 8k quality, fashion catalog style`;
+
   if (avatarLook) {
-    const gender = isMale ? 'man' : 'woman';
     return `Full body professional fashion photograph of a ${avatarLook.look}, ` +
-      `${avatarLook.age} years old, fashion model, 170-178cm tall, slim figure, ${styleNote}, ` +
-      `standing in a natural front-facing pose, wearing a simple fitted white t-shirt ` +
-      `and plain dark fitted jeans, simple white sneakers, ` +
-      `clean pure white studio background, professional fashion photography lighting, ` +
-      `sharp focus, high resolution, photorealistic, no accessories, full body visible head to toe, ` +
-      `center frame, 8k quality, fashion catalog style`;
+      `${avatarLook.age} years old, fashion model, 175cm tall, slim figure, ${styleNote}, ` +
+      basePose;
   }
 
   // Fallback für unbekannte Namen
   const gender = isMale ? 'man' : 'woman';
   const genderDetails = isMale
-    ? 'young man, 26 years old, athletic build, 185cm tall, handsome face'
-    : 'young woman, 24 years old, slim athletic build, 175cm tall, beautiful face, natural look';
+    ? 'young man, 26 years old, athletic build, 180cm tall, handsome face'
+    : 'young woman, 24 years old, slim figure, 175cm tall, beautiful face, natural look';
 
   return `Full body professional fashion photograph of a ${genderDetails}, ${styleNote}, ` +
-    `fashion model standing in a natural front-facing pose, wearing a simple fitted white t-shirt ` +
-    `and plain dark fitted jeans, simple white sneakers, ` +
-    `clean pure white studio background, professional fashion photography lighting, ` +
-    `sharp focus, high resolution, photorealistic, no accessories, full body visible head to toe, ` +
-    `center frame, 8k quality, fashion catalog style`;
+    `fashion model, ` + basePose;
 }
 
 /**
@@ -216,10 +217,12 @@ function buildWalkPrompt(avatar) {
   return `Professional high-fashion runway show, ${gender} fashion model walking confidently ` +
     `toward the camera on a dark catwalk runway, ` +
     `elegant model walk with one foot crossing in front of the other, ` +
-    `straight posture, hips swaying naturally, arms relaxed at sides, ` +
-    `dramatic spotlight from above illuminating the model, ` +
-    `dark audience silhouettes on both sides, camera flashes from the crowd, ` +
-    `front-facing camera angle, full body shot from head to shoes, ` +
+    `straight upright posture, hips swaying naturally, arms relaxed at sides, ` +
+    `dramatic single spotlight from directly above illuminating the model, ` +
+    `dark glossy reflective runway floor, dark audience silhouettes on both sides, ` +
+    `camera positioned at waist height looking slightly upward, fixed steady camera, ` +
+    `model centered in frame, full body shot from head to shoes, ` +
+    `same framing and distance for every model, ` +
     `dark moody atmosphere, professional fashion show lighting, ` +
     `Vogue fashion week quality, cinematic, smooth steady camera, 4K quality`;
 }
@@ -342,9 +345,11 @@ class ReplicateProvider {
       input = {
         prompt: prompt || 'Fashion model walking confidently toward the camera on a dark catwalk runway, ' +
           'elegant model walk with one foot crossing in front of the other, ' +
-          'natural hip sway, arms swinging gracefully at sides, ' +
-          'dramatic spotlight from above, dark background, ' +
-          'professional fashion show, full body shot, cinematic quality, 4K',
+          'straight upright posture, natural hip sway, arms swinging gracefully at sides, ' +
+          'dramatic single spotlight from directly above, dark glossy reflective floor, dark background, ' +
+          'camera at waist height looking slightly upward, fixed steady camera position, ' +
+          'model centered in frame, full body shot from head to shoes, ' +
+          'professional fashion show, cinematic quality, 4K',
         start_image: imageUrl,
         duration: 5,
         aspect_ratio: '9:16',
@@ -642,25 +647,30 @@ function buildOutfitPrompt(avatar, outfitArticles) {
   const nameKey = (avatar.name || '').toLowerCase();
   const avatarLook = uniqueLooks[nameKey];
 
+  // ★ Einheitliche Kamera-Perspektive für alle Models (wie Sol)
+  // Gleiche Pose, gleicher Ausschnitt, gleiche Entfernung → identisches Laufsteg-Feeling
+  const cameraSetup = `standing at the end of a dark fashion runway catwalk facing the camera, ` +
+    `mid-stride walking pose, left foot slightly forward, weight shifting naturally, ` +
+    `straight upright posture, shoulders back, chin slightly up, ` +
+    `camera positioned at waist height looking slightly upward at the model, ` +
+    `model centered in frame, full body from head to feet with 10 percent margin above head and below feet, ` +
+    `solid pitch black dark background, dramatic single spotlight from directly above, ` +
+    `dark glossy reflective runway floor, dark moody atmosphere, ` +
+    `no audience visible, no studio background, ` +
+    `sharp focus, high resolution, photorealistic, full body visible head to toe, ` +
+    `center frame, 9:16 portrait aspect ratio, 8k quality, Vogue editorial fashion show photography`;
+
   if (avatarLook) {
     return `Full body professional fashion photograph of a ${avatarLook.look}, ` +
-      `${avatarLook.age} years old, fashion model, 170-178cm tall, slim figure, ` +
+      `${avatarLook.age} years old, fashion model, 175cm tall, slim figure, ` +
       `${clothingDesc}, ` +
-      `walking confidently on a dark fashion runway catwalk, ` +
-      `solid pitch black dark background, dramatic fashion show spotlight from above, ` +
-      `dark moody atmosphere, no studio background, dark runway floor, ` +
-      `sharp focus, high resolution, photorealistic, full body visible head to toe, ` +
-      `center frame, 8k quality, Vogue editorial fashion show photography`;
+      cameraSetup;
   }
 
   const gender = isMale ? 'man' : 'woman';
   return `Full body professional fashion photograph of a young ${gender}, 25 years old, ` +
-    `fashion model, ${clothingDesc}, ` +
-    `walking confidently on a dark fashion runway catwalk, ` +
-    `solid pitch black dark background, dramatic fashion show spotlight from above, ` +
-    `dark moody atmosphere, no studio background, dark runway floor, ` +
-    `sharp focus, high resolution, photorealistic, full body visible head to toe, ` +
-    `center frame, 8k quality, Vogue editorial fashion show photography`;
+    `fashion model, 175cm tall, slim figure, ${clothingDesc}, ` +
+    cameraSetup;
 }
 
 module.exports = {
