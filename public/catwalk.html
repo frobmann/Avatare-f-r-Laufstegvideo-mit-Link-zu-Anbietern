@@ -998,8 +998,8 @@
 
     <!-- ★ FULLSCREEN FASHION SHOW (Video-Modus: ein Model nach dem anderen) -->
     <div id="fullscreen-show" class="fs-show" style="display:none;">
-      <video id="fs-video-a" class="fs-video" muted playsinline loop></video>
-      <video id="fs-video-b" class="fs-video" muted playsinline loop></video>
+      <video id="fs-video-a" class="fs-video" muted playsinline></video>
+      <video id="fs-video-b" class="fs-video" muted playsinline></video>
       <img id="fs-image" class="fs-image" alt="" />
 
       <div class="fs-dimmer" id="fs-dimmer"></div>
@@ -1882,6 +1882,9 @@
 
         if (avatar.generated_video) {
           // ★ VIDEO-MODUS: bildschirmfüllendes Fashion-Show-Video
+          // Alte ended-Handler entfernen
+          incoming.onended = null;
+          outgoing.onended = null;
           incoming.src = avatar.generated_video;
           incoming.load();
           incoming.play().catch(() => {});
@@ -1889,6 +1892,8 @@
           outgoing.classList.remove('active');
           // Altes Video nach Überblendung stoppen
           setTimeout(() => { outgoing.pause(); outgoing.removeAttribute('src'); outgoing.load(); }, 1500);
+          // Wenn Video zu Ende → nächstes Model (kein loop, nur einmal abspielen)
+          incoming.onended = () => { if (!isPaused) this.nextModel(); };
 
         } else if (avatar.generated_image) {
           // Bild-Modus mit Ken-Burns-Zoom
@@ -1923,8 +1928,13 @@
         // Statistik
         trackStat(avatar.id, null, 'view');
 
-        // Auto-Advance planen
-        this.scheduleAdvance();
+        // Auto-Advance nur für Bild-Modus (Videos wechseln über onended)
+        if (!avatar.generated_video) {
+          this.scheduleAdvance();
+        } else {
+          // Timer stoppen falls von Bild-Model kommend
+          if (this.advanceTimer) { clearTimeout(this.advanceTimer); this.advanceTimer = null; }
+        }
       }
 
       buildProductPanel(avatar) {
@@ -2003,8 +2013,10 @@
           activeVid.play().catch(() => {});
         }
 
-        // Auto-Advance wieder starten
-        this.scheduleAdvance();
+        // Auto-Advance wieder starten (nur für Bild-Modus, Videos nutzen onended)
+        if (!currentAvatar?.generated_video) {
+          this.scheduleAdvance();
+        }
       }
 
       nextModel() {
