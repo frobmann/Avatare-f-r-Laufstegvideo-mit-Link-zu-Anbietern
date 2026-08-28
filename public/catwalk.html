@@ -709,6 +709,185 @@
     .lang-option .lang-flag { font-size: 1.1rem; line-height: 1; }
 
     /* ═══════════════════════════════════════ */
+    /*  FULLSCREEN FASHION SHOW (Video-Modus) */
+    /*  Wie eine echte Fashion Show:          */
+    /*  Ein Model nach dem anderen,           */
+    /*  bildschirmfüllend, mit Überblendung   */
+    /* ═══════════════════════════════════════ */
+    .fs-show {
+      position: absolute;
+      inset: 0;
+      z-index: 50;
+      overflow: hidden;
+      background: #000;
+    }
+
+    /* Gradient-Overlay unten für Textlesbarkeit */
+    .fs-show::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 45%;
+      background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.65) 100%);
+      pointer-events: none;
+      z-index: 51;
+    }
+
+    /* Videos: bildschirmfüllend mit weicher Überblendung */
+    .fs-video {
+      position: absolute;
+      inset: 0;
+      width: 100%; height: 100%;
+      object-fit: contain;
+      opacity: 0;
+      transition: opacity 1.2s ease;
+      z-index: 1;
+    }
+    .fs-video.active { opacity: 1; }
+
+    /* Bild-Fallback (Ken Burns Zoom-Effekt) */
+    .fs-image {
+      position: absolute;
+      inset: 0;
+      width: 100%; height: 100%;
+      object-fit: contain;
+      opacity: 0;
+      transition: opacity 1.2s ease;
+      z-index: 1;
+    }
+    .fs-image.active {
+      opacity: 1;
+      animation: kenBurns 12s ease-in-out infinite;
+    }
+    @keyframes kenBurns {
+      0%, 100% { transform: scale(1) translateY(0); }
+      50% { transform: scale(1.06) translateY(-1%); }
+    }
+
+    /* Model-Info Overlay (Name, Marken, Preis) */
+    .fs-overlay {
+      position: absolute;
+      bottom: 80px;
+      left: 0; right: 0;
+      text-align: center;
+      z-index: 55;
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.8s ease 0.3s, transform 0.8s ease 0.3s;
+    }
+    .fs-overlay.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .fs-model-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.2rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      text-shadow: 0 2px 20px rgba(0,0,0,0.9), 0 0 60px rgba(0,0,0,0.6);
+      margin-bottom: 8px;
+    }
+    .fs-model-brands {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      letter-spacing: 0.08em;
+      text-shadow: 0 1px 10px rgba(0,0,0,0.9);
+    }
+    .fs-model-price {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin-top: 6px;
+      text-shadow: 0 1px 10px rgba(0,0,0,0.9);
+    }
+    .fs-click-hint {
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      margin-top: 14px;
+      letter-spacing: 0.12em;
+      opacity: 0.6;
+      animation: hintPulse 2s ease-in-out infinite;
+    }
+
+    /* Produkt-Panel (gleitet von unten hoch bei Klick) */
+    .fs-product-panel {
+      position: absolute;
+      bottom: 0; left: 50%;
+      transform: translateX(-50%) translateY(100%);
+      width: 90%; max-width: 420px;
+      max-height: 70vh;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 18px 18px 0 0;
+      padding: 24px;
+      z-index: 62;
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      backdrop-filter: blur(20px);
+      box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+      overflow-y: auto;
+    }
+    .fs-product-panel.open {
+      transform: translateX(-50%) translateY(0);
+    }
+    .fs-panel-handle {
+      width: 40px; height: 4px;
+      background: var(--card-border);
+      border-radius: 2px;
+      margin: 0 auto 16px;
+    }
+
+    /* Dimmer hinter dem Produkt-Panel */
+    .fs-dimmer {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,0.5);
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s;
+      z-index: 58;
+    }
+    .fs-dimmer.active { opacity: 1; pointer-events: all; }
+
+    /* Progress-Dots */
+    .fs-dots {
+      position: absolute;
+      bottom: 24px; left: 50%;
+      transform: translateX(-50%);
+      display: flex; gap: 8px;
+      z-index: 55;
+    }
+    .fs-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .fs-dot.active {
+      background: var(--accent);
+      width: 24px;
+      border-radius: 4px;
+      box-shadow: 0 0 8px var(--accent-glow);
+    }
+
+    /* Navigation-Pfeile */
+    .fs-nav {
+      position: absolute;
+      top: 50%; transform: translateY(-50%);
+      font-size: 3rem;
+      color: rgba(255,255,255,0.2);
+      cursor: pointer;
+      z-index: 55;
+      padding: 20px;
+      transition: color 0.3s;
+      user-select: none;
+    }
+    .fs-nav:hover { color: var(--accent); }
+    .fs-nav-prev { left: 10px; }
+    .fs-nav-next { right: 10px; }
+
+    /* ═══════════════════════════════════════ */
     /*  RESPONSIVE                            */
     /* ═══════════════════════════════════════ */
     @media (max-width: 768px) {
@@ -722,6 +901,13 @@
       .controls { bottom: 10px; right: 10px; gap: 5px; }
       .control-btn { width: 32px; height: 32px; font-size: 0.8rem; }
       .avatar-counter { bottom: 10px; left: 10px; font-size: 0.6rem; }
+      /* Full-Screen Mode */
+      .fs-model-name { font-size: 1.5rem; }
+      .fs-model-brands { font-size: 0.75rem; }
+      .fs-model-price { font-size: 1.1rem; }
+      .fs-nav { font-size: 2.2rem; padding: 12px; }
+      .fs-product-panel { width: 95%; padding: 16px; }
+      .fs-overlay { bottom: 60px; }
     }
     @media (max-width: 480px) {
       .catwalk-title { font-size: 1rem; }
@@ -730,6 +916,10 @@
       .avatar-wrapper.has-video .avatar-figure { width: 85vw; max-width: 350px; height: 55vh; }
       .product-card { width: 230px; padding: 10px; }
       .audience { display: none; }
+      /* Full-Screen Mode */
+      .fs-model-name { font-size: 1.1rem; letter-spacing: 0.12em; }
+      .fs-nav { display: none; }
+      .fs-overlay { bottom: 50px; }
     }
   </style>
 </head>
@@ -803,8 +993,29 @@
     <div class="catwalk-subtitle" id="catwalk-subtitle">Klicke auf die Models – Shoppe den Look</div>
     <div class="date-display" id="date-display"></div>
 
-    <!-- Avatar-Track (JS positioniert hier die laufenden Avatare) -->
+    <!-- Avatar-Track (Runway-Modus: JS positioniert hier die laufenden Avatare) -->
     <div class="avatar-track" id="avatar-track"></div>
+
+    <!-- ★ FULLSCREEN FASHION SHOW (Video-Modus: ein Model nach dem anderen) -->
+    <div id="fullscreen-show" class="fs-show" style="display:none;">
+      <video id="fs-video-a" class="fs-video" muted playsinline loop></video>
+      <video id="fs-video-b" class="fs-video" muted playsinline loop></video>
+      <img id="fs-image" class="fs-image" alt="" />
+
+      <div class="fs-dimmer" id="fs-dimmer"></div>
+
+      <div class="fs-overlay" id="fs-overlay">
+        <div class="fs-model-name" id="fs-model-name"></div>
+        <div class="fs-model-brands" id="fs-model-brands"></div>
+        <div class="fs-model-price" id="fs-model-price"></div>
+        <div class="fs-click-hint" id="fs-click-hint"></div>
+      </div>
+
+      <div class="fs-product-panel" id="fs-product-panel"></div>
+      <div class="fs-dots" id="fs-dots"></div>
+      <div class="fs-nav fs-nav-prev" id="fs-prev">‹</div>
+      <div class="fs-nav fs-nav-next" id="fs-next">›</div>
+    </div>
 
     <div class="avatar-counter" id="avatar-counter"></div>
 
@@ -1562,6 +1773,286 @@
     }
 
     // ═══════════════════════════════════════════════════════
+    //  FULLSCREEN FASHION SHOW (wie echtes Fashion-Show-Video)
+    // ═══════════════════════════════════════════════════════
+    let fsShow = null;
+
+    class FullScreenShow {
+      constructor(avatars) {
+        this.avatars = avatars;
+        this.currentIndex = -1;
+        this.activeSlot = 'a';           // Wechselt zwischen 'a' und 'b' für Crossfade
+        this.advanceTimer = null;
+        this.showDuration = 10000;       // 10 Sekunden pro Model
+        this.isProductOpen = false;
+
+        this.container = document.getElementById('fullscreen-show');
+        this.videoA = document.getElementById('fs-video-a');
+        this.videoB = document.getElementById('fs-video-b');
+        this.image = document.getElementById('fs-image');
+        this.overlay = document.getElementById('fs-overlay');
+        this.modelName = document.getElementById('fs-model-name');
+        this.modelBrands = document.getElementById('fs-model-brands');
+        this.modelPrice = document.getElementById('fs-model-price');
+        this.clickHint = document.getElementById('fs-click-hint');
+        this.productPanel = document.getElementById('fs-product-panel');
+        this.dotsContainer = document.getElementById('fs-dots');
+        this.dimmer = document.getElementById('fs-dimmer');
+
+        this.init();
+      }
+
+      init() {
+        // Full-Screen-Modus aktivieren, Runway verstecken
+        this.container.style.display = 'block';
+        document.getElementById('avatar-track').style.display = 'none';
+        // Runway-Elemente verstecken (der Video-Hintergrund IST der Laufsteg)
+        document.querySelectorAll('.runway-floor, .runway-center-shine, .runway-lines, .audience, .runway-edge-lights, .spotlight, .flash-ambient').forEach(el => {
+          el.style.display = 'none';
+        });
+
+        // Dots erstellen
+        this.dotsContainer.innerHTML = '';
+        this.avatars.forEach((_, i) => {
+          const dot = document.createElement('div');
+          dot.className = 'fs-dot';
+          dot.addEventListener('click', (e) => { e.stopPropagation(); this.showModel(i); });
+          this.dotsContainer.appendChild(dot);
+        });
+
+        // Navigation
+        document.getElementById('fs-prev').addEventListener('click', (e) => { e.stopPropagation(); this.prevModel(); });
+        document.getElementById('fs-next').addEventListener('click', (e) => { e.stopPropagation(); this.nextModel(); });
+
+        // Klick auf Video → Produkte zeigen / verstecken
+        this.container.addEventListener('click', (e) => {
+          if (e.target.closest('.fs-nav') || e.target.closest('.fs-dots') ||
+              e.target.closest('.fs-product-panel') || e.target.closest('.controls') ||
+              e.target.closest('.lang-wrapper')) return;
+
+          if (this.isProductOpen) {
+            this.closeProducts();
+          } else {
+            this.openProducts();
+          }
+        });
+
+        // Dimmer klicken → Produkte schließen
+        this.dimmer.addEventListener('click', (e) => { e.stopPropagation(); this.closeProducts(); });
+
+        // Tastatur-Navigation
+        this.keyHandler = (e) => {
+          if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); this.nextModel(); }
+          if (e.key === 'ArrowLeft') { e.preventDefault(); this.prevModel(); }
+          if (e.key === 'Escape' && this.isProductOpen) { this.closeProducts(); }
+        };
+        document.addEventListener('keydown', this.keyHandler);
+
+        // Touch-Swipe
+        let touchStartX = 0;
+        this.container.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; }, { passive: true });
+        this.container.addEventListener('touchend', (e) => {
+          const diff = touchStartX - e.changedTouches[0].clientX;
+          if (Math.abs(diff) > 60) {
+            diff > 0 ? this.nextModel() : this.prevModel();
+          }
+        });
+
+        // Show starten
+        this.showModel(0);
+      }
+
+      showModel(index) {
+        if (index === this.currentIndex) return;
+
+        const avatar = this.avatars[index];
+        this.currentIndex = index;
+
+        // Produkte schließen wenn offen
+        if (this.isProductOpen) this.closeProducts();
+
+        // Crossfade: eingehend / ausgehend bestimmen
+        const incoming = this.activeSlot === 'a' ? this.videoB : this.videoA;
+        const outgoing = this.activeSlot === 'a' ? this.videoA : this.videoB;
+        this.activeSlot = this.activeSlot === 'a' ? 'b' : 'a';
+
+        // Bild ausblenden
+        this.image.classList.remove('active');
+        this.image.style.display = 'none';
+
+        if (avatar.generated_video) {
+          // ★ VIDEO-MODUS: bildschirmfüllendes Fashion-Show-Video
+          incoming.src = avatar.generated_video;
+          incoming.load();
+          incoming.play().catch(() => {});
+          incoming.classList.add('active');
+          outgoing.classList.remove('active');
+          // Altes Video nach Überblendung stoppen
+          setTimeout(() => { outgoing.pause(); outgoing.removeAttribute('src'); outgoing.load(); }, 1500);
+
+        } else if (avatar.generated_image) {
+          // Bild-Modus mit Ken-Burns-Zoom
+          outgoing.classList.remove('active');
+          setTimeout(() => { outgoing.pause(); outgoing.removeAttribute('src'); outgoing.load(); }, 1500);
+          incoming.classList.remove('active');
+
+          this.image.src = avatar.generated_image;
+          this.image.style.display = 'block';
+          requestAnimationFrame(() => this.image.classList.add('active'));
+        }
+
+        // Overlay aktualisieren (mit verzögertem Einblenden)
+        this.overlay.classList.remove('visible');
+        setTimeout(() => {
+          this.modelName.textContent = avatar.name;
+          const brands = [...new Set(avatar.outfit.map(o => o.brand_name))];
+          this.modelBrands.textContent = brands.length > 0 ? brands.join(' · ') : '';
+          this.modelPrice.textContent = avatar.outfit.length > 0 ? formatPrice(avatar.total_price) : '';
+          this.clickHint.textContent = t('clickHint');
+          this.overlay.classList.add('visible');
+        }, 500);
+
+        // Dots aktualisieren
+        this.dotsContainer.querySelectorAll('.fs-dot').forEach((dot, i) => {
+          dot.classList.toggle('active', i === index);
+        });
+
+        // Produkt-Panel bauen
+        this.buildProductPanel(avatar);
+
+        // Statistik
+        trackStat(avatar.id, null, 'view');
+
+        // Auto-Advance planen
+        this.scheduleAdvance();
+      }
+
+      buildProductPanel(avatar) {
+        if (!avatar.outfit?.length) {
+          this.productPanel.innerHTML = '';
+          return;
+        }
+
+        const brands = [...new Set(avatar.outfit.map(o => o.brand_name))];
+        const brandLabel = brands.length > 1 ? brands.join(' × ') : brands[0];
+
+        const items = avatar.outfit.map(i => `
+          <li class="product-item" data-url="${i.product_url}" data-avatar="${avatar.id}" data-article="${i.article_id}">
+            <div class="product-item-info">
+              <div class="product-item-category">${tCat(i.category)}</div>
+              <div class="product-item-name">${i.article_name}</div>
+              <div class="product-item-brand">${i.brand_name}</div>
+            </div>
+            <span class="product-item-price">${formatPrice(i.price)}</span>
+            <span class="product-item-link">${t('shopLink')}</span>
+          </li>`).join('');
+
+        this.productPanel.innerHTML = `
+          <div class="fs-panel-handle"></div>
+          <div class="product-card-header">
+            <span class="product-card-brand">${brandLabel}</span>
+            <span class="product-card-total">${formatPrice(avatar.total_price)}</span>
+          </div>
+          <ul class="product-card-items">${items}</ul>
+          <div class="free-shipping-badge">${t('freeShipping')}</div>
+          <a class="shop-all-btn" href="#" id="fs-shop-all">${t('shopAll')}</a>
+        `;
+
+        // Shop-All-Button
+        document.getElementById('fs-shop-all')?.addEventListener('click', (e) => {
+          e.preventDefault(); e.stopPropagation();
+          this.shopAll(avatar.id);
+        });
+
+        // Produkt-Items klickbar
+        this.productPanel.querySelectorAll('.product-item[data-url]').forEach(item => {
+          item.addEventListener('click', (e) => {
+            e.stopPropagation();
+            redirectToShop(item.dataset.url, item.dataset.avatar, item.dataset.article);
+          });
+        });
+      }
+
+      openProducts() {
+        if (!this.avatars[this.currentIndex]?.outfit?.length) return;
+        this.isProductOpen = true;
+        this.productPanel.classList.add('open');
+        this.dimmer.classList.add('active');
+
+        // Video pausieren
+        const activeVid = this.activeSlot === 'b' ? this.videoA : this.videoB;
+        // Note: activeSlot was toggled, so current video is the opposite
+        this.videoA.pause();
+        this.videoB.pause();
+
+        // Auto-Advance stoppen
+        if (this.advanceTimer) { clearTimeout(this.advanceTimer); this.advanceTimer = null; }
+
+        trackStat(this.avatars[this.currentIndex].id, null, 'click');
+      }
+
+      closeProducts() {
+        this.isProductOpen = false;
+        this.productPanel.classList.remove('open');
+        this.dimmer.classList.remove('active');
+
+        // Video weiterspielen
+        const currentAvatar = this.avatars[this.currentIndex];
+        if (currentAvatar?.generated_video) {
+          const activeVid = this.activeSlot === 'a' ? this.videoA : this.videoB;
+          activeVid.play().catch(() => {});
+        }
+
+        // Auto-Advance wieder starten
+        this.scheduleAdvance();
+      }
+
+      nextModel() {
+        const next = (this.currentIndex + 1) % this.avatars.length;
+        this.showModel(next);
+      }
+
+      prevModel() {
+        const prev = (this.currentIndex - 1 + this.avatars.length) % this.avatars.length;
+        this.showModel(prev);
+      }
+
+      scheduleAdvance() {
+        if (this.advanceTimer) clearTimeout(this.advanceTimer);
+        if (isPaused) return;
+        const duration = this.showDuration / speedMultiplier;
+        this.advanceTimer = setTimeout(() => this.nextModel(), duration);
+      }
+
+      shopAll(avatarId) {
+        const avatar = this.avatars.find(a => a.id === avatarId);
+        if (!avatar) return;
+        avatar.outfit.forEach((item, i) => {
+          setTimeout(() => redirectToShop(item.product_url, avatarId, item.article_id), i * 300);
+        });
+      }
+
+      destroy() {
+        if (this.advanceTimer) clearTimeout(this.advanceTimer);
+        this.videoA.pause(); this.videoA.removeAttribute('src'); this.videoA.load();
+        this.videoB.pause(); this.videoB.removeAttribute('src'); this.videoB.load();
+        this.videoA.classList.remove('active');
+        this.videoB.classList.remove('active');
+        this.image.classList.remove('active');
+        this.container.style.display = 'none';
+        this.dotsContainer.innerHTML = '';
+        this.overlay.classList.remove('visible');
+        this.productPanel.classList.remove('open');
+        this.dimmer.classList.remove('active');
+        if (this.keyHandler) document.removeEventListener('keydown', this.keyHandler);
+        document.getElementById('avatar-track').style.display = 'block';
+        document.querySelectorAll('.runway-floor, .runway-center-shine, .runway-lines, .audience, .runway-edge-lights, .spotlight, .flash-ambient').forEach(el => {
+          el.style.display = '';
+        });
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════
     //  CATWALK LADEN & RENDERN
     // ═══════════════════════════════════════════════════════
     async function loadCatwalkData() {
@@ -1579,7 +2070,8 @@
       const track = document.getElementById('avatar-track');
       track.innerHTML = '';
 
-      // Alte Animationen stoppen
+      // Alte Shows stoppen
+      if (fsShow) { fsShow.destroy(); fsShow = null; }
       activeWalkers = [];
       walkerQueue = [];
       if (spawnTimer) { clearTimeout(spawnTimer); spawnTimer = null; }
@@ -1602,7 +2094,30 @@
         document.documentElement.style.setProperty('--bg-dark', catwalkData.config.background_color);
       }
 
-      // Avatare erstellen und in die Warteschlange stellen
+      // ★ ENTSCHEIDUNG: Videos vorhanden → Full-Screen Fashion Show
+      //   Keine Videos → Runway-Modus (SVG-Silhouetten)
+      const hasVideos = catwalkData.avatars.some(a => a.generated_video);
+
+      if (hasVideos) {
+        // ════════════════════════════════════════════
+        //  FULLSCREEN FASHION SHOW MODE
+        //  Videos bildschirmfüllend, wie echte Show
+        // ════════════════════════════════════════════
+        console.log('🎬 Fullscreen Fashion Show Modus (Videos vorhanden)');
+        fsShow = new FullScreenShow(catwalkData.avatars);
+      } else {
+        // ════════════════════════════════════════════
+        //  RUNWAY MODUS (Fallback: SVG-Silhouetten)
+        // ════════════════════════════════════════════
+        console.log('👗 Runway Modus (keine Videos — SVG-Avatare)');
+        renderRunwayMode();
+      }
+    }
+
+    // Runway-Modus: SVG-Avatare laufen über den CSS-Laufsteg
+    function renderRunwayMode() {
+      const track = document.getElementById('avatar-track');
+
       catwalkData.avatars.forEach((avatar, index) => {
         const el = createAvatarElement(avatar, index);
         el.style.opacity = '0';
@@ -1612,7 +2127,6 @@
         activeWalkers.push(walker);
         walkerQueue.push(walker);
 
-        // Klick-Handler für Produkt-Items
         el.querySelectorAll('.product-item[data-url]').forEach(item => {
           item.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -1621,10 +2135,7 @@
         });
       });
 
-      // Animations-Loop starten
       animFrameId = requestAnimationFrame(animationLoop);
-
-      // Erstes Model sofort starten, dann gestaggert
       spawnNextAvatar();
     }
 
