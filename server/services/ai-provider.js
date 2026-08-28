@@ -95,8 +95,22 @@ function httpRequest(url, options = {}) {
 
 /**
  * Bild von URL herunterladen und lokal speichern
+ * Unterstützt: https://, http://, data:image/... URIs
  */
 async function downloadImage(url, outputPath) {
+  // Data-URI direkt als Datei speichern (Base64 dekodieren)
+  if (url && url.startsWith('data:')) {
+    const dir = path.dirname(outputPath);
+    fs.mkdirSync(dir, { recursive: true });
+    const base64Match = url.match(/^data:[^;]+;base64,(.+)$/);
+    if (base64Match) {
+      const buffer = Buffer.from(base64Match[1], 'base64');
+      fs.writeFileSync(outputPath, buffer);
+      return outputPath;
+    }
+    throw new Error('Ungültiges data: URI Format');
+  }
+
   return new Promise((resolve, reject) => {
     const parsedUrl = new URL(url);
     const lib = parsedUrl.protocol === 'https:' ? https : http;

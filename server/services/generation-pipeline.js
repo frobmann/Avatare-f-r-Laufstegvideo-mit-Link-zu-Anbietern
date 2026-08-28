@@ -382,9 +382,33 @@ async function generateOutfitImage(avatarId, date) {
 
     console.log(`\n👗 Try-On für ${avatar.name}: ${clothingItems.length} Kleidungsstücke`);
 
+    // Prüfen ob überhaupt Artikel mit Bildern vorhanden sind
+    const itemsWithImages = clothingItems.filter(i => !!i.article_image);
+    if (itemsWithImages.length === 0) {
+      console.log(`  ⚠️ Keine Artikel mit Bildern vorhanden – Try-On übersprungen`);
+      console.log(`  ℹ️ Tipp: Nutze "Styled Avatar" statt Try-On (generiert Avatar direkt im Outfit)`);
+      updateGeneration(genId, {
+        status: 'completed',
+        output_path: '',
+        cost: 0,
+        metadata: JSON.stringify({
+          note: 'Keine Artikelbilder vorhanden. Nutze Styled Avatar statt Try-On.',
+          articles_total: clothingItems.length,
+          articles_with_images: 0,
+        }),
+      });
+      return {
+        success: false,
+        noArticleImages: true,
+        generationId: genId,
+        message: 'Keine Artikel mit Bildern vorhanden. Nutze "Styled Avatar" (Schritt 2 Alternative) statt Try-On.',
+      };
+    }
+
     // Avatar-Bild als Data-URI für Replicate vorbereiten
     const avatarDataUri = localImageToDataUri(currentImageUrl);
     if (avatarDataUri) currentImageUrl = avatarDataUri;
+    const originalImageUrl = currentImageUrl; // Merken um Vergleich am Ende zu ermöglichen
 
     // Try-On für jeden Kleidungsartikel
     for (const item of clothingItems) {
@@ -423,8 +447,15 @@ async function generateOutfitImage(avatarId, date) {
     const finalPath = path.join(GENERATED_DIR, finalFilename);
     const relativePath = `public/generated/${finalFilename}`;
 
-    if (currentImageUrl !== avatar.image_url) {
+    // Nur downloaden wenn sich das Bild geändert hat (nicht die ursprüngliche Data-URI)
+    if (currentImageUrl !== originalImageUrl) {
       await downloadImage(currentImageUrl, finalPath);
+    } else {
+      // Nichts verarbeitet — lokales Bild kopieren als Fallback
+      const localSrc = localImageToDataUri(avatar.image_url);
+      if (localSrc) {
+        await downloadImage(localSrc, finalPath);
+      }
     }
 
     updateGeneration(genId, {
@@ -588,11 +619,14 @@ async function generateWalkAnimation(avatarId, date) {
 
 /**
  * Führt die komplette Pipeline für einen Avatar aus:
- * 1. Avatar-Basisbild generieren (falls nötig)
- * 2. Outfit via Try-On anziehen
- * 3. Walking-Video generieren
+ * 1. Styled Avatar generieren (Avatar direkt im Fashion-Outfit)
+ * 2. Walking-Video generieren
  *
- * Geschätzte Kosten: ~$0.15–0.30 pro Avatar
+ * Hinweis: Wir nutzen "Styled Avatar" statt Try-On, weil
+ * die Artikel keine Garment-Bilder haben (image_url ist leer).
+ * Styled Avatar generiert den Avatar direkt mit dem Outfit im Prompt.
+ *
+ * Geschätzte Kosten: ~$0.15–0.25 pro Avatar
  */
 async function generateFullPipeline(avatarId, date) {
   const db = getDb();
@@ -610,29 +644,20 @@ async function generateFullPipeline(avatarId, date) {
   console.log(`🎭 KOMPLETT-PIPELINE: ${avatar.name}`);
   console.log(`${'═'.repeat(50)}`);
 
-  // Schritt 1: Avatar-Basisbild
-  if (!avatar.image_url) {
-    console.log('\n📸 Schritt 1/3: Avatar-Basisbild generieren...');
-    const avatarResult = await generateAvatarBaseImage(avatarId);
-    results.steps.push({ step: 'avatar_image', ...avatarResult });
-    results.totalCost += avatarResult.cost || 0;
-    if (!avatarResult.success) {
-      results.success = false;
-      return results;
-    }
-  } else {
-    console.log('\n📸 Schritt 1/3: Avatar-Basisbild vorhanden ✅');
-    results.steps.push({ step: 'avatar_image', success: true, skipped: true });
+  // Schritt 1: Styled Avatar (Avatar direkt im Fashion-Outfit generieren)
+  console.log('\n🎨 Schritt 1/2: Styled Avatar im Fashion-Outfit generieren...');
+  const styledResult = await generateStyledAvatar(avatarId, { force: true });
+  results.steps.push({ step: 'styled_avatar', ...styledResult });
+  results.totalCost += styledResult.cost || 0;
+
+  if (!styledResult.success) {
+    results.success = false;
+    console.log(`   ❌ Styled Avatar fehlgeschlagen: ${styledResult.error}`);
+    return results;
   }
 
-  // Schritt 2: Outfit Try-On
-  console.log('\n👗 Schritt 2/3: Outfit via Try-On anziehen...');
-  const outfitResult = await generateOutfitImage(avatarId, date);
-  results.steps.push({ step: 'outfit_tryon', ...outfitResult });
-  results.totalCost += outfitResult.cost || 0;
-
-  // Schritt 3: Walking-Video
-  console.log('\n🎬 Schritt 3/3: Walking-Video generieren...');
+  // Schritt 2: Walking-Video
+  console.log('\n🎬 Schritt 2/2: Walking-Video generieren...');
   const videoResult = await generateWalkAnimation(avatarId, date);
   results.steps.push({ step: 'walk_video', ...videoResult });
   results.totalCost += videoResult.cost || 0;
