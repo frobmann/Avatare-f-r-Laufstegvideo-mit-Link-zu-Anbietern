@@ -36,7 +36,7 @@ Produktkachel, beim Klicken geht es direkt zum Shop des Anbieters.
 | Backend    | Node.js 18+ und Express 4                               |
 | Datenbank  | SQLite über **sql.js** (WASM), Datei `data/catwalk.db`  |
 | Frontend   | Vanilla HTML/CSS/JS, kein Framework, kein Build-Schritt |
-| KI         | Replicate API: Flux 1.1 Pro, IDM-VTON, Minimax Video-01 |
+| KI         | Replicate API: Flux 1.1 Pro, IDM-VTON, Kling v2.1       |
 
 ## Technische Regeln
 

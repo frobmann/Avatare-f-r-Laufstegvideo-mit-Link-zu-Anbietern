@@ -4,7 +4,7 @@
 > in ein neues Claude-Projekt eingegeben werden kann. Es enthält alles, was
 > Claude braucht, um am Projekt mitzuarbeiten.
 >
-> **Letzte Aktualisierung**: August 2026
+> **Letzte Aktualisierung**: 30. August 2026
 > **Branch**: `claude/avatar-catwalk-shop-xcpvob`
 > **Repository**: `frobmann/Avatare-f-r-Laufstegvideo-mit-Link-zu-Anbietern`
 
@@ -19,12 +19,14 @@
 5. [Datenbank-Schema](#5-datenbank-schema)
 6. [API-Endpunkte (komplett)](#6-api-endpunkte-komplett)
 7. [KI-Pipeline (3 Stufen)](#7-ki-pipeline-3-stufen)
-8. [Wichtige Code-Muster](#8-wichtige-code-muster)
-9. [Frontend-Seiten](#9-frontend-seiten)
-10. [Lokale Einrichtung (Windows)](#10-lokale-einrichtung-windows)
-11. [Aktueller Entwicklungsstand](#11-aktueller-entwicklungsstand)
-12. [Nächste Schritte / Offene Aufgaben](#12-nächste-schritte--offene-aufgaben)
-13. [Wichtige Hinweise & Konventionen](#13-wichtige-hinweise--konventionen)
+8. [Automatische Aufgaben (Scheduler)](#8-automatische-aufgaben-scheduler)
+9. [Wichtige Code-Muster](#9-wichtige-code-muster)
+10. [Frontend-Seiten](#10-frontend-seiten)
+11. [Lokale Einrichtung (Windows)](#11-lokale-einrichtung-windows)
+12. [Start-Skripte (Windows)](#12-start-skripte-windows)
+13. [Aktueller Entwicklungsstand](#13-aktueller-entwicklungsstand)
+14. [Nächste Schritte / Offene Aufgaben](#14-nächste-schritte--offene-aufgaben)
+15. [Wichtige Hinweise & Konventionen](#15-wichtige-hinweise--konventionen)
 
 ---
 
@@ -44,7 +46,7 @@ Täglich werden den 6 Avataren neue Outfits zugewiesen (aus einem Pool von Artik
 
 1. **Avatar-Basisbilder** generiert (Flux 1.1 Pro – fotorealistische Ganzkörper-Model-Fotos)
 2. **Outfit-Bilder** erstellt (IDM-VTON – die Mode wird virtuell auf den Avatar „aufgetragen")
-3. **Walking-Videos** erzeugt (Minimax Video-01 – der Avatar „läuft" über den Catwalk)
+3. **Walking-Videos** erzeugt (Kling v2.1 – der Avatar „läuft" über den Catwalk)
 
 ### Monetarisierung
 
@@ -78,7 +80,7 @@ Bitte behalte alle deutschen Bezeichnungen bei und antworte auf Deutsch.
 Repository: https://github.com/frobmann/Avatare-f-r-Laufstegvideo-mit-Link-zu-Anbietern
 Branch: claude/avatar-catwalk-shop-xcpvob
 Technologie: Node.js + Express + sql.js (SQLite) + Vanilla HTML/CSS/JS
-KI-Pipeline: Replicate API (Flux 1.1 Pro, IDM-VTON, Minimax Video-01)
+KI-Pipeline: Replicate API (Flux 1.1 Pro, IDM-VTON, Kling v2.1)
 
 Wichtig:
 - Code-Kommentare und Fehlermeldungen auf Deutsch
@@ -157,7 +159,7 @@ Claude wird das für die gesamte Konversation beibehalten.
 │  SQLite (sql.js/WASM)   │     │  Replicate API               │
 │  data/catwalk.db        │     │  ├── Flux 1.1 Pro (Bilder)   │
 │                         │     │  ├── IDM-VTON (Try-On)       │
-│  7 Tabellen             │     │  └── Minimax Video-01 (Video)│
+│  7 Tabellen             │     │  └── Kling v2.1 (Video)      │
 └─────────────────────────┘     └──────────────────────────────┘
 ```
 
@@ -170,7 +172,7 @@ Claude wird das für die gesamte Konversation beibehalten.
 | Frontend      | Vanilla HTML/CSS/JS                    | Keine Build-Tools, keine Frameworks            |
 | KI (Bilder)   | Replicate: Flux 1.1 Pro               | Günstig (~$0.03–0.05/Bild), fotorealistisch    |
 | KI (Try-On)   | Replicate: IDM-VTON                   | Günstigster Virtual Try-On (~$0.01–0.03/Bild)  |
-| KI (Video)    | Replicate: Minimax Video-01           | Beste Qualität (~$0.10–0.20/Video)             |
+| KI (Video)    | Replicate: **Kling v2.1**             | Beste Gehbewegung (~$0.05–0.15/Video)          |
 | Paketmanager  | npm                                    | Standard für Node.js                           |
 
 ### Dependencies (package.json)
@@ -182,6 +184,7 @@ Claude wird das für die gesamte Konversation beibehalten.
     "cors": "^2.8.5",
     "express": "^4.21.0",
     "multer": "^1.4.5-lts.1",
+    "playwright": "^1.62.1",
     "uuid": "^10.0.0"
   }
 }
@@ -209,29 +212,44 @@ Avatare-f-r-Laufstegvideo-mit-Link-zu-Anbietern/
 │   │   ├── catwalk.js               # Catwalk-Daten + Statistiken
 │   │   └── generate.js              # KI-Generierungs-Endpunkte
 │   │
+│   ├── seed-providers.js            # Anbieter-Grunddaten
+│   │
 │   └── services/                    # Business-Logik
 │       ├── ai-provider.js           # Provider-Abstraktion (Replicate, HF, Lokal)
-│       └── generation-pipeline.js   # 3-Stufen KI-Pipeline
+│       ├── generation-pipeline.js   # 3-Stufen KI-Pipeline
+│       ├── outfit-rotation.js       # Automatische Outfit-Zuweisung nach Stil
+│       ├── availability-checker.js  # Täglicher Verfügbarkeits-Check der Shop-Links
+│       └── asin-checker.js          # Stündliche Amazon-ASIN-Prüfung + Auto-Ersatz
 │
 ├── public/                          # Frontend (statisch)
 │   ├── index.html                   # Startseite
-│   ├── catwalk.html                 # Laufsteg-Ansicht (öffentlich)
-│   ├── admin.html                   # Admin-Dashboard (~1500 Zeilen)
+│   ├── catwalk.html                 # Laufsteg-Ansicht (öffentlich, KI-Videos)
+│   ├── admin.html                   # Admin-Dashboard
+│   ├── impressum.html               # Impressum (Rechtstext)
+│   ├── datenschutz.html             # Datenschutzerklärung (Rechtstext)
 │   └── generated/                   # KI-generierte Bilder & Videos (gitignored)
 │
 ├── data/                            # Datenbank-Dateien (gitignored)
 │   ├── catwalk.db                   # SQLite Hauptdatenbank
+│   ├── backups/                     # Automatische Backups (Finanzamt §147 AO)
 │   └── cache/                       # Generierungs-Cache
 │
 ├── uploads/                         # Hochgeladene Dateien (gitignored)
 │
 ├── docs/                            # Dokumentation
+│   ├── KONTEXT-UEBERGABE.md         # Dieses Dokument
 │   └── SEED_MODELS_KOSTENANALYSE.md # KI-Modell-Vergleich
 │
+├── SERVER-STARTEN.bat               # Server mit allen Automatismen starten
+├── START-KI-GENERIERUNG.bat         # Styled Avatar-Bilder generieren
+├── VIDEOS-GENERIEREN.bat            # Walking-Videos generieren (Menü)
+├── ASIN-CHECK-STARTEN.bat           # ASIN-Check manuell anstossen
+├── setup-windows.bat                # Windows Ein-Klick-Setup
+│
+├── CLAUDE.md                        # Projektregeln für Claude Code
 ├── .env.example                     # Vorlage für Konfiguration
 ├── .env                             # Konfiguration mit API-Keys (NICHT im Git!)
 ├── .gitignore                       # node_modules, data/, .env, etc.
-├── setup-windows.bat                # Windows Ein-Klick-Setup
 ├── package.json                     # Dependencies & Scripts
 └── README.md                        # Projekt-Dokumentation
 ```
@@ -445,8 +463,37 @@ Das Seed-Script (`npm run seed`) erstellt:
 | POST | `/api/generate/video/:avatarId` | **Schritt 3**: Walking-Video |
 | POST | `/api/generate/pipeline/:avatarId` | **Komplett**: Alle 3 Schritte |
 | POST | `/api/generate/batch` | Alle Outfits generieren (Batch) |
+| POST | `/api/generate/styled/:avatarId` | Styled Avatar (Outfit direkt im Prompt, ohne Try-On) |
+| POST | `/api/generate/styled/batch/all` | Styled Avatare für alle (Query: `?force=1`) |
+| POST | `/api/generate/videos/batch` | Walking-Videos für alle Avatare |
 | GET | `/api/generate/history?limit=` | Generierungs-Historie |
 | GET | `/api/generate/costs?days=` | Kosten-Übersicht (nach Typ, nach Tag) |
+
+### Outfit-Rotation, Verfügbarkeit & Backups (`/api/generate`)
+
+| Method | Pfad | Beschreibung |
+|--------|------|-------------|
+| GET | `/api/generate/outfits/preview` | Vorschau der automatischen Zuweisung |
+| POST | `/api/generate/outfits/auto-assign` | Outfits automatisch zuweisen |
+| POST | `/api/generate/outfits/rotate` | Outfits neu durchrotieren |
+| POST | `/api/generate/availability/check` | Verfügbarkeits-Check manuell starten |
+| GET | `/api/generate/availability/report` | Bericht: nicht erreichbare Artikel |
+| GET | `/api/generate/backups` | Vorhandene Datenbank-Backups auflisten |
+| POST | `/api/generate/backups/create` | Backup sofort erstellen |
+| POST | `/api/generate/backups/restore` | Backup wiederherstellen |
+| GET | `/api/generate/export/costs-csv` | Kosten als CSV (Buchhaltung) |
+| GET | `/api/generate/export/articles-csv` | Artikel als CSV |
+| GET | `/api/generate/export/availability-csv` | Verfügbarkeits-Protokoll als CSV |
+| GET | `/api/generate/export/dsgvo-complete` | DSGVO-Komplettauskunft |
+| DELETE | `/api/generate/export/dsgvo-delete-stats` | Klick-Statistiken löschen (DSGVO) |
+
+### ASIN-Checker (`/api/asin-check`)
+
+| Method | Pfad | Beschreibung |
+|--------|------|-------------|
+| GET | `/api/asin-check/run` | Prüfung sofort starten (`?replace=0` = ohne Auto-Ersatz) |
+| GET | `/api/asin-check/last` | Ergebnis des letzten Laufs |
+| GET | `/api/asin-check/history` | Verlauf der bisherigen Prüfungen |
 
 ---
 
@@ -458,13 +505,13 @@ Das Seed-Script (`npm run seed`) erstellt:
 Schritt 1                    Schritt 2                    Schritt 3
 ┌─────────────────┐   ┌──────────────────┐   ┌────────────────────┐
 │  Avatar-Basisbild│──▶│  Virtual Try-On  │──▶│  Walking-Video     │
-│  (Flux 1.1 Pro) │   │  (IDM-VTON)      │   │  (Minimax V.-01)   │
+│  (Flux 1.1 Pro) │   │  (IDM-VTON)      │   │  (Kling v2.1)      │
 │                  │   │                  │   │                    │
 │  Ganzkörper-Foto │   │  Kleidung auf    │   │  Laufende Animation│
 │  in neutraler    │   │  Avatar auftragen│   │  auf dem Catwalk   │
 │  Kleidung        │   │                  │   │                    │
 │                  │   │  Artikel-Bild →  │   │  Outfit-Bild →     │
-│  ~$0.03–0.05     │   │  ~$0.01–0.03     │   │  ~$0.10–0.20       │
+│  ~$0.03–0.05     │   │  ~$0.01–0.03     │   │  ~$0.05–0.15       │
 └─────────────────┘   └──────────────────┘   └────────────────────┘
 ```
 
@@ -473,11 +520,21 @@ Schritt 1                    Schritt 2                    Schritt 3
 | Was | Modell | Kosten |
 |-----|--------|--------|
 | Avatar-Basisbild | Flux 1.1 Pro | ~$0.03–0.05/Bild |
+| Styled Avatar (Outfit im Prompt) | Flux 1.1 Pro | ~$0.04–0.06/Bild |
 | Virtual Try-On | IDM-VTON | ~$0.01–0.03/Bild |
-| Walking-Video | Minimax Video-01 | ~$0.10–0.20/Video |
-| **Komplett pro Avatar** | | **~$0.15–0.30** |
-| **6 Avatare/Tag** | | **~$0.90–1.80/Tag** |
-| **Monatlich (6 Avatare)** | | **~$27–54/Monat** |
+| Walking-Video | **Kling v2.1** | ~$0.05–0.15/Video |
+| **Komplett pro Avatar** | | **~$0.10–0.25** |
+| **6 Avatare/Tag** | | **~$0.60–1.50/Tag** |
+| **Monatlich (6 Avatare)** | | **~$18–45/Monat** |
+
+> ⚠️ **Achtung, bekannte Abweichung**: Der Endpunkt `GET /api/generate/status`
+> und die Datei `VIDEOS-GENERIEREN.bat` geben noch die alten Minimax-Preise
+> (~$0.10–0.20/Video, ~$27–54/Monat) aus. Die Werte in `server/routes/generate.js`
+> (`costEstimate`) müssen noch auf Kling v2.1 angepasst werden.
+
+> 💡 **Hinweis**: In der Praxis laufen die Kosten deutlich niedriger, weil die
+> Videos **nicht täglich** neu generiert werden. Einmal erzeugte Walking-Videos
+> bleiben in `public/generated/` liegen und werden vom Catwalk wiederverwendet.
 
 ### Schritt 1: Avatar-Basisbild (Flux 1.1 Pro)
 
@@ -518,17 +575,32 @@ hose, rock       →  lower_body
 kleid            →  dresses
 ```
 
-### Schritt 3: Walking-Video (Minimax Video-01)
+### Schritt 3: Walking-Video (Kling v2.1)
 
 **Datei**: `generation-pipeline.js` → `generateWalkAnimation(avatarId, date)`
 
 Nimmt das Outfit-Bild und generiert eine Walking-Animation.
 
-**Unterstützte Video-Modelle** (konfigurierbar in `.env`):
-- **Minimax Video-01** (Standard) – Beste Qualität, ~$0.10–0.20
-- **Kling AI v1.6** – Höchste Qualität, ~$0.15–0.30
-- **Wan 2.1** – Alternative
-- **Stable Video Diffusion** – Günstigster, ~$0.03–0.05
+**Aktuell im Einsatz**: `kwaivgi/kling-v2.1` (in der `.env` über `VIDEO_MODEL` gesetzt).
+Kling liefert die realistischste Gehbewegung – genau das, worauf es beim Catwalk ankommt.
+Es erzeugt 5 Sekunden im Format 9:16, passend zur bildschirmfüllenden Fashion-Show.
+
+**Unterstützte Video-Modelle** (umschaltbar über `VIDEO_MODEL` in der `.env`):
+
+| Modell | `VIDEO_MODEL` | Kosten | Bemerkung |
+|--------|---------------|--------|-----------|
+| **Kling v2.1** | `kwaivgi/kling-v2.1` | ~$0.05–0.15 | **Aktuell aktiv**, beste Gehbewegung |
+| Wan 2.1 I2V | `wavespeedai/wan-2.1-i2v-720p` | ~$0.03–0.08 | Schnell und günstig |
+| Minimax Video-01 | `minimax/video-01` | ~$0.10–0.20 | Früherer Standard |
+| Stable Video Diffusion | `stability-ai/stable-video-diffusion` | ~$0.03–0.05 | Fallback, nur 3 Sek |
+
+Die Modellauswahl passiert in `ai-provider.js` → `generateWalkAnimation()`.
+Der Code erkennt am Modellnamen, welche Eingabefelder die API erwartet
+(`start_image` bei Kling, `first_frame_image` bei Minimax, `image` bei Wan).
+
+> ⚠️ **Achtung**: Der Fallback-Wert im Code (`ai-provider.js`, `CONFIG.replicate.videoModel`)
+> und die `.env.example` stehen noch auf `minimax/video-01`. Ohne einen Eintrag
+> `VIDEO_MODEL=kwaivgi/kling-v2.1` in der `.env` würde also weiterhin Minimax laufen.
 
 **Ablauf:**
 1. Fertiges Outfit-Bild suchen (aus `generations`-Tabelle)
@@ -550,7 +622,75 @@ Führt alle 3 Schritte nacheinander aus. Überspringt Schritt 1 falls bereits ei
 
 ---
 
-## 8. Wichtige Code-Muster
+## 8. Automatische Aufgaben (Scheduler)
+
+Der Server erledigt inzwischen mehrere Dinge von selbst. Es braucht **keinen
+externen Cron-Job** – alles läuft in `server/index.js` über `setTimeout` und
+`setInterval`, solange der Server läuft.
+
+### Übersicht
+
+| Aufgabe | Wann | Wo im Code |
+|---------|------|-----------|
+| Datenbank-Backup | Bei jedem Serverstart + täglich um Mitternacht | `backupDatabase()` in `index.js` |
+| Outfit-Zuweisung | Beim Start (falls heute noch keine) + Mitternacht | `services/outfit-rotation.js` |
+| DSGVO-Bereinigung | Beim Start + Mitternacht | `index.js` (inline) |
+| Verfügbarkeits-Check | 30 Sek nach dem Start, max. 1x pro Tag | `services/availability-checker.js` |
+| ASIN-Check | 60 Sek nach dem Start, danach **alle 60 Minuten** | `services/asin-checker.js` |
+
+### Mitternacht-Scheduler
+
+`scheduleMidnightTasks()` rechnet die Millisekunden bis zur nächsten Mitternacht
+aus, führt dann `runMidnightTasks()` aus und wiederholt das alle 24 Stunden.
+Drei Aufgaben laufen dabei nacheinander:
+
+**1. Datenbank-Backup (Finanzamt §147 AO)**
+- Ziel: `data/backups/`
+- `catwalk_daily_JJJJ-MM-TT.db` → ein Backup pro Tag, wird **unbegrenzt aufbewahrt**
+  (10 Jahre Aufbewahrungspflicht)
+- `catwalk_JJJJ-MM-TT_....db` → Zeitstempel-Backup bei jedem Serverstart,
+  davon werden nur die **letzten 30** behalten, ältere automatisch gelöscht
+
+**2. Outfit-Zuweisung für den neuen Tag**
+- Nur wenn für das heutige Datum noch **kein** Outfit existiert
+- `autoAssignOutfits(datum)` weist jedem Avatar passende Artikel zu, gesteuert über
+  `STYLE_PREFERENCES` in `outfit-rotation.js` (Stil → Pflicht-/Optional-Kategorien,
+  Preisklasse, bevorzugte Marken)
+
+**3. DSGVO-Bereinigung**
+- Löscht alle Einträge aus `click_stats`, die **älter als 90 Tage** sind
+- Läuft zusätzlich bei jedem Serverstart
+
+### ASIN-Checker (stündlich)
+
+Prüft alle aktiven Artikel mit Amazon.de-Links. Er startet 60 Sekunden nach dem
+Serverstart und wiederholt sich dann **alle 60 Minuten**.
+
+Der Check unterscheidet drei Ergebnisse, weil Amazon automatisierte Zugriffe oft
+blockiert:
+
+| Status | Bedeutung | Reaktion |
+|--------|-----------|----------|
+| `ok` | HTTP 200–399, ASIN existiert | nichts |
+| `broken` | HTTP 404, ASIN existiert wirklich nicht | **Ersatz-ASIN wird gesucht, eingesetzt und verifiziert** |
+| `blocked` | 403/503/CAPTCHA/Timeout – Amazon hat geblockt | nichts, Link gilt als in Ordnung |
+
+Das ist der wichtige Punkt: **Nur ein echtes 404 gilt als kaputt.** Der Checker
+rotiert dafür durch mehrere realistische User-Agents. Manuell anstossen lässt sich
+der Lauf über `GET /api/asin-check/run` oder per Doppelklick auf
+`ASIN-CHECK-STARTEN.bat`.
+
+### Verfügbarkeits-Check (täglich)
+
+`availability-checker.js` prüft die Produkt-URLs **aller** Anbieter (nicht nur
+Amazon) und schreibt das Ergebnis in die Tabelle `availability_checks`. Er erkennt
+Bot-Schutz (403/429, Timeouts bei bekannten Shops, Redirect zur Startseite) und
+deaktiviert Artikel standardmässig **nicht** automatisch. Bericht:
+`GET /api/generate/availability/report`.
+
+---
+
+## 9. Wichtige Code-Muster
 
 ### Server-Start (async wegen sql.js)
 
@@ -631,7 +771,7 @@ const result = await this._waitForPrediction(prediction.id, maxWaitMs);
 
 ---
 
-## 9. Frontend-Seiten
+## 10. Frontend-Seiten
 
 ### admin.html (~1500 Zeilen)
 
@@ -648,20 +788,37 @@ Das Admin-Dashboard ist eine **Single-Page-App** mit Tab-Navigation:
 
 ### catwalk.html
 
-Die öffentliche Catwalk-Ansicht:
-- CSS-animierte Avatar-Silhouetten laufen über den Laufsteg
+Die öffentliche Catwalk-Ansicht. **Sie zeigt inzwischen echte KI-Videos, keine
+CSS-Silhouetten mehr.**
+
+- Jeder Avatar mit einem `generated_video` wird als `<video muted playsinline>`
+  eingebunden (Marker `🎬 AI Video`); nur wo noch kein Video existiert, greift
+  die alte Bild-/Silhouetten-Darstellung als Fallback
+- **Full-Screen-Modus**: zwei überblendende `<video>`-Elemente (`fs-video-a` /
+  `fs-video-b`) spielen die Models bildschirmfüllend nacheinander ab – wie bei
+  einer echten Fashion Show
+- Rahmenlose Darstellung mit Vignette; zwei Laufbahnen (rechts hin, links zurück,
+  Rücklauf gespiegelt)
+- Jedes Video läuft **einmal** durch, kein Doppel-Loop
+- Zweisprachige Untertitel: Landessprache + Englisch
 - Hover: Produktkachel mit Brand-Logo, Artikeln, Preisen
-- Klick: Redirect zum Shop (product_url des Artikels)
-- Endlosschlaufe
+- Klick: Redirect zum Shop (`product_url` des Artikels)
 - Responsive Design
+
+Die Videos liegen unter `public/generated/` und kommen über
+`GET /api/catwalk/show` als Feld `generated_video` ins Frontend.
 
 ### index.html
 
 Einfache Startseite mit Links zu Catwalk und Admin.
 
+### impressum.html / datenschutz.html
+
+Rechtstexte, erreichbar über `/impressum` und `/datenschutz`.
+
 ---
 
-## 10. Lokale Einrichtung (Windows)
+## 11. Lokale Einrichtung (Windows)
 
 ### Voraussetzungen
 
@@ -700,7 +857,7 @@ AI_PROVIDER=replicate
 REPLICATE_API_TOKEN=r8_dein_token_hier
 AVATAR_MODEL=black-forest-labs/flux-1.1-pro
 TRYON_MODEL=cuuupid/idm-vton
-VIDEO_MODEL=minimax/video-01
+VIDEO_MODEL=kwaivgi/kling-v2.1
 MAX_CONCURRENT_GENERATIONS=2
 GENERATION_CACHE_HOURS=24
 IMAGE_QUALITY=medium
@@ -708,13 +865,21 @@ IMAGE_QUALITY=medium
 
 ### Server starten
 
+Am einfachsten per **Doppelklick auf `SERVER-STARTEN.bat`** – siehe Abschnitt 12.
+Alternativ im Terminal:
+
 ```bash
+npm start
+# oder
 node server/index.js
 ```
 
 Dann im Browser:
 - **Catwalk**: http://localhost:3000/catwalk
 - **Admin**: http://localhost:3000/admin
+
+Beim Start meldet der Server, welche Automatismen aktiv sind (Backup,
+Outfit-Zuweisung, ASIN-Check, DSGVO-Bereinigung – siehe Abschnitt 8).
 
 ### Typische Windows-Probleme
 
@@ -727,7 +892,39 @@ Dann im Browser:
 
 ---
 
-## 11. Aktueller Entwicklungsstand
+## 12. Start-Skripte (Windows)
+
+Im Projektstamm liegen mehrere `.bat`-Dateien für den Alltag – alle per
+Doppelklick bedienbar, kein Terminal nötig. Sie prüfen zuerst per `curl`, ob der
+Server auf Port 3000 schon läuft.
+
+| Datei | Wofür |
+|-------|-------|
+| **`SERVER-STARTEN.bat`** | Startet den Server (`npm start`) mit allen Automatismen. Läuft er schon, zeigt das Skript nur die Links. **Der übliche Einstieg.** |
+| **`START-KI-GENERIERUNG.bat`** | Generiert die Styled Avatar-Bilder für alle 6 Avatare (`POST /api/generate/styled/batch/all?force=1`). Startet den Server bei Bedarf selbst. Dauer ca. 6–8 Min, Kosten ca. $0.25. |
+| **`VIDEOS-GENERIEREN.bat`** | Menü mit 4 Optionen: nur Bilder, nur Walking-Videos, Komplett-Pipeline oder Abbrechen. Dauer 10–30 Min je nach Auswahl. |
+| **`ASIN-CHECK-STARTEN.bat`** | Stösst den ASIN-Check sofort an (`GET /api/asin-check/run`), statt auf den stündlichen Lauf zu warten. Erklärt die Statusmeldungen. |
+| `setup-windows.bat` | Einmaliges Ein-Klick-Setup (Installation). |
+
+**Typischer Ablauf beim ersten Mal:**
+
+1. `setup-windows.bat` → installiert alles
+2. `.env` anlegen und `REPLICATE_API_TOKEN` eintragen
+3. `SERVER-STARTEN.bat` → Server läuft, Outfits werden automatisch zugewiesen
+4. `START-KI-GENERIERUNG.bat` → Avatar-Bilder erzeugen
+5. `VIDEOS-GENERIEREN.bat` → Option 2, Walking-Videos erzeugen
+6. http://localhost:3000/catwalk öffnen
+
+> ⚠️ `VIDEOS-GENERIEREN.bat` nennt in den Menütexten noch **Minimax Video-01**
+> und die alten Preise. Tatsächlich läuft Kling v2.1. Die Texte sollten noch
+> angepasst werden.
+
+> Die persönlichen Starter-Dateien (`claude-*.bat`) stehen in der `.gitignore`,
+> weil jede Person ihre eigene hat.
+
+---
+
+## 13. Aktueller Entwicklungsstand
 
 ### ✅ Fertig
 
@@ -745,23 +942,39 @@ Dann im Browser:
 - [x] **Kostentracking**: Automatische Erfassung und Berichte
 - [x] **Windows-Kompatibilität**: sql.js statt better-sqlite3 (kein Compiler nötig)
 - [x] **Setup-Script**: Ein-Klick-Installation für Windows
+- [x] **Catwalk mit KI-Videos**: echte Walking-Videos statt CSS-Silhouetten
+- [x] **Video-Player**: Full-Screen-Modus mit zwei überblendenden Video-Elementen
+- [x] **Kling v2.1**: Wechsel von Minimax für realistischere Laufbewegungen
+- [x] **Bildsprache**: rahmenlose Models, zwei Laufbahnen, einheitliche Kamera/Pose,
+      zweisprachige Untertitel
+- [x] **Mitternacht-Scheduler**: tägliches Backup, Outfit-Rotation, DSGVO-Bereinigung
+- [x] **ASIN-Checker**: stündliche Prüfung mit Auto-Ersatz und Bot-Erkennung
+- [x] **Verfügbarkeits-Check**: täglicher Check aller Shop-Links mit Bot-Schutz-Erkennung
+- [x] **Tägliche Automatik**: Outfit-Rotation läuft ohne externen Cron-Job
+- [x] **Backup-Verwaltung**: Finanzamt-konform (§147 AO), inkl. Restore-Endpunkt
+- [x] **DSGVO**: 90-Tage-Bereinigung, Komplettauskunft, Lösch-Endpunkt
+- [x] **Rechtstexte**: Impressum und Datenschutzerklärung
+- [x] **CSV-Exporte**: Kosten, Artikel, Verfügbarkeit (für die Buchhaltung)
+- [x] **Start-Skripte**: `SERVER-STARTEN.bat` und Co. für den Alltag ohne Terminal
 
 ### 🔄 Noch zu tun / Verbesserungsmöglichkeiten
 
+- [ ] **Kostenangaben korrigieren**: `costEstimate` in `server/routes/generate.js`
+      und die Texte in `VIDEOS-GENERIEREN.bat` nennen noch Minimax-Preise
+- [ ] **Kling als Code-Standard**: Fallback in `ai-provider.js` und `.env.example`
+      stehen noch auf `minimax/video-01`
 - [ ] **Echte Produktbilder**: Artikel mit echten Produktfotos verknüpfen (für Try-On)
-- [ ] **Catwalk mit KI-Videos**: Videos statt CSS-Silhouetten im Catwalk anzeigen
 - [ ] **Hosting / Deployment**: Auf einen Server bringen (Railway, Render, Vercel)
 - [ ] **Affiliate-Links**: Echte Affiliate-Tracking-URLs für die Shop-Links
 - [ ] **Benutzer-Authentifizierung**: Admin-Bereich absichern (Login)
-- [ ] **Tägliche Automatik**: Cron-Job für automatische tägliche Outfit-Rotation
 - [ ] **Mehr Avatare / Anbieter**: Echte Anbieter-Daten und Produktkataloge einpflegen
 - [ ] **HTTPS / Domain**: SSL-Zertifikat und eigene Domain einrichten
-- [ ] **Video-Player**: Integrierter Video-Player für Walking-Videos im Catwalk
 - [ ] **Mobile-Optimierung**: Touch-Events und responsive Verbesserungen
+- [ ] **Automatische Video-Erneuerung**: Videos werden bisher nur manuell erzeugt
 
 ---
 
-## 12. Nächste Schritte / Offene Aufgaben
+## 14. Nächste Schritte / Offene Aufgaben
 
 ### Priorität 1: Sicherheit
 
@@ -780,13 +993,34 @@ Die Artikel brauchen echte Produktfotos (`image_url` in der `articles`-Tabelle),
 - Produktbilder von den Shop-Seiten herunterladen und in `uploads/` ablegen
 - Oder die `product_url` nutzen, um Bilder direkt zu referenzieren
 
-### Priorität 3: Catwalk mit echten KI-Videos
+### Priorität 3: Doku- und Code-Reste auf Kling umstellen ✍️
 
-Der Catwalk zeigt aktuell CSS-animierte Silhouetten. Das Ziel ist, die generierten Walking-Videos anzuzeigen. Die Infrastruktur (`generated_video` im Catwalk-API) ist bereits vorbereitet.
+Der Wechsel auf Kling v2.1 ist über die `.env` erfolgt, aber an drei Stellen
+steht noch Minimax:
+
+1. `server/services/ai-provider.js` → `CONFIG.replicate.videoModel` (Fallback)
+2. `.env.example` → `VIDEO_MODEL=minimax/video-01`
+3. `server/routes/generate.js` → `costEstimate.perVideo` und die Monatswerte
+   sowie die Menütexte in `VIDEOS-GENERIEREN.bat`
+
+Solange die `.env` gesetzt ist, läuft alles korrekt – auf einem neuen Rechner
+ohne `VIDEO_MODEL`-Eintrag würde aber wieder Minimax verwendet.
+
+### Priorität 4: Videos automatisch erneuern
+
+Die Walking-Videos werden bisher nur manuell über `VIDEOS-GENERIEREN.bat` erzeugt.
+Der Mitternacht-Scheduler weist zwar täglich neue Outfits zu, generiert dazu aber
+keine neuen Videos. Offene Frage: Lohnt sich das bei ~$0.05–0.15 pro Video täglich,
+oder reicht ein wöchentlicher Lauf?
+
+### ✅ Erledigt: Catwalk mit echten KI-Videos
+
+Der Catwalk zeigt inzwischen die generierten Walking-Videos statt der
+CSS-Silhouetten – inklusive bildschirmfüllendem Full-Screen-Modus.
 
 ---
 
-## 13. Wichtige Hinweise & Konventionen
+## 15. Wichtige Hinweise & Konventionen
 
 ### Sprache
 
