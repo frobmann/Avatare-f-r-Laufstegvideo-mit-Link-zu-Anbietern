@@ -7,3 +7,7 @@ uploads/
 .env
 .DS_Store
 public/generated/
+
+# Persoenliche Claude-Code-Starter (pro Person, nicht committen)
+claude-*.bat
+.claude/settings.local.json
