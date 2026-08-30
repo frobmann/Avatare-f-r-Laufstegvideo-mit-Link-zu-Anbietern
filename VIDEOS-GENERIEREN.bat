@@ -4,11 +4,11 @@ title 🎬 Walking-Videos generieren
 
 echo ═══════════════════════════════════════════════════
 echo   WALKING-VIDEOS GENERIEREN
-echo   Erstellt realistische Catwalk-Videos mit KI
+echo   Erstellt realistische Catwalk-Videos mit KI (Kling v2.1)
 echo ═══════════════════════════════════════════════════
 echo.
-echo Kosten pro Video: ca. $0.10-0.20 (Minimax Video-01)
-echo Kosten alle 6 Avatare: ca. $0.60-1.20
+echo Kosten pro Video: ca. $0.05-0.15 (Kling v2.1)
+echo Kosten alle 6 Avatare: ca. $0.30-0.90
 echo Dauer pro Video: ca. 1-3 Minuten
 echo.
 echo ═══════════════════════════════════════════════════
@@ -42,12 +42,12 @@ echo     → Wird als Grundlage fuer Videos benoetigt
 echo     → Kosten: ca. $0.04-0.06 pro Avatar
 echo.
 echo [2] Walking-Videos fuer ALLE Avatare generieren
-echo     → Erstellt Laufsteg-Videos mit Minimax Video-01
-echo     → Kosten: ca. $0.10-0.20 pro Video
+echo     → Erstellt Laufsteg-Videos mit Kling v2.1
+echo     → Kosten: ca. $0.05-0.15 pro Video
 echo.
 echo [3] Komplett-Pipeline (Bilder + Videos)
 echo     → Beides in einem Schritt
-echo     → Kosten: ca. $0.15-0.25 pro Avatar
+echo     → Kosten: ca. $0.10-0.20 pro Avatar
 echo.
 echo [4] Abbrechen
 echo.

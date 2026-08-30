@@ -4,16 +4,16 @@
  * Orchestriert den gesamten Prozess:
  * 1. Avatar-Basisbild generieren (Flux 1.1 Pro)
  * 2. Virtual Try-On per Artikel (IDM-VTON)
- * 3. Walking-Animation generieren (Minimax Video-01)
+ * 3. Walking-Animation generieren (Kling v2.1)
  * 4. Ergebnisse cachen und in DB speichern
  *
  * Kosten-Übersicht:
  *   Avatar-Bild:     Flux 1.1 Pro        ~$0.03–0.05/Bild
  *   Virtual Try-On:  IDM-VTON            ~$0.01–0.03/Bild
- *   Walk-Video:      Minimax Video-01    ~$0.10–0.20/Video
+ *   Walk-Video:      Kling v2.1          ~$0.05–0.15/Video
  *   ─────────────────────────────────────────────────────
- *   Komplett pro Avatar (Bild + Try-On + Video): ~$0.15–0.30
- *   6 Avatare/Tag:   ~$0.90–1.80/Tag ≈ $27–54/Monat
+ *   Komplett pro Avatar (Bild + Try-On + Video): ~$0.10–0.25
+ *   6 Avatare/Tag:   ~$0.60–1.50/Tag ≈ $18–45/Monat
  */
 
 const path = require('path');
@@ -492,9 +492,9 @@ async function generateOutfitImage(avatarId, date) {
 
 /**
  * Generiert eine Walking-Animation aus dem Outfit-Bild.
- * Verwendet Minimax Video-01 für hochwertige Videos.
+ * Verwendet das in VIDEO_MODEL gesetzte Modell (Standard: Kling v2.1).
  *
- * Kosten: ~$0.10–0.20 pro Video (Minimax)
+ * Kosten: ~$0.05–0.15 pro Video (Kling v2.1)
  */
 async function generateWalkAnimation(avatarId, date) {
   const db = getDb();

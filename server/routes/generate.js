@@ -66,10 +66,10 @@ router.get('/status', (req, res) => {
     costEstimate: {
       perAvatar: '$0.03–0.05',
       perTryOn: '$0.01–0.03',
-      perVideo: '$0.10–0.20',
-      perFullPipeline: '$0.15–0.30',
-      daily6Avatars: '$0.90–1.80',
-      monthly6Avatars: '$27–54',
+      perVideo: '$0.05–0.15',
+      perFullPipeline: '$0.10–0.25',
+      daily6Avatars: '$0.60–1.50',
+      monthly6Avatars: '$18–45',
     },
   });
 });

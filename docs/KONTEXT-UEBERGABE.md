@@ -527,11 +527,6 @@ Schritt 1                    Schritt 2                    Schritt 3
 | **6 Avatare/Tag** | | **~$0.60–1.50/Tag** |
 | **Monatlich (6 Avatare)** | | **~$18–45/Monat** |
 
-> ⚠️ **Achtung, bekannte Abweichung**: Der Endpunkt `GET /api/generate/status`
-> und die Datei `VIDEOS-GENERIEREN.bat` geben noch die alten Minimax-Preise
-> (~$0.10–0.20/Video, ~$27–54/Monat) aus. Die Werte in `server/routes/generate.js`
-> (`costEstimate`) müssen noch auf Kling v2.1 angepasst werden.
-
 > 💡 **Hinweis**: In der Praxis laufen die Kosten deutlich niedriger, weil die
 > Videos **nicht täglich** neu generiert werden. Einmal erzeugte Walking-Videos
 > bleiben in `public/generated/` liegen und werden vom Catwalk wiederverwendet.
@@ -598,9 +593,9 @@ Die Modellauswahl passiert in `ai-provider.js` → `generateWalkAnimation()`.
 Der Code erkennt am Modellnamen, welche Eingabefelder die API erwartet
 (`start_image` bei Kling, `first_frame_image` bei Minimax, `image` bei Wan).
 
-> ⚠️ **Achtung**: Der Fallback-Wert im Code (`ai-provider.js`, `CONFIG.replicate.videoModel`)
-> und die `.env.example` stehen noch auf `minimax/video-01`. Ohne einen Eintrag
-> `VIDEO_MODEL=kwaivgi/kling-v2.1` in der `.env` würde also weiterhin Minimax laufen.
+> 💡 **Hinweis**: Kling v2.1 ist inzwischen auch der Standard **im Code**
+> (`ai-provider.js`, `CONFIG.replicate.videoModel`) und in der `.env.example`.
+> Ohne `VIDEO_MODEL`-Eintrag in der `.env` läuft also ebenfalls Kling.
 
 **Ablauf:**
 1. Fertiges Outfit-Bild suchen (aus `generations`-Tabelle)
@@ -915,10 +910,6 @@ Server auf Port 3000 schon läuft.
 5. `VIDEOS-GENERIEREN.bat` → Option 2, Walking-Videos erzeugen
 6. http://localhost:3000/catwalk öffnen
 
-> ⚠️ `VIDEOS-GENERIEREN.bat` nennt in den Menütexten noch **Minimax Video-01**
-> und die alten Preise. Tatsächlich läuft Kling v2.1. Die Texte sollten noch
-> angepasst werden.
-
 > Die persönlichen Starter-Dateien (`claude-*.bat`) stehen in der `.gitignore`,
 > weil jede Person ihre eigene hat.
 
@@ -944,7 +935,8 @@ Server auf Port 3000 schon läuft.
 - [x] **Setup-Script**: Ein-Klick-Installation für Windows
 - [x] **Catwalk mit KI-Videos**: echte Walking-Videos statt CSS-Silhouetten
 - [x] **Video-Player**: Full-Screen-Modus mit zwei überblendenden Video-Elementen
-- [x] **Kling v2.1**: Wechsel von Minimax für realistischere Laufbewegungen
+- [x] **Kling v2.1**: Wechsel von Minimax für realistischere Laufbewegungen –
+      durchgezogen bis in Code-Standard, `.env.example` und Kostenschätzung
 - [x] **Bildsprache**: rahmenlose Models, zwei Laufbahnen, einheitliche Kamera/Pose,
       zweisprachige Untertitel
 - [x] **Mitternacht-Scheduler**: tägliches Backup, Outfit-Rotation, DSGVO-Bereinigung
@@ -959,10 +951,6 @@ Server auf Port 3000 schon läuft.
 
 ### 🔄 Noch zu tun / Verbesserungsmöglichkeiten
 
-- [ ] **Kostenangaben korrigieren**: `costEstimate` in `server/routes/generate.js`
-      und die Texte in `VIDEOS-GENERIEREN.bat` nennen noch Minimax-Preise
-- [ ] **Kling als Code-Standard**: Fallback in `ai-provider.js` und `.env.example`
-      stehen noch auf `minimax/video-01`
 - [ ] **Echte Produktbilder**: Artikel mit echten Produktfotos verknüpfen (für Try-On)
 - [ ] **Hosting / Deployment**: Auf einen Server bringen (Railway, Render, Vercel)
 - [ ] **Affiliate-Links**: Echte Affiliate-Tracking-URLs für die Shop-Links
@@ -993,30 +981,21 @@ Die Artikel brauchen echte Produktfotos (`image_url` in der `articles`-Tabelle),
 - Produktbilder von den Shop-Seiten herunterladen und in `uploads/` ablegen
 - Oder die `product_url` nutzen, um Bilder direkt zu referenzieren
 
-### Priorität 3: Doku- und Code-Reste auf Kling umstellen ✍️
-
-Der Wechsel auf Kling v2.1 ist über die `.env` erfolgt, aber an drei Stellen
-steht noch Minimax:
-
-1. `server/services/ai-provider.js` → `CONFIG.replicate.videoModel` (Fallback)
-2. `.env.example` → `VIDEO_MODEL=minimax/video-01`
-3. `server/routes/generate.js` → `costEstimate.perVideo` und die Monatswerte
-   sowie die Menütexte in `VIDEOS-GENERIEREN.bat`
-
-Solange die `.env` gesetzt ist, läuft alles korrekt – auf einem neuen Rechner
-ohne `VIDEO_MODEL`-Eintrag würde aber wieder Minimax verwendet.
-
-### Priorität 4: Videos automatisch erneuern
+### Priorität 3: Videos automatisch erneuern
 
 Die Walking-Videos werden bisher nur manuell über `VIDEOS-GENERIEREN.bat` erzeugt.
 Der Mitternacht-Scheduler weist zwar täglich neue Outfits zu, generiert dazu aber
 keine neuen Videos. Offene Frage: Lohnt sich das bei ~$0.05–0.15 pro Video täglich,
 oder reicht ein wöchentlicher Lauf?
 
-### ✅ Erledigt: Catwalk mit echten KI-Videos
+### ✅ Erledigt
 
-Der Catwalk zeigt inzwischen die generierten Walking-Videos statt der
-CSS-Silhouetten – inklusive bildschirmfüllendem Full-Screen-Modus.
+- **Catwalk mit echten KI-Videos**: Der Catwalk zeigt die generierten
+  Walking-Videos statt der CSS-Silhouetten – inklusive bildschirmfüllendem
+  Full-Screen-Modus.
+- **Kling v2.1 überall**: Modellwahl, Fallback im Code, `.env.example`,
+  Kostenschätzung in `/api/generate/status` und die Texte in
+  `VIDEOS-GENERIEREN.bat` sind auf Kling v2.1 vereinheitlicht.
 
 ---
 

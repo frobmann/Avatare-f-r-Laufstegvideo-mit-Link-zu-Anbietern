@@ -7,7 +7,7 @@
  * Modelle:
  *   Avatar-Generierung:  Flux 1.1 Pro      ~$0.03–0.05/Bild
  *   Virtual Try-On:      IDM-VTON           ~$0.01–0.03/Bild
- *   Video-Animation:     Minimax Video-01   ~$0.10–0.20/Video
+ *   Video-Animation:     Kling v2.1         ~$0.05–0.15/Video
  */
 
 const https = require('https');
@@ -22,7 +22,7 @@ const CONFIG = {
     token: process.env.REPLICATE_API_TOKEN || '',
     avatarModel: process.env.AVATAR_MODEL || 'black-forest-labs/flux-1.1-pro',
     tryonModel: process.env.TRYON_MODEL || 'cuuupid/idm-vton',
-    videoModel: process.env.VIDEO_MODEL || 'minimax/video-01',
+    videoModel: process.env.VIDEO_MODEL || 'kwaivgi/kling-v2.1',
   },
   huggingface: {
     token: process.env.HUGGINGFACE_API_TOKEN || '',
