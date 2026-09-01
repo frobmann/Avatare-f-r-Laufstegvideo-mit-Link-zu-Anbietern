@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Fashion Catwalk – Shop the Look</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --card-bg: #13131a;
+      --accent: #c9a96e;
+      --accent-glow: rgba(201,169,110,0.3);
+      --text: #e8e4dc;
+      --text-secondary: #8a8690;
+      --border: rgba(201,169,110,0.15);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      padding: 32px 16px 20px;
+      width: 100%;
+      max-width: 480px;
+    }
+    .logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      text-shadow: 0 0 30px var(--accent-glow);
+      margin-bottom: 4px;
+    }
+    .tagline {
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+    }
+    .date-badge {
+      display: inline-block;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 4px 14px;
+    }
+
+    /* Links */
+    .links {
+      width: 100%;
+      max-width: 480px;
+      padding: 0 16px;
+    }
+
+    /* Catwalk Button (prominent) */
+    .catwalk-link {
+      display: block;
+      text-align: center;
+      padding: 16px;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, var(--accent), #b08c50);
+      color: #0a0a0f;
+      font-weight: 600;
+      font-size: 0.95rem;
+      letter-spacing: 0.08em;
+      text-decoration: none;
+      border-radius: 12px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .catwalk-link:hover, .catwalk-link:active {
+      transform: scale(1.02);
+      box-shadow: 0 4px 20px var(--accent-glow);
+    }
+    .catwalk-link .sub { font-size: 0.7rem; font-weight: 300; opacity: 0.7; display: block; margin-top: 3px; }
+
+    /* Section title */
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 0.85rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      text-align: center;
+      margin: 24px 0 14px;
+    }
+
+    /* Model Card */
+    .model-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      margin-bottom: 12px;
+      overflow: hidden;
+      transition: transform 0.2s;
+    }
+    .model-card:active { transform: scale(0.98); }
+
+    .model-header {
+      display: flex;
+      align-items: center;
+      padding: 14px 16px;
+      cursor: pointer;
+    }
+    .model-thumb {
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--accent);
+      margin-right: 14px;
+      flex-shrink: 0;
+    }
+    .model-thumb-placeholder {
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #6b4423);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
+      margin-right: 14px;
+      flex-shrink: 0;
+    }
+    .model-info { flex: 1; }
+    .model-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+    }
+    .model-style {
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+    .model-price {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+    .expand-icon {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      transition: transform 0.3s;
+    }
+    .model-card.open .expand-icon { transform: rotate(180deg); }
+
+    /* Product list (collapsed by default) */
+    .model-products {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease;
+    }
+    .model-card.open .model-products { max-height: 600px; }
+
+    .product-item {
+      display: flex;
+      align-items: center;
+      padding: 10px 16px;
+      border-top: 1px solid rgba(255,255,255,0.04);
+      text-decoration: none;
+      color: var(--text);
+      transition: background 0.2s;
+    }
+    .product-item:hover, .product-item:active {
+      background: rgba(201,169,110,0.06);
+    }
+    .product-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      margin-right: 12px;
+      flex-shrink: 0;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .product-details { flex: 1; }
+    .product-name { font-size: 0.8rem; font-weight: 400; }
+    .product-brand { font-size: 0.65rem; color: var(--text-secondary); }
+    .product-price { font-size: 0.8rem; font-weight: 600; color: var(--accent); }
+    .product-arrow { font-size: 0.7rem; color: var(--text-secondary); margin-left: 8px; }
+
+    .shop-all-btn {
+      display: block;
+      text-align: center;
+      padding: 11px;
+      margin: 0 16px 14px;
+      background: transparent;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-decoration: none;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+    .shop-all-btn:hover { background: rgba(201,169,110,0.1); }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 30px 16px;
+      margin-top: auto;
+    }
+    .footer-links { display: flex; gap: 16px; justify-content: center; margin-bottom: 10px; }
+    .footer-links a { color: var(--text-secondary); font-size: 0.6rem; text-decoration: none; letter-spacing: 0.05em; }
+    .footer-copy { font-size: 0.55rem; color: var(--text-secondary); opacity: 0.5; }
+
+    /* Loading */
+    .loading { text-align: center; padding: 60px 16px; color: var(--text-secondary); }
+    .loading .spinner {
+      width: 30px; height: 30px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="logo">Fashion Catwalk</div>
+    <div class="tagline">Shop the Look · Shoppe den Look</div>
+    <div class="date-badge" id="date-badge"></div>
+  </div>
+
+  <div class="links">
+    <!-- Hauptlink zur Catwalk-Show -->
+    <a class="catwalk-link" href="/catwalk" id="catwalk-btn">
+      🎬 Fashion Show ansehen
+      <span class="sub">Watch the full runway show</span>
+    </a>
+
+    <div class="section-title">Today's Looks</div>
+
+    <div id="models-container">
+      <div class="loading">
+        <div class="spinner"></div>
+        Looks werden geladen...
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-links">
+      <a href="/impressum">Impressum</a>
+      <a href="/datenschutz">Datenschutz</a>
+    </div>
+    <div class="footer-copy">© 2026 Fashion Catwalk · Alle Preise inkl. MwSt.</div>
+  </div>
+
+  <script>
+    // Datum anzeigen
+    const now = new Date();
+    const dateOpts = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+    document.getElementById('date-badge').textContent = now.toLocaleDateString('de-DE', dateOpts);
+
+    // Daten laden
+    async function loadModels() {
+      try {
+        const resp = await fetch('/api/catwalk/show');
+        const data = await resp.json();
+        renderModels(data.avatars);
+      } catch (e) {
+        document.getElementById('models-container').innerHTML =
+          '<div class="loading">Fehler beim Laden. Bitte Seite neu laden.</div>';
+      }
+    }
+
+    function renderModels(avatars) {
+      const container = document.getElementById('models-container');
+      if (!avatars || avatars.length === 0) {
+        container.innerHTML = '<div class="loading">Noch keine Looks verfügbar.</div>';
+        return;
+      }
+
+      container.innerHTML = avatars.map(avatar => {
+        const brands = [...new Set(avatar.outfit.map(o => o.brand_name))].join(' × ');
+        const price = `€${avatar.total_price.toFixed(2)}`;
+
+        // Thumbnail
+        let thumbHtml;
+        if (avatar.generated_image) {
+          thumbHtml = `<img class="model-thumb" src="${avatar.generated_image}" alt="${avatar.name}" />`;
+        } else {
+          const initials = avatar.name.charAt(0).toUpperCase();
+          thumbHtml = `<div class="model-thumb-placeholder">${initials}</div>`;
+        }
+
+        // Produkte
+        const productsHtml = avatar.outfit.map(item => `
+          <a class="product-item" href="${item.product_url}" target="_blank" rel="noopener">
+            <div class="product-dot" style="background:${item.color || '#666'}"></div>
+            <div class="product-details">
+              <div class="product-name">${item.article_name}</div>
+              <div class="product-brand">${item.brand_name}</div>
+            </div>
+            <div class="product-price">€${item.price.toFixed(2)}</div>
+            <div class="product-arrow">›</div>
+          </a>
+        `).join('');
+
+        return `
+          <div class="model-card" id="card-${avatar.id}">
+            <div class="model-header" onclick="toggleCard('${avatar.id}')">
+              ${thumbHtml}
+              <div class="model-info">
+                <div class="model-name">${avatar.name}</div>
+                <div class="model-style">${brands || avatar.description}</div>
+              </div>
+              <div class="model-price">${price}</div>
+              <div class="expand-icon">▼</div>
+            </div>
+            <div class="model-products">
+              ${productsHtml}
+              <a class="shop-all-btn" href="#" onclick="shopAll(event, '${avatar.id}')">
+                Ganzen Look shoppen · Shop full look →
+              </a>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function toggleCard(id) {
+      const card = document.getElementById('card-' + id);
+      card.classList.toggle('open');
+    }
+
+    function shopAll(event, avatarId) {
+      event.preventDefault();
+      // Alle Produkt-Links des Models öffnen
+      const card = document.getElementById('card-' + avatarId);
+      const links = card.querySelectorAll('.product-item');
+      links.forEach((link, i) => {
+        setTimeout(() => window.open(link.href, '_blank'), i * 300);
+      });
+    }
+
+    loadModels();
+  </script>
+</body>
+</html>

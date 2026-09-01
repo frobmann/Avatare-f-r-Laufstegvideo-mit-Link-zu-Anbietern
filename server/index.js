@@ -267,6 +267,7 @@ async function startServer() {
   app.use('/api/providers', require('./routes/providers'));
   app.use('/api/articles', require('./routes/articles'));
   app.use('/api/catwalk', require('./routes/catwalk'));
+  app.use('/api/social', require('./routes/social-export'));
   app.use('/api/generate', require('./routes/generate'));
 
   // Admin Dashboard
@@ -277,6 +278,16 @@ async function startServer() {
   // Catwalk Ansicht
   app.get('/catwalk', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'public', 'catwalk.html'));
+  });
+
+  // Link in Bio (für Instagram/TikTok)
+  app.get('/linkinbio', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'public', 'linkinbio.html'));
+  });
+
+  // Social Media Export Dashboard
+  app.get('/social', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'public', 'social-export.html'));
   });
 
   // ── Rechtliche Seiten (Pflicht in Deutschland) ──
@@ -368,19 +379,21 @@ async function startServer() {
 
   app.listen(PORT, () => {
     console.log(`
-╔══════════════════════════════════════════════════╗
-║  🎭 Avatar Catwalk Shop System                  ║
-║  ────────────────────────────────────────────    ║
-║  🌐 Server:    http://localhost:${PORT}            ║
-║  👔 Admin:     http://localhost:${PORT}/admin       ║
-║  🎬 Catwalk:   http://localhost:${PORT}/catwalk     ║
-║  📡 API:       http://localhost:${PORT}/api         ║
-║  ────────────────────────────────────────────    ║
-║  ⏰ Automatische Aufgaben:                      ║
-║     💾 Backup: täglich um Mitternacht            ║
-║     🔗 ASIN-Check: alle 60 Minuten              ║
-║     👗 Outfits: täglich um Mitternacht           ║
-╚══════════════════════════════════════════════════╝
+╔══════════════════════════════════════════════════════╗
+║  🎭 Avatar Catwalk Shop System                      ║
+║  ──────────────────────────────────────────────      ║
+║  🌐 Server:      http://localhost:${PORT}              ║
+║  👔 Admin:       http://localhost:${PORT}/admin         ║
+║  🎬 Catwalk:     http://localhost:${PORT}/catwalk       ║
+║  📱 Social:      http://localhost:${PORT}/social        ║
+║  🔗 Link in Bio: http://localhost:${PORT}/linkinbio     ║
+║  📡 API:         http://localhost:${PORT}/api           ║
+║  ──────────────────────────────────────────────      ║
+║  ⏰ Automatische Aufgaben:                          ║
+║     💾 Backup: täglich um Mitternacht                ║
+║     🔗 ASIN-Check: alle 60 Minuten                  ║
+║     👗 Outfits: täglich um Mitternacht               ║
+╚══════════════════════════════════════════════════════╝
     `);
   });
 }

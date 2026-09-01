@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Social Media Export – Fashion Catwalk</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0f; --card-bg: #13131a; --accent: #c9a96e;
+      --accent-glow: rgba(201,169,110,0.3); --text: #e8e4dc;
+      --text-secondary: #8a8690; --border: rgba(201,169,110,0.15);
+      --success: #4ade80; --error: #f87171;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: 'Inter', -apple-system, sans-serif;
+      min-height: 100vh; padding: 20px;
+    }
+
+    .page-header {
+      text-align: center; margin-bottom: 30px;
+    }
+    .page-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem; color: var(--accent);
+      letter-spacing: 0.12em; text-transform: uppercase;
+    }
+    .page-subtitle {
+      font-size: 0.75rem; color: var(--text-secondary);
+      letter-spacing: 0.15em; margin-top: 6px;
+    }
+
+    /* Controls */
+    .controls {
+      display: flex; gap: 12px; justify-content: center;
+      flex-wrap: wrap; margin-bottom: 24px;
+    }
+    .control-group { display: flex; align-items: center; gap: 6px; }
+    .control-label { font-size: 0.7rem; color: var(--text-secondary); letter-spacing: 0.08em; }
+    select, button {
+      background: var(--card-bg); color: var(--text); border: 1px solid var(--border);
+      border-radius: 8px; padding: 8px 14px; font-size: 0.8rem;
+      font-family: inherit; cursor: pointer;
+    }
+    select:focus, button:focus { outline: none; border-color: var(--accent); }
+    button:hover { background: rgba(201,169,110,0.1); }
+    .btn-accent {
+      background: var(--accent); color: #0a0a0f; font-weight: 600; border: none;
+    }
+    .btn-accent:hover { background: #b08c50; }
+
+    /* Stats row */
+    .stats {
+      display: flex; gap: 16px; justify-content: center; margin-bottom: 24px;
+    }
+    .stat {
+      background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px 20px; text-align: center;
+    }
+    .stat-value { font-size: 1.4rem; font-weight: 700; color: var(--accent); }
+    .stat-label { font-size: 0.6rem; color: var(--text-secondary); letter-spacing: 0.1em; margin-top: 2px; }
+
+    /* Collection caption */
+    .collection-box {
+      background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px; margin-bottom: 24px;
+      max-width: 700px; margin-left: auto; margin-right: auto;
+    }
+    .collection-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 0.9rem; color: var(--accent); margin-bottom: 10px;
+      letter-spacing: 0.08em;
+    }
+    .caption-text {
+      background: rgba(0,0,0,0.3); border-radius: 8px; padding: 14px;
+      font-size: 0.8rem; line-height: 1.6; white-space: pre-wrap;
+      color: var(--text); margin-bottom: 10px;
+      max-height: 200px; overflow-y: auto;
+    }
+    .copy-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: transparent; border: 1px solid var(--accent);
+      color: var(--accent); padding: 6px 14px; border-radius: 6px;
+      font-size: 0.7rem; cursor: pointer; transition: all 0.2s;
+    }
+    .copy-btn:hover { background: rgba(201,169,110,0.1); }
+    .copy-btn.copied { border-color: var(--success); color: var(--success); }
+
+    /* Model cards grid */
+    .models-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 16px; max-width: 1200px; margin: 0 auto;
+    }
+
+    .export-card {
+      background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: 14px; overflow: hidden;
+    }
+    .export-card-header {
+      display: flex; align-items: center; padding: 14px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .export-thumb {
+      width: 48px; height: 48px; border-radius: 10px;
+      object-fit: cover; margin-right: 12px; flex-shrink: 0;
+    }
+    .export-thumb-placeholder {
+      width: 48px; height: 48px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), #6b4423);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; margin-right: 12px; flex-shrink: 0;
+    }
+    .export-model-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 0.95rem; color: var(--accent);
+    }
+    .export-model-brands { font-size: 0.65rem; color: var(--text-secondary); }
+    .export-model-price { margin-left: auto; font-weight: 600; color: var(--accent); font-size: 0.9rem; }
+
+    .export-video-status {
+      padding: 8px 16px; font-size: 0.7rem; display: flex; align-items: center; gap: 6px;
+    }
+    .status-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+    }
+    .status-dot.ready { background: var(--success); }
+    .status-dot.missing { background: var(--error); }
+
+    .export-caption {
+      padding: 0 16px 12px;
+    }
+    .export-actions {
+      display: flex; gap: 8px; padding: 12px 16px;
+      border-top: 1px solid rgba(255,255,255,0.04);
+    }
+    .export-actions button, .export-actions a {
+      flex: 1; text-align: center; padding: 8px;
+      border-radius: 6px; font-size: 0.7rem; text-decoration: none;
+      font-weight: 500;
+    }
+    .btn-insta { background: linear-gradient(135deg, #833AB4, #E1306C, #F77737); color: #fff; border: none; }
+    .btn-tiktok { background: #010101; color: #fff; border: 1px solid #fff; }
+    .btn-copy-sm { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
+
+    /* Instructions panel */
+    .instructions {
+      max-width: 700px; margin: 30px auto 0;
+      background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px;
+    }
+    .instructions h3 {
+      font-family: 'Playfair Display', serif; font-size: 0.85rem;
+      color: var(--accent); margin-bottom: 12px; letter-spacing: 0.08em;
+    }
+    .instructions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .instr-platform { }
+    .instr-platform h4 {
+      font-size: 0.75rem; font-weight: 600; margin-bottom: 8px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .instr-platform ol {
+      list-style: decimal; padding-left: 18px;
+      font-size: 0.7rem; line-height: 1.8; color: var(--text-secondary);
+    }
+
+    @media (max-width: 768px) {
+      .models-grid { grid-template-columns: 1fr; }
+      .instructions-grid { grid-template-columns: 1fr; }
+      .stats { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <div class="page-title">Social Media Export</div>
+    <div class="page-subtitle">Instagram Reels · TikTok · Link in Bio</div>
+  </div>
+
+  <div class="controls">
+    <div class="control-group">
+      <span class="control-label">Sprache:</span>
+      <select id="lang-select">
+        <option value="de" selected>🇩🇪 Deutsch</option>
+        <option value="en">🇬🇧 English</option>
+        <option value="fr">🇫🇷 Français</option>
+        <option value="es">🇪🇸 Español</option>
+        <option value="it">🇮🇹 Italiano</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <span class="control-label">Plattform:</span>
+      <select id="platform-select">
+        <option value="all">Alle</option>
+        <option value="instagram">Instagram</option>
+        <option value="tiktok">TikTok</option>
+      </select>
+    </div>
+    <button class="btn-accent" onclick="loadExport()">🔄 Laden</button>
+  </div>
+
+  <div class="stats" id="stats"></div>
+
+  <div id="collection-section"></div>
+
+  <div class="models-grid" id="models-grid">
+    <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-secondary)">
+      Lade Daten...
+    </div>
+  </div>
+
+  <div class="instructions">
+    <h3>📱 So postest du auf Social Media</h3>
+    <div class="instructions-grid">
+      <div class="instr-platform">
+        <h4>📸 Instagram Reels</h4>
+        <ol>
+          <li>Video-Datei auf dein Handy übertragen (USB, Cloud, AirDrop)</li>
+          <li>Instagram → <strong>+</strong> → <strong>Reel</strong> → Video auswählen</li>
+          <li>Trending Musik/Sound hinzufügen</li>
+          <li>Caption kopieren und einfügen (Button unten)</li>
+          <li><strong>Link in Bio</strong> auf deine Catwalk-Seite setzen</li>
+          <li>Veröffentlichen! 🚀</li>
+        </ol>
+      </div>
+      <div class="instr-platform">
+        <h4>🎵 TikTok</h4>
+        <ol>
+          <li>Video-Datei auf dein Handy übertragen</li>
+          <li>TikTok → <strong>+</strong> → <strong>Hochladen</strong> → Video wählen</li>
+          <li>Trending Sound hinzufügen</li>
+          <li>Caption kopieren und einfügen</li>
+          <li><strong>Link in Bio</strong> auf deine Catwalk-Seite setzen</li>
+          <li>Veröffentlichen! 🚀</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    async function loadExport() {
+      const lang = document.getElementById('lang-select').value;
+      const platform = document.getElementById('platform-select').value;
+
+      try {
+        const resp = await fetch(`/api/social/export?lang=${lang}&platform=${platform}`);
+        const data = await resp.json();
+        renderExport(data);
+      } catch (e) {
+        document.getElementById('models-grid').innerHTML =
+          '<div style="grid-column:1/-1;text-align:center;color:var(--error)">Fehler beim Laden. Ist der Server gestartet?</div>';
+      }
+    }
+
+    function renderExport(data) {
+      // Stats
+      document.getElementById('stats').innerHTML = `
+        <div class="stat"><div class="stat-value">${data.totalModels}</div><div class="stat-label">MODELS</div></div>
+        <div class="stat"><div class="stat-value">${data.modelsWithVideo}</div><div class="stat-label">MIT VIDEO</div></div>
+        <div class="stat"><div class="stat-value">${data.date}</div><div class="stat-label">DATUM</div></div>
+      `;
+
+      // Collection caption
+      document.getElementById('collection-section').innerHTML = `
+        <div class="collection-box">
+          <div class="collection-title">📋 Collection Caption (für Carousel-Post)</div>
+          <div class="caption-text" id="collection-caption">${escHtml(data.collectionCaption)}</div>
+          <button class="copy-btn" onclick="copyText('collection-caption', this)">📋 Caption kopieren</button>
+        </div>
+      `;
+
+      // Model cards
+      const grid = document.getElementById('models-grid');
+      if (data.models.length === 0) {
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-secondary)">Keine Models gefunden.</div>';
+        return;
+      }
+
+      grid.innerHTML = data.models.map((m, i) => {
+        const thumbHtml = m.image
+          ? `<img class="export-thumb" src="/${m.image}" alt="${m.model}" />`
+          : `<div class="export-thumb-placeholder">${m.model.charAt(0)}</div>`;
+
+        return `
+          <div class="export-card">
+            <div class="export-card-header">
+              ${thumbHtml}
+              <div>
+                <div class="export-model-name">${m.model}</div>
+                <div class="export-model-brands">${m.brands || m.style}</div>
+              </div>
+              <div class="export-model-price">${m.totalPrice}</div>
+            </div>
+
+            <div class="export-video-status">
+              <div class="status-dot ${m.hasVideo ? 'ready' : 'missing'}"></div>
+              ${m.hasVideo
+                ? `<span style="color:var(--success)">Video bereit (9:16)</span><span style="margin-left:auto;font-size:0.6rem;color:var(--text-secondary)">${m.video}</span>`
+                : `<span style="color:var(--error)">Kein Video — Bild als Fallback nutzen</span>`
+              }
+            </div>
+
+            <div class="export-caption">
+              <div class="caption-text" id="caption-${i}" style="font-size:0.72rem;max-height:120px">${escHtml(m.caption)}</div>
+            </div>
+
+            <div class="export-actions">
+              <button class="btn-copy-sm" onclick="copyText('caption-${i}', this)">📋 Caption</button>
+              <button class="btn-insta" onclick="copyText('caption-${i}', this)">📸 Instagram</button>
+              <button class="btn-tiktok" onclick="copyText('caption-${i}', this)">🎵 TikTok</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function escHtml(str) {
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    async function copyText(elementId, btn) {
+      const el = document.getElementById(elementId);
+      const text = el.textContent || el.innerText;
+      try {
+        await navigator.clipboard.writeText(text);
+        const oldText = btn.innerHTML;
+        btn.innerHTML = '✅ Kopiert!';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.innerHTML = oldText; btn.classList.remove('copied'); }, 2000);
+      } catch (e) {
+        // Fallback: Text markieren
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(range);
+      }
+    }
+
+    // Beim Laden automatisch starten
+    loadExport();
+  </script>
+</body>
+</html>
