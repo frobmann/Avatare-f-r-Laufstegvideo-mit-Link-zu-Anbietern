@@ -1,0 +1,41 @@
+# ═══════════════════════════════════════════════
+# Fashion Catwalk – Docker Compose
+# Starten mit: docker compose up -d
+# ═══════════════════════════════════════════════
+
+services:
+  catwalk:
+    build: .
+    container_name: fashion-catwalk
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+    volumes:
+      # Datenbank und Backups persistent speichern
+      - catwalk-data:/app/data
+      # Generierte Bilder/Videos persistent speichern
+      - catwalk-generated:/app/public/generated
+      # Uploads persistent speichern
+      - catwalk-uploads:/app/uploads
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      # API-Keys über .env oder Umgebungsvariablen setzen
+      - REPLICATE_API_TOKEN=${REPLICATE_API_TOKEN:-}
+      - AMAZON_ACCESS_KEY=${AMAZON_ACCESS_KEY:-}
+      - AMAZON_SECRET_KEY=${AMAZON_SECRET_KEY:-}
+      - AMAZON_PARTNER_TAG=${AMAZON_PARTNER_TAG:-}
+    healthcheck:
+      test: ["CMD", "node", "-e", "const h=require('http');h.get('http://localhost:3000/api/health',r=>{process.exit(r.statusCode===200?0:1)}).on('error',()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  catwalk-data:
+    driver: local
+  catwalk-generated:
+    driver: local
+  catwalk-uploads:
+    driver: local

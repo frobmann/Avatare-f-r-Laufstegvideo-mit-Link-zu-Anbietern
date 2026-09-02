@@ -1,0 +1,29 @@
+# ═══════════════════════════════════════════════
+# Fashion Catwalk – Render.com Konfiguration
+# ═══════════════════════════════════════════════
+
+services:
+  - type: web
+    name: fashion-catwalk
+    runtime: node
+    plan: starter   # ~7$/Monat, immer online
+    buildCommand: npm ci --omit=dev --ignore-scripts
+    startCommand: node server/index.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3000"
+      - key: REPLICATE_API_TOKEN
+        sync: false   # Manuell in Render Dashboard eingeben
+      - key: AMAZON_ACCESS_KEY
+        sync: false
+      - key: AMAZON_SECRET_KEY
+        sync: false
+      - key: AMAZON_PARTNER_TAG
+        sync: false
+    disk:
+      name: catwalk-data
+      mountPath: /app/data
+      sizeGB: 1

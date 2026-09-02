@@ -262,6 +262,23 @@ async function startServer() {
     console.log('⚠️ ASIN-Checker nicht verfügbar:', e.message);
   }
 
+  // Health-Check-Endpunkt (für Docker, Railway, Render, etc.)
+  app.get('/api/health', (req, res) => {
+    try {
+      const db = require('./db').getDb();
+      const avatarCount = db.prepare('SELECT COUNT(*) as c FROM avatars').get().c;
+      res.json({
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        uptime: Math.floor(process.uptime()),
+        avatars: avatarCount,
+        version: require('../package.json').version || '1.0.0',
+      });
+    } catch (e) {
+      res.status(503).json({ status: 'error', error: e.message });
+    }
+  });
+
   // API Routes (erst nach DB-Initialisierung laden!)
   app.use('/api/avatars', require('./routes/avatars'));
   app.use('/api/providers', require('./routes/providers'));

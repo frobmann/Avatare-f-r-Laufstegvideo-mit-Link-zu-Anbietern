@@ -1,0 +1,41 @@
+# ═══════════════════════════════════════════════
+# Docker Ignore – Fashion Catwalk
+# Diese Dateien werden NICHT in den Container kopiert
+# ═══════════════════════════════════════════════
+
+# Git
+.git
+.gitignore
+
+# Umgebungsvariablen (Sicherheit!)
+.env
+
+# Node Modules (werden im Container frisch installiert)
+node_modules
+
+# Datenbank und Backups (werden als Volume gemountet)
+data/
+
+# Generierte Bilder/Videos (werden als Volume gemountet)
+public/generated/
+uploads/
+
+# Dokumentation
+docs/
+*.md
+!README.md
+
+# Windows-Dateien
+*.bat
+*.cmd
+
+# Editor-Dateien
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Docker-Dateien selbst
+Dockerfile
+docker-compose.yml
+.dockerignore
